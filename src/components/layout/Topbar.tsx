@@ -10,7 +10,7 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/topics": { name: "Topics", description: "Manage educational topics and content" },
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
   "/audit": { name: "Audit Logs", description: "View system audit logs" },
-  "/settings": { name: "Settings", description: "Manage system settings and configurations" },
+  "/settings": { name: "Settings", description: "Manage application policies and information" },
 };
 
 export default function Topbar() {

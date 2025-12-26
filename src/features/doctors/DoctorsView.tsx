@@ -22,7 +22,6 @@ export default function DoctorsView() {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
 
   // Fetch doctors
   const fetchDoctors = async () => {
@@ -84,11 +83,6 @@ useEffect(() => {
     setIsVerifyModalOpen(true);
   };
 
-  const handleSuspend = (doctor: DoctorForm) => {
-    setSelectedDoctor(doctor);
-    setIsSuspendDialogOpen(true);
-  };
-
   const handleDelete = (doctor: DoctorForm) => {
     setSelectedDoctor(doctor);
     setIsDeleteDialogOpen(true);
@@ -124,20 +118,6 @@ useEffect(() => {
       fetchDoctors();
     } catch (error) {
       console.error("Failed to verify doctor:", error);
-    }
-  };
-
-  const handleConfirmSuspend = async () => {
-    if (!selectedDoctor) return;
-    try {
-      const shouldSuspend = selectedDoctor.status !== "suspended";
-      await doctorService.toggleDoctorSuspension(
-        selectedDoctor.id,
-        shouldSuspend
-      );
-      fetchDoctors();
-    } catch (error) {
-      console.error("Failed to suspend doctor:", error);
     }
   };
 
@@ -208,7 +188,6 @@ useEffect(() => {
                   <option value="pending">Pending</option>
                   <option value="verified">Verified</option>
                   <option value="rejected">Rejected</option>
-                  <option value="suspended">Suspended</option>
                 </select>
               </div>
             </div>
@@ -251,9 +230,9 @@ useEffect(() => {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Suspended</div>
+          <div className="text-sm text-gray-600 mb-1">Rejected</div>
           <div className="text-2xl font-bold text-red-600">
-            {doctors.filter((d) => d.status === "suspended").length}
+            {doctors.filter((d) => d.status === "rejected").length}
           </div>
         </div>
       </div>
@@ -269,7 +248,6 @@ useEffect(() => {
           onView={handleView}
           onEdit={handleEdit}
           onVerify={handleVerify}
-          onSuspend={handleSuspend}
           onDelete={handleDelete}
         />
       )}
@@ -293,28 +271,6 @@ useEffect(() => {
         isOpen={isVerifyModalOpen}
         onClose={() => setIsVerifyModalOpen(false)}
         onSubmit={handleVerifySubmit}
-      />
-
-      <ConfirmDialog
-        isOpen={isSuspendDialogOpen}
-        onClose={() => setIsSuspendDialogOpen(false)}
-        onConfirm={handleConfirmSuspend}
-        title={
-          selectedDoctor?.status === "suspended"
-            ? "Unsuspend Doctor"
-            : "Suspend Doctor"
-        }
-        message={
-          selectedDoctor?.status === "suspended"
-            ? `Are you sure you want to unsuspend Dr. ${selectedDoctor?.fullName} ? They will regain access to the platform.`
-            : `Are you sure you want to suspend Dr. ${selectedDoctor?.fullName} ? They will lose access to the platform.`
-        }
-        confirmText={
-          selectedDoctor?.status === "suspended"
-            ? "Unsuspend"
-            : "Suspend"
-        }
-        variant="warning"
       />
 
       <ConfirmDialog

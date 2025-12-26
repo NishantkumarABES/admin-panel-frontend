@@ -1,4 +1,4 @@
-import { Eye, Edit, ShieldCheck, Ban, Trash2 } from "lucide-react";
+import { Eye, Edit, ShieldCheck, Trash2 } from "lucide-react";
 import type { DoctorForm } from "../doctor.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 
@@ -7,12 +7,11 @@ interface DoctorTableProps {
   onView: (doctor: DoctorForm) => void;
   onEdit: (doctor: DoctorForm) => void;
   onVerify: (doctor: DoctorForm) => void;
-  onSuspend: (doctor: DoctorForm) => void;
   onDelete: (doctor: DoctorForm) => void;
 }
 
 export default function DoctorTable({
-  doctors, onView, onEdit, onVerify, onSuspend, onDelete,
+  doctors, onView, onEdit, onVerify, onDelete,
 }: DoctorTableProps) {
   if (doctors.length === 0) {
     return (
@@ -122,17 +121,6 @@ export default function DoctorTable({
                         <ShieldCheck className="w-4 h-4" />
                       </button>
                     )}
-                    <button
-                      onClick={() => onSuspend(doctor)}
-                      className="p-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
-                      title={
-                        doctor.status === "suspended"
-                          ? "Unsuspend Doctor"
-                          : "Suspend Doctor"
-                      }
-                    >
-                      <Ban className="w-4 h-4" />
-                    </button>
                     <button
                       onClick={() => onDelete(doctor)}
                       className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"

@@ -16,7 +16,6 @@ export default function PatientsView() {
     const styles = {
       active: "bg-emerald-100 text-emerald-700 border-emerald-200",
       inactive: "bg-amber-100 text-amber-700 border-amber-200",
-      suspended: "bg-red-100 text-red-700 border-red-200",
     };
 
     return (
@@ -113,13 +112,12 @@ export default function PatientsView() {
     total: patients.length,
     active: patients.filter(p => p.status === "active").length,
     inactive: patients.filter(p => p.status === "inactive").length,
-    suspended: patients.filter(p => p.status === "suspended").length,
   };
 
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Total Patients</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
@@ -131,10 +129,6 @@ export default function PatientsView() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Inactive</p>
           <p className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Suspended</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{stats.suspended}</p>
         </div>
       </div>
 
@@ -162,7 +156,6 @@ export default function PatientsView() {
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
               </select>
             </div>
           </div>

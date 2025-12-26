@@ -156,6 +156,6 @@ export const mockDoctors: DoctorForm[] = [
     specialty: "Dermatology",
     licenseNumber: "DERM-24680",
     yearsOfExperience: 15,
-    status: "suspended",
+    status: "rejected",
   },
 ];

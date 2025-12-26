@@ -88,18 +88,5 @@ export const mockPatients: PatientForm[] = [
     address: "321 Elm St, Houston, TX 77001",
     emergencyContact: "+1 (555) 654-3210",
     createdAt: "2024-04-05",
-  },
-  {
-    id: "5",
-    firstName: "David",
-    lastName: "Williams",
-    email: "david.w@example.com",
-    phone: "+1 (555) 567-8901",
-    status: "suspended",
-    dateOfBirth: "1982-09-25",
-    gender: "Male",
-    address: "654 Maple Dr, Phoenix, AZ 85001",
-    emergencyContact: "+1 (555) 543-2109",
-    createdAt: "2024-05-12",
-  },
+  }
 ];
