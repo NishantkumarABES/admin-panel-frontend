@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Save, X, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Save, X, AlertCircle, Pencil } from 'lucide-react';
 import type { Setting, SettingType, UpdateSettingDTO } from '../settings.types';
 
 interface Contact {
@@ -28,17 +28,23 @@ export default function ContactTable({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [originalContactsCount, setOriginalContactsCount] = useState(0);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (setting?.content) {
       try {
         const parsed = JSON.parse(setting.content);
-        setContacts(Array.isArray(parsed) ? parsed : []);
+        const contactsArray = Array.isArray(parsed) ? parsed : [];
+        setContacts(contactsArray);
+        setOriginalContactsCount(contactsArray.length);
       } catch (err) {
         setContacts([]);
+        setOriginalContactsCount(0);
       }
     } else {
       setContacts([]);
+      setOriginalContactsCount(0);
     }
   }, [setting]);
 
@@ -49,6 +55,11 @@ export default function ContactTable({
 
   const handleRemoveContact = (index: number) => {
     setContacts(contacts.filter((_, i) => i !== index));
+  };
+
+  const handleEditContact = (index: number) => {
+    setEditingIndex(index);
+    setIsEditing(true);
   };
 
   const handleContactChange = (index: number, field: keyof Contact, value: string) => {
@@ -85,7 +96,9 @@ export default function ContactTable({
     setError('');
     try {
       await onSave(type, { content: JSON.stringify(contacts) });
+      setOriginalContactsCount(contacts.length);
       setIsEditing(false);
+      setEditingIndex(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to save changes');
     } finally {
@@ -105,6 +118,7 @@ export default function ContactTable({
       setContacts([]);
     }
     setIsEditing(false);
+    setEditingIndex(null);
     setError('');
   };
 
@@ -193,7 +207,7 @@ export default function ContactTable({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Message
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Action
                 </th>
               </tr>
@@ -262,15 +276,35 @@ export default function ContactTable({
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {isEditing && (
-                        <button
-                          onClick={() => handleRemoveContact(index)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                          title="Remove contact"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {!isEditing && (
+                          <button
+                            onClick={() => handleEditContact(index)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            title="Edit contact"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {!isEditing && (
+                          <button
+                            onClick={() => handleRemoveContact(index)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Remove contact"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {isEditing && index < originalContactsCount && (
+                          <button
+                            onClick={() => handleRemoveContact(index)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Remove contact"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

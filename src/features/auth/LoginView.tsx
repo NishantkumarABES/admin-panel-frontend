@@ -19,24 +19,25 @@ export default function LoginView() {
     setIsLoading(true);
 
     try {
-      // const response = await api.post('/auth/login/email/', { email, password });
-      // const data = response.data;
+      console.log("API Base URL:", import.meta.env.VITE_API_URL);
+      const response = await api.post('/auth/login/email/', { email, password });
+      const data = response.data;
 
-      // // Check if the response contains an error
-      // if (data.error) {
-      //   setError(data.error);
-      //   return;
-      // }
+      // Check if the response contains an error
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
 
       // Successful login - store tokens and user data
-      // if (data.access && data.refresh && data.user) {
-      //   login(data.access, data.refresh, data.user);
-      //   navigate("/");
-      // }
+      if (data.access && data.refresh && data.user) {
+        login(data.access, data.refresh, data.user);
+        navigate("/");
+      }
       // Mock successful login for demonstration purposes
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      login("access_token", "refresh_token", {id: "1", role: "admin", "state": "active", onboarding_complete: true});
-      navigate("/");
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      // login("access_token", "refresh_token", {id: "1", role: "admin", "state": "active", onboarding_complete: true});
+      // navigate("/");
     } catch (err: any) {
       // Handle API errors
       if (err.response?.data?.error) {
