@@ -167,7 +167,7 @@ export default function TopicDetailsModal({
                   {/* Format 2 - Search Users */}
                   {topic.format === "format2" && (
                     <>
-                      {topic.searchUsers && topic.searchUsers.length > 0 && (
+                      {/* {topic.searchUsers && topic.searchUsers.length > 0 && (
                         <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                           <Users className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
@@ -179,7 +179,7 @@ export default function TopicDetailsModal({
                             </div>
                           </div>
                         </div>
-                      )}
+                      )} */}
 
                       {topic.detailPageType && (
                         <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">

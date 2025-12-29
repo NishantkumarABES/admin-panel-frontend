@@ -9,6 +9,7 @@ import TopicsView from "../features/topics/TopicsView";
 import EventsView from "../features/events/EventsView";
 import AuditLogsView from "../features/audit/AuditLogsView";
 import SettingsView from "../features/settings/SettingsView";
+import AdvertisementsView from "../features/Advertisements/AdvertisementsView"; 
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
       <Route path="/products" element={<ProductsView />} />
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
+      <Route path="/advertisements" element={<AdvertisementsView />} />
       <Route path="/audit" element={<AuditLogsView />} />
       <Route path="/settings" element={<SettingsView />} />
     </Routes>

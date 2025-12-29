@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { Search, Eye, Filter } from "lucide-react";
 import type { PatientForm } from "./patient.types";
 import { mockPatients } from "./patient.types";
-import { patientService } from "../../services/patient.service";
+import { patientService, type PatientAnalytics } from "../../services/patient.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import PatientDetailsModal from "./components/PatientDetailsModal";
 
 export default function PatientsView() {
   const [patients, setPatients] = useState<PatientForm[]>([]);
+  const [analytics, setAnalytics] = useState<PatientAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -73,6 +75,24 @@ export default function PatientsView() {
     }
   };
 
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const response = await patientService.getAnalytics();
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Failed to fetch patient analytics:", error);
+      // Fallback to calculated stats if API fails
+      setAnalytics(null);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchPatients();
@@ -108,11 +128,18 @@ export default function PatientsView() {
     }
   };
 
-  const stats = {
-    total: patients.length,
-    active: patients.filter(p => p.status === "active").length,
-    inactive: patients.filter(p => p.status === "inactive").length,
-  };
+  // Use API analytics data if available, otherwise calculate from current patients
+  const stats = analytics
+    ? {
+        total: analytics.total_patients,
+        active: analytics.active_patients,
+        inactive: analytics.inactive_patients,
+      }
+    : {
+        total: patients.length,
+        active: patients.filter(p => p.status === "active").length,
+        inactive: patients.filter(p => p.status === "inactive").length,
+      };
 
   return (
     <div className="space-y-6">
@@ -120,15 +147,27 @@ export default function PatientsView() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Total Patients</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+          )}
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Active</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
+          )}
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <p className="text-sm text-gray-600">Inactive</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</p>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</p>
+          )}
         </div>
       </div>
 

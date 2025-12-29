@@ -1,15 +1,64 @@
-import { Users, Stethoscope, Package, Calendar, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getDashboardMetrics, type DashboardMetrics } from "../../services/dashboard.service";
 
 export default function DashboardView() {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getDashboardMetrics();
+        setMetrics(response.data);
+      } catch (err) {
+        setError("Failed to load dashboard metrics");
+        console.error("Error fetching dashboard metrics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+              <div className="h-10 bg-gray-200 rounded mb-4"></div>
+              <div className="h-8 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="flex items-center gap-2 text-red-800">
+          <AlertCircle className="w-5 h-5" />
+          <span>{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!metrics) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      {/* <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Overview of platform activity and key metrics
-        </p>
-      </div> */}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -20,9 +69,13 @@ export default function DashboardView() {
             </div>
             <TrendingUp className="w-5 h-5 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">248</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {metrics.doctors.total.toLocaleString()}
+          </div>
           <div className="text-sm text-gray-600">Total Doctors</div>
-          <div className="text-xs text-emerald-600 mt-2">+12% from last month</div>
+          <div className="text-xs text-emerald-600 mt-2">
+            +{metrics.doctors.growth_percent.toFixed(1)}% from last month
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -32,33 +85,45 @@ export default function DashboardView() {
             </div>
             <TrendingUp className="w-5 h-5 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">1,854</div>
-          <div className="text-sm text-gray-600">Total Patients</div>
-          <div className="text-xs text-emerald-600 mt-2">+24% from last month</div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-amber-50 rounded-lg">
-              <Package className="w-6 h-6 text-amber-600" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {metrics.patients.total.toLocaleString()}
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">89</div>
-          <div className="text-sm text-gray-600">Products</div>
-          <div className="text-xs text-emerald-600 mt-2">+5% from last month</div>
+          <div className="text-sm text-gray-600">Total Patients</div>
+          <div className="text-xs text-emerald-600 mt-2">
+            +{metrics.patients.growth_percent.toFixed(1)}% from last month
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-emerald-50 rounded-lg">
-              <Calendar className="w-6 h-6 text-emerald-600" />
+              <BookOpen className="w-6 h-6 text-emerald-600" />
             </div>
             <TrendingUp className="w-5 h-5 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">34</div>
-          <div className="text-sm text-gray-600">Upcoming Events</div>
-          <div className="text-xs text-emerald-600 mt-2">+8% from last month</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {metrics.topics.total.toLocaleString()}
+          </div>
+          <div className="text-sm text-gray-600">Total Topics</div>
+          <div className="text-xs text-emerald-600 mt-2">
+            +{metrics.topics.growth_percent.toFixed(1)}% from last month
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <Package className="w-6 h-6 text-orange-600" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {0}
+          </div>
+          <div className="text-sm text-gray-600">Total Products</div>
+          <div className="text-xs text-emerald-600 mt-2">
+            +0.0% from last month
+          </div>
         </div>
       </div>
 
@@ -78,12 +143,12 @@ export default function DashboardView() {
                 Review and verify new doctor registrations
               </div>
             </div>
-            <a
-              href="/doctors"
+            <Link
+              to="/doctors"
               className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Review
-            </a>
+            </Link>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -95,12 +160,12 @@ export default function DashboardView() {
                 Review product submissions for marketplace
               </div>
             </div>
-            <a
-              href="/products"
+            <Link
+              to="/products"
               className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Review
-            </a>
+            </Link>
           </div>
         </div>
       </div>

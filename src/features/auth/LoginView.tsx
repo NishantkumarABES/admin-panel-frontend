@@ -19,7 +19,7 @@ export default function LoginView() {
     setIsLoading(true);
 
     try {
-      console.log("API Base URL:", import.meta.env.VITE_API_URL);
+      // console.log("API Base URL:", import.meta.env.VITE_API_URL);
       const response = await api.post('/auth/login/email/', { email, password });
       const data = response.data;
 

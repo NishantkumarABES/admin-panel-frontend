@@ -3,7 +3,17 @@ import type {
   PatientForm, CreatePatientDTO, UpdatePatientDTO, PatientFilters,
 } from "../features/patients/patient.types";
 
+export interface PatientAnalytics {
+  total_patients: number;
+  active_patients: number;
+  inactive_patients: number;
+}
+
 export const patientService = {
+  getAnalytics: () => {
+    return api.get<PatientAnalytics>("/analytics/admin/patients/analytics/");
+  },
+
   getPatients: (filters?: PatientFilters) => {
     const params = new URLSearchParams();
     if (filters?.status && filters.status !== "all") {
