@@ -35,10 +35,18 @@ export interface SpecialityAdvertisement {
 }
 
 export interface AdFilters {
+  page?: number;
+  page_size?: number;
   status?: string;
   search?: string;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
 // Mock data for development
 export const mockGeneralAds: GeneralAdvertisement[] = [
   {

@@ -9,7 +9,8 @@ import TopicsView from "../features/topics/TopicsView";
 import EventsView from "../features/events/EventsView";
 import AuditLogsView from "../features/audit/AuditLogsView";
 import SettingsView from "../features/settings/SettingsView";
-import AdvertisementsView from "../features/Advertisements/AdvertisementsView"; 
+import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
+import CIMSView from "../features/CIMS/CIMSView"; 
 
 export default function AppRoutes() {
   return (
@@ -21,6 +22,7 @@ export default function AppRoutes() {
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/advertisements" element={<AdvertisementsView />} />
+      <Route path="/cims" element={<CIMSView />} />
       <Route path="/audit" element={<AuditLogsView />} />
       <Route path="/settings" element={<SettingsView />} />
     </Routes>

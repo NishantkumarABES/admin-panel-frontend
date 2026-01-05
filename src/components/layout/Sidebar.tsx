@@ -1,8 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
-  LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck, 
-  ChevronLeft, ChevronRight, User, LogOut, Megaphone
+  LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck,
+  ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
@@ -14,6 +14,7 @@ const navItems = [
   { label: "Topics", path: "/topics", icon: BookOpen },
   { label: "Events", path: "/events", icon: Calendar },
   { label: "Advertisements", path: "/advertisements", icon: Megaphone },
+  { label: "CIMS", path: "/cims", icon: Pill },
   { label: "Audit Logs", path: "/audit", icon: FileCheck },
   { label: "Settings", path: "/settings", icon: Settings },
 ];
@@ -36,7 +37,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     <aside
       className={`${
         isCollapsed ? "w-20" : "w-64"
-      } bg-gray-900 text-white h-screen flex flex-col transition-all duration-500 ease-in-out fixed left-0 top-0 z-30`}
+      } bg-gray-900 text-white h-full flex flex-col transition-all duration-500 ease-in-out fixed left-0 top-0 z-30`}
     >
       {/* Collapse Toggle Button */}
       <button
@@ -64,11 +65,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <img
               src={logo}
               alt="Clinic Topics Logo"
-              className="w-8 h-8 flex-shrink-0"
+              className="w-8 h-8 shrink-0"
             />
-            <h1 className="text-sm font-bold !text-white whitespace-nowrap">
+            <p className="text-[28px] font-bold text-white! whitespace-nowrap">
               Clinic Topics
-            </h1>
+            </p>
           </div>
         )}
       </div>
@@ -84,15 +85,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             className={({ isActive }) =>
               `flex items-center ${
                 isCollapsed ? "justify-center" : "gap-3"
-              } px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out
+              } px-4 py-2.5 rounded-lg text-base font-medium transition-all duration-300 ease-in-out
               ${
                 isActive
-                  ? "bg-gray-800 !text-white"
-                  : "text-gray-200 hover:bg-gray-800 !text-white"
+                  ? "bg-gray-800 text-white!"
+                  : "text-white! hover:bg-gray-800 "
               }`
             }
           >
-            <Icon className="w-5 h-5 flex-shrink-0" />
+            <Icon className="w-5 h-5 shrink-0" />
             {!isCollapsed && <span className="transition-opacity duration-300 ease-in-out">{label}</span>}
           </NavLink>
         ))}
@@ -101,7 +102,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {/* Admin User Section */}
       <div className="border-t border-gray-800">
         <div className={`p-4 flex items-center transition-all duration-300 ease-in-out ${isCollapsed ? "justify-center" : "gap-3"}`}>
-          <div className="w-9 h-9 rounded-full bg-white text-gray-900 flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-white text-gray-900 flex items-center justify-center shrink-0">
             <User className="w-5 h-5" />
           </div>
 
@@ -115,7 +116,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               <button
                 onClick={handleLogout}
                 title="Logout"
-                className="p-1.5 rounded-lg hover:bg-gray-800 transition-all duration-300 ease-in-out flex-shrink-0"
+                className="p-1.5 rounded-lg hover:bg-gray-800 transition-all duration-300 ease-in-out shrink-0"
               >
                 <LogOut className="w-4 h-4 text-gray-400" />
               </button>

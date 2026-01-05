@@ -1,10 +1,10 @@
 import {Mail, Phone, Briefcase, FileText} from "lucide-react";
-import type { DoctorForm } from "../doctor.types";
+import type { DoctorUser } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
 
 interface DoctorDetailsModalProps {
-  doctor: DoctorForm | null;
+  doctor: DoctorUser | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -28,7 +28,7 @@ export default function DoctorDetailsModal({
     if (!value) return null;
     return (
       <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
-        <Icon className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+        <Icon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-xs text-gray-500 mb-0.5">{label}</div>
           <div className="text-sm text-gray-900">{value}</div>
@@ -44,11 +44,11 @@ export default function DoctorDetailsModal({
         <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
           <div className="flex-1">
             <h3 className="text-xl font-semibold text-gray-900 mb-1">
-              Dr. {doctor.fullName}
+              Dr. {doctor.full_name}
             </h3>
-            <p className="text-sm text-gray-600 mb-3">{doctor.specialty}</p>
+            <p className="text-sm text-gray-600 mb-3">{doctor.specialization}</p>
             <div className="flex items-center gap-2">
-              <StatusBadge status={doctor.status} />
+              <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
             </div>
           </div>
         </div>
@@ -73,12 +73,12 @@ export default function DoctorDetailsModal({
             <InfoRow
               icon={FileText}
               label="License Number"
-              value={doctor.licenseNumber}
+              value={doctor.license_number}
             />
             <InfoRow
               icon={Briefcase}
               label="Years of Experience"
-              value={`${doctor.yearsOfExperience} years`}
+              value={`${doctor.years_of_experience} years`}
             />
           </div>
         </div>

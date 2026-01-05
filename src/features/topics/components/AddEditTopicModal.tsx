@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
-import { Upload, X } from "lucide-react";
 import type {
   Topic,
   CreateTopicDTO,
-  TopicFormat,
-  AuthorType,
-  DetailPageType,
-  PublishTiming,
+  ArticleInputType,
 } from "../topic.types";
 import Modal from "../../../components/common/Modal";
 
@@ -18,13 +14,11 @@ interface AddEditTopicModalProps {
 }
 
 const initialFormData: CreateTopicDTO = {
-  category: "",
-  authorType: "doctor",
-  authorId: "",
-  title: "",
-  description: "",
-  format: "format1",
-  publishTiming: "now",
+  articleInputType: "html",
+  articleContent: "",
+  baseImageUrl: "",
+  imageUrlOverride: "",
+  titleOverride: "",
 };
 
 export default function AddEditTopicModal({
@@ -34,31 +28,18 @@ export default function AddEditTopicModal({
   onSubmit,
 }: AddEditTopicModalProps) {
   const [formData, setFormData] = useState<CreateTopicDTO>(initialFormData);
-  const [imagePreview, setImagePreview] = useState<string>("");
 
   useEffect(() => {
     if (topic) {
       setFormData({
-        category: topic.category,
-        authorType: topic.authorType,
-        authorId: topic.authorId,
-        title: topic.title,
-        description: topic.description,
-        format: topic.format,
-        pdfUrl: topic.pdfUrl,
-        searchUsers: topic.searchUsers,
-        detailPageType: topic.detailPageType,
-        externalUrl: topic.externalUrl,
-        videoUrl: topic.videoUrl,
-        publishTiming: topic.publishTiming,
-        scheduledAt: topic.scheduledAt,
+        articleInputType: topic.articleInputType || "html",
+        articleContent: topic.articleContent || "",
+        baseImageUrl: topic.baseImageUrl || "",
+        imageUrlOverride: topic.imageUrlOverride || "",
+        titleOverride: topic.titleOverride || "",
       });
-      if (topic.image) {
-        setImagePreview(topic.image);
-      }
     } else {
       setFormData(initialFormData);
-      setImagePreview("");
     }
   }, [topic, isOpen]);
 
@@ -70,36 +51,13 @@ export default function AddEditTopicModal({
 
   const handleClose = () => {
     setFormData(initialFormData);
-    setImagePreview("");
     onClose();
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, image: file });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setFormData({ ...formData, image: undefined });
-    setImagePreview("");
-  };
-
-  const handleFormatChange = (format: TopicFormat) => {
+  const handleInputTypeChange = (type: ArticleInputType) => {
     setFormData({
       ...formData,
-      format,
-      pdfUrl: undefined,
-      searchUsers: undefined,
-      detailPageType: undefined,
-      externalUrl: undefined,
-      videoUrl: undefined,
+      articleInputType: type,
     });
   };
 
@@ -110,428 +68,143 @@ export default function AddEditTopicModal({
       title={topic ? "Edit Topic" : "Add New Topic"}
       size="xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Format Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Topic Format *
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Input Type Selection */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <label className="block text-xs font-extrabold text-gray-900 mb-3 uppercase tracking-wide">
+            Article Input Type *
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="flex gap-2.5">
             <button
               type="button"
-              onClick={() => handleFormatChange("format1")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                formData.format === "format1"
-                  ? "bg-gray-900 text-white border-gray-900"
+              onClick={() => handleInputTypeChange("html")}
+              className={`flex-1 px-3.5 py-2.5 text-sm font-extrabold rounded-xl border transition-all ${
+                formData.articleInputType === "html"
+                  ? "bg-blue-700 text-white border-blue-700 shadow-md"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
             >
-              Format 1 (PDF)
+              Article HTML
             </button>
             <button
               type="button"
-              onClick={() => handleFormatChange("format2")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                formData.format === "format2"
-                  ? "bg-gray-900 text-white border-gray-900"
+              onClick={() => handleInputTypeChange("plain_text")}
+              className={`flex-1 px-3.5 py-2.5 text-sm font-extrabold rounded-xl border transition-all ${
+                formData.articleInputType === "plain_text"
+                  ? "bg-blue-700 text-white border-blue-700 shadow-md"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
             >
-              Format 2 (Users)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFormatChange("format3")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                formData.format === "format3"
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Format 3 (Video)
+              Plain Text
             </button>
           </div>
         </div>
 
-        {/* Basic Information */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
-            Basic Information
+        {/* Article Content */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <label className="block text-xs font-extrabold text-gray-900 mb-2 uppercase tracking-wide">
+            Article Content *
+          </label>
+          <textarea
+            value={formData.articleContent}
+            onChange={(e) =>
+              setFormData({ ...formData, articleContent: e.target.value })
+            }
+            rows={12}
+            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-vertical transition-all leading-relaxed font-mono"
+            placeholder={
+              formData.articleInputType === "html"
+                ? "Paste your article HTML here..."
+                : "Paste your plain text article here..."
+            }
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1.5 leading-snug">
+            {formData.articleInputType === "html"
+              ? "Paste the complete HTML content of your article."
+              : "Paste the plain text content of your article."}
+          </p>
+        </div>
+
+        {/* Base Image URL */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <label className="block text-xs font-extrabold text-gray-900 mb-2 uppercase tracking-wide">
+            Base URL for Images in Article *
+          </label>
+          <input
+            type="url"
+            value={formData.baseImageUrl}
+            onChange={(e) =>
+              setFormData({ ...formData, baseImageUrl: e.target.value })
+            }
+            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="https://example.com/images/"
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1.5 leading-snug">
+            This base URL will be used to resolve image paths in the article content.
+          </p>
+        </div>
+
+        {/* Optional Fields */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
+          <h3 className="text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+            Optional Overrides
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <input
-                type="text"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                required
-              />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Author Type *
-              </label>
-              <select
-                value={formData.authorType}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    authorType: e.target.value as AuthorType,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                required
-              >
-                <option value="doctor">Doctor</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Author ID *
-              </label>
-              <input
-                type="text"
-                value={formData.authorId}
-                onChange={(e) =>
-                  setFormData({ ...formData, authorId: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter author ID"
-                required
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Image (jpg, jpeg, png)
-          </label>
-          {imagePreview ? (
-            <div className="relative inline-block">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-              />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute -top-2 -right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Click to upload image</p>
-                <p className="text-xs text-gray-500">JPG, JPEG, PNG</p>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handleImageChange}
-              />
+          {/* Image URL Override */}
+          <div>
+            <label className="block text-xs font-extrabold text-gray-900 mb-2 uppercase tracking-wide">
+              Image URL Override (Optional)
             </label>
-          )}
-        </div>
-
-        {/* Format 1 - PDF */}
-        {formData.format === "format1" && (
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              PDF Document
-            </h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                PDF URL *
-              </label>
-              <input
-                type="url"
-                value={formData.pdfUrl || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, pdfUrl: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="https://example.com/document.pdf"
-                required
-              />
-            </div>
+            <input
+              type="url"
+              value={formData.imageUrlOverride}
+              onChange={(e) =>
+                setFormData({ ...formData, imageUrlOverride: e.target.value })
+              }
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="https://example.com/custom-image.jpg"
+            />
+            <p className="text-xs text-gray-500 mt-1.5 leading-snug">
+              Override the default article image with a custom URL.
+            </p>
           </div>
-        )}
 
-        {/* Format 2 - Search Users */}
-        {formData.format === "format2" && (
+          {/* Title Override */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              User Search
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Users (comma-separated IDs)
-                </label>
-                <input
-                  type="text"
-                  value={formData.searchUsers?.join(", ") || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      searchUsers: e.target.value
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="user1, user2, user3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Detail Page Type *
-                </label>
-                <select
-                  value={formData.detailPageType || "pdf"}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      detailPageType: e.target.value as DetailPageType,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
-                >
-                  <option value="pdf">PDF</option>
-                  <option value="external_url">External URL</option>
-                </select>
-              </div>
-
-              {formData.detailPageType === "pdf" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PDF URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.pdfUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, pdfUrl: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="https://example.com/document.pdf"
-                    required
-                  />
-                </div>
-              )}
-
-              {formData.detailPageType === "external_url" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    External URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.externalUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, externalUrl: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="https://example.com"
-                    required
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Format 3 - Video */}
-        {formData.format === "format3" && (
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              Video Content
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Video URL *
-                </label>
-                <input
-                  type="url"
-                  value={formData.videoUrl || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, videoUrl: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Detail Page Type *
-                </label>
-                <select
-                  value={formData.detailPageType || "no_url"}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      detailPageType: e.target.value as DetailPageType,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
-                >
-                  <option value="pdf">PDF</option>
-                  <option value="external_url">External URL</option>
-                  <option value="no_url">No URL</option>
-                </select>
-              </div>
-
-              {formData.detailPageType === "pdf" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PDF URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.pdfUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, pdfUrl: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="https://example.com/document.pdf"
-                    required
-                  />
-                </div>
-              )}
-
-              {formData.detailPageType === "external_url" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    External URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.externalUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, externalUrl: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="https://example.com"
-                    required
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Publishing Options */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
-            Publishing
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                When to Publish *
-              </label>
-              <select
-                value={formData.publishTiming}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    publishTiming: e.target.value as PublishTiming,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                required
-              >
-                <option value="now">Publish Now</option>
-                <option value="later">Schedule for Later</option>
-              </select>
-            </div>
-
-            {formData.publishTiming === "later" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Schedule Date & Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formData.scheduledAt || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, scheduledAt: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
-                />
-              </div>
-            )}
+            <label className="block text-xs font-extrabold text-gray-900 mb-2 uppercase tracking-wide">
+              Title Override (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.titleOverride}
+              onChange={(e) =>
+                setFormData({ ...formData, titleOverride: e.target.value })
+              }
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="Custom article title"
+            />
+            <p className="text-xs text-gray-500 mt-1.5 leading-snug">
+              Override the default article title with a custom title.
+            </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <div className="flex gap-2.5 pt-2">
+          <button
+            type="submit"
+            className="flex-1 px-3.5 py-2.5 text-sm font-extrabold text-white bg-blue-700 rounded-xl hover:bg-blue-800 transition-all shadow-md"
+          >
+            {topic ? "Update Topic" : "Add Topic"}
+          </button>
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-5 py-2.5 text-sm font-extrabold text-white bg-gray-900 rounded-xl hover:bg-gray-950 transition-all shadow-md"
           >
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            {topic ? "Update Topic" : "Add Topic"}
           </button>
         </div>
       </form>

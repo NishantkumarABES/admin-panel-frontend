@@ -12,7 +12,7 @@ export default function TopicsView() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  // const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<TopicStatus | "all">("all");
 
   // Modal states
@@ -27,7 +27,7 @@ export default function TopicsView() {
       setLoading(true);
       const filters: any = {};
       if (statusFilter !== "all") filters.status = statusFilter;
-      if (categoryFilter !== "all") filters.category = categoryFilter;
+      // if (categoryFilter !== "all") filters.category = categoryFilter;
       if (searchTerm) filters.search = searchTerm;
       const response = await topicService.getTopics(filters);
       setTopics(Array.isArray(response.data) ? response.data : [...mockTopics]);
@@ -58,9 +58,9 @@ export default function TopicsView() {
   }, [searchTerm]);
 
   // Refetch when filters change
-  useEffect(() => {
-    // fetchTopics();
-  }, [statusFilter, categoryFilter]);
+  // useEffect(() => {
+  //   // fetchTopics();
+  // }, [statusFilter, categoryFilter]);
 
   // Handlers
   const handleView = (topic: Topic) => {
@@ -108,27 +108,55 @@ export default function TopicsView() {
   };
 
   // Get unique categories for filter
-  const uniqueCategories = Array.from(
-    new Set(topics.map((topic) => topic.category))
-  ).sort();
+  // const uniqueCategories = Array.from(
+  //   new Set(topics.map((topic) => topic.category))
+  // ).sort();
 
   // Get stats for all topics
   const stats = {
     total: topics.length,
     published: topics.filter((t) => t.status === "published").length,
-    scheduled: topics.filter((t) => t.status === "scheduled").length,
-    draft: topics.filter((t) => t.status === "draft").length,
+    // scheduled: topics.filter((t) => t.status === "scheduled").length,
+    unpublished: topics.filter((t) => t.status === "unpublished").length,
   };
 
   return (
+    
     <div className="space-y-6 min-w-0 max-w-full">
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Total Topics</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Published</div>
+          <div className="text-2xl font-bold text-emerald-600">
+            {stats.published}
+          </div>
+        </div>
+
+        {/* <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Scheduled</div>
+          <div className="text-2xl font-bold text-amber-600">
+            {stats.scheduled}
+          </div>
+        </div> */}
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Unpublished</div>
+          <div className="text-2xl font-bold text-gray-600">{stats.unpublished}</div>
+        </div>
+      </div>
+
       {/* Filters and Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between min-w-0">
           {/* Left side: Search + Filters */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
             {/* Search */}
-            <div className="flex-1 min-w-0 w-full sm:min-w-[280px] sm:max-w-md relative">
+            <div className="flex-1 min-w-0 w-full sm:min-w-285 sm:max-w-md relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
@@ -142,8 +170,8 @@ export default function TopicsView() {
             {/* Filters group */}
             <div className="flex flex-wrap items-center gap-4 min-w-0">
               {/* Category Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              {/* <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
@@ -156,11 +184,11 @@ export default function TopicsView() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Status Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-50">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
                 <select
                   value={statusFilter}
                   onChange={(e) =>
@@ -178,10 +206,10 @@ export default function TopicsView() {
           </div>
 
           {/* Right side: Add Topic Button */}
-          <div className="flex justify-end lg:justify-normal flex-shrink-0">
+          <div className="flex justify-end lg:justify-normal shrink-0">
             <button
               onClick={handleAdd}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4" />
               Add Topic
@@ -190,32 +218,7 @@ export default function TopicsView() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Total Topics</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Published</div>
-          <div className="text-2xl font-bold text-emerald-600">
-            {stats.published}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Scheduled</div>
-          <div className="text-2xl font-bold text-amber-600">
-            {stats.scheduled}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Draft</div>
-          <div className="text-2xl font-bold text-gray-600">{stats.draft}</div>
-        </div>
-      </div>
+      
 
       {/* Table */}
       {loading ? (

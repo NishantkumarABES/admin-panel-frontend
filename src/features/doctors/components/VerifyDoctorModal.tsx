@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import type { DoctorForm } from "../doctor.types";
+import type { DoctorUser } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 
 interface VerifyDoctorModalProps {
-  doctor: DoctorForm | null;
+  doctor: DoctorUser | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (doctorId: string, action: "verified" | "rejected", notes?: string, rejectionReason?: string) => void;
@@ -52,17 +52,17 @@ export default function VerifyDoctorModal({
         {/* Doctor Info */}
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-1">
-            Dr. {doctor.fullName}
+            Dr. {doctor.full_name}
           </h3>
-          <p className="text-sm text-gray-600">{doctor.specialty}</p>
+          <p className="text-sm text-gray-600">{doctor.specializations[0]}</p>
           <p className="text-sm text-gray-600">
-            License: {doctor.licenseNumber}
+            License: {doctor.license_number}
           </p>
         </div>
 
         {/* Warning Notice */}
         <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium text-amber-900 mb-1">
               Verification Action

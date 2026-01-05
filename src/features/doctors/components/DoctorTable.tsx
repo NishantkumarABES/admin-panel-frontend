@@ -1,17 +1,16 @@
-import { Eye, Edit, ShieldCheck, Trash2 } from "lucide-react";
-import type { DoctorForm } from "../doctor.types";
+import { Eye, Edit } from "lucide-react"; // Trash2
+import type { DoctorUser } from "../doctor.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 
 interface DoctorTableProps {
-  doctors: DoctorForm[];
-  onView: (doctor: DoctorForm) => void;
-  onEdit: (doctor: DoctorForm) => void;
-  onVerify: (doctor: DoctorForm) => void;
-  onDelete: (doctor: DoctorForm) => void;
+  doctors: DoctorUser[];
+  onView: (doctor: DoctorUser) => void;
+  onEdit: (doctor: DoctorUser) => void;
+  onDelete: (doctor: DoctorUser) => void;
 }
 
 export default function DoctorTable({
-  doctors, onView, onEdit, onVerify, onDelete,
+  doctors, onView, onEdit, // onDelete is currently unused
 }: DoctorTableProps) {
   if (doctors.length === 0) {
     return (
@@ -33,9 +32,9 @@ export default function DoctorTable({
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 speciality
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Location
-              </th>
+              </th> */}
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 License Number
               </th>
@@ -63,29 +62,28 @@ export default function DoctorTable({
                   <div className="flex items-center">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        Dr. {doctor.fullName}
+                        Dr. {doctor.full_name}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">
+                <td className="px-4 py-4  wrap-break-words">
                   <div className="text-sm text-gray-900">
-                    {doctor.specialty}
+                    {doctor.specialization}
                   </div>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {/* {doctor.location} */}
-                    <div>New York, NY</div>
+                {/* <td className="px-4 py-4 max-w-xs">
+                  <div className="text-sm text-gray-900 wrap-break-words">
+                    <div>{doctor.clinic_address}</div>
                   </div>
-                </td>
+                </td> */}
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {doctor.licenseNumber}
+                    {doctor.license_number}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {doctor.yearsOfExperience} years
+                  {doctor.years_of_experience} years
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                   {doctor.phone}
@@ -94,7 +92,7 @@ export default function DoctorTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <StatusBadge status={doctor.status} size="sm" />
+                  <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
@@ -112,22 +110,13 @@ export default function DoctorTable({
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    {doctor.status === "pending" && (
-                      <button
-                        onClick={() => onVerify(doctor)}
-                        className="p-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
-                        title="Verify Doctor"
-                      >
-                        <ShieldCheck className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
+                    {/* <button
                       onClick={() => onDelete(doctor)}
                       className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                       title="Delete Doctor"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>

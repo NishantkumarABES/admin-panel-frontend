@@ -1,34 +1,30 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Filter } from "lucide-react";
-import type { PatientForm } from "./patient.types";
+import { Search, Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import type { PatientUser } from "./patient.types";
 import { mockPatients } from "./patient.types";
 import { patientService, type PatientAnalytics } from "../../services/patient.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import PatientDetailsModal from "./components/PatientDetailsModal";
+import StatusBadge from "../../components/common/StatusBadge";
 
 export default function PatientsView() {
-  const [patients, setPatients] = useState<PatientForm[]>([]);
+  const [patients, setPatients] = useState<PatientUser[]>([]);
   const [analytics, setAnalytics] = useState<PatientAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      active: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      inactive: "bg-amber-100 text-amber-700 border-amber-200",
-    };
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${styles[status as keyof typeof styles]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  };
 
   // Modal states
-  const [selectedPatient, setSelectedPatient] = useState<PatientForm | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientUser | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -38,21 +34,26 @@ export default function PatientsView() {
       const filters = {
         status: statusFilter !== "all" ? statusFilter : undefined,
         search: searchTerm || undefined,
+        page: currentPage,
+        page_size: pageSize,
       };
 
       // Try to fetch from API, fallback to mock data on error
       try {
         const response = await patientService.getPatients(filters);
-        setPatients(Array.isArray(response.data) ? response.data : [...mockPatients]);
-
-        // setPatients(response.data);
+        setPatients(response.data.results);
+        setTotalCount(response.data.count);
+        setHasNext(response.data.next !== null);
+        setHasPrevious(response.data.previous !== null);
       } catch (error) {
         console.log("Using mock data - API not available");
         let filteredData = [...mockPatients];
 
         // Apply status filter
         if (statusFilter !== "all") {
-          filteredData = filteredData.filter(p => p.status === statusFilter);
+          filteredData = filteredData.filter(p =>
+            statusFilter === "active" ? p.is_active : !p.is_active
+          );
         }
 
         // Apply search filter
@@ -60,13 +61,14 @@ export default function PatientsView() {
           const search = searchTerm.toLowerCase();
           filteredData = filteredData.filter(
             p =>
-              `${p.firstName} ${p.lastName}`.toLowerCase().includes(search) ||
+              `${p.full_name}`.toLowerCase().includes(search) ||
               p.email.toLowerCase().includes(search) ||
               p.phone.toLowerCase().includes(search)
           );
         }
 
         setPatients(filteredData);
+        setTotalCount(filteredData.length);
       }
     } catch (error) {
       console.error("Failed to fetch patients:", error);
@@ -99,17 +101,18 @@ export default function PatientsView() {
     }, 300);
 
     return () => clearTimeout(timer);
+  }, [searchTerm, statusFilter, currentPage, pageSize]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [searchTerm, statusFilter]);
 
-  const handleView = (patient: PatientForm) => {
+  const handleView = (patient: PatientUser) => {
     setSelectedPatient(patient);
     setIsDetailsModalOpen(true);
   };
 
-  // const handleDelete = (patient: PatientForm) => {
-  //   setSelectedPatient(patient);
-  //   setIsDeleteDialogOpen(true);
-  // };
 
   const handleConfirmDelete = async () => {
     if (!selectedPatient) return;
@@ -128,7 +131,7 @@ export default function PatientsView() {
     }
   };
 
-  // Use API analytics data if available, otherwise calculate from current patients
+  // Use API analytics data if available, or totalCount from pagination, or calculate from current patients
   const stats = analytics
     ? {
         total: analytics.total_patients,
@@ -136,9 +139,9 @@ export default function PatientsView() {
         inactive: analytics.inactive_patients,
       }
     : {
-        total: patients.length,
-        active: patients.filter(p => p.status === "active").length,
-        inactive: patients.filter(p => p.status === "inactive").length,
+        total: totalCount || patients.length,
+        active: patients.filter(p => p.is_active).length,
+        inactive: patients.filter(p => !p.is_active).length,
       };
 
   return (
@@ -239,7 +242,7 @@ export default function PatientsView() {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {patient.firstName} {patient.lastName}
+                        {patient.full_name}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -249,7 +252,7 @@ export default function PatientsView() {
                       <div className="text-sm text-gray-600">{patient.phone}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(patient.status)}
+                      <StatusBadge status={patient.is_active ? "active" : "inactive"} size="sm" />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex justify-end gap-2">
@@ -260,19 +263,67 @@ export default function PatientsView() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        {/* <button
-                          onClick={() => handleDelete(patient)}
-                          className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                          title="Delete Profile"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button> */}
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && patients.length > 0 && (
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} patients
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="pageSize" className="text-sm text-gray-600">
+                    Per page:
+                  </label>
+                  <select
+                    id="pageSize"
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={!hasPrevious}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                <div className="px-3 py-1.5 text-sm text-gray-600">
+                  Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={!hasNext}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -297,7 +348,7 @@ export default function PatientsView() {
             }}
             onConfirm={handleConfirmDelete}
             title="Delete Patient"
-            message={`Are you sure you want to delete ${selectedPatient.firstName} ${selectedPatient.lastName}? This action cannot be undone.`}
+            message={`Are you sure you want to delete ${selectedPatient.full_name}? This action cannot be undone.`}
             confirmText="Delete"
             variant="danger"
           />

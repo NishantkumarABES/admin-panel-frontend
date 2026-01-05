@@ -1,8 +1,9 @@
-export type TopicStatus = "draft" | "published" | "scheduled";
+export type TopicStatus = "unpublished" | "published"; // "scheduled" removed for simplicity
 export type TopicFormat = "format1" | "format2" | "format3";
 export type AuthorType = "doctor" | "admin";
 export type DetailPageType = "pdf" | "external_url" | "no_url";
 export type PublishTiming = "now" | "later";
+export type ArticleInputType = "html" | "plain_text";
 
 export interface Topic {
   id: string;
@@ -16,7 +17,14 @@ export interface Topic {
   description: string;
   image?: string;
 
-  // Format-specific fields
+  // Article-based fields
+  articleInputType: ArticleInputType;
+  articleContent: string;
+  baseImageUrl: string;
+  imageUrlOverride?: string;
+  titleOverride?: string;
+
+  // Format-specific fields (kept for backward compatibility)
   format: TopicFormat;
   pdfUrl?: string; // Format 1
   detailPageType?: DetailPageType; // Format 2 & 3
@@ -38,27 +46,12 @@ export interface Topic {
 
 // DTO for creating/editing topics
 export interface CreateTopicDTO {
-  category: string;
-  authorType: AuthorType;
-  authorId: string;
-  title: string;
-  description: string;
-  image?: File | string;
-  format: TopicFormat;
-
-  // Format 1 fields
-  pdfUrl?: string;
-
-  // Format 2 & 3 fields
-  detailPageType?: DetailPageType;
-  externalUrl?: string;
-
-  // Format 3 fields
-  videoUrl?: string;
-
-  // Publishing
-  publishTiming: PublishTiming;
-  scheduledAt?: string;
+  // Article-based fields
+  articleInputType: ArticleInputType;
+  articleContent: string;
+  baseImageUrl: string;
+  imageUrlOverride?: string;
+  titleOverride?: string;
 }
 
 export interface UpdateTopicDTO extends Partial<CreateTopicDTO> {
@@ -97,6 +90,9 @@ export const mockTopics: Topic[] = [
     createdAt: "2024-01-15T09:30:00Z",
     updatedAt: "2024-01-15T10:00:00Z",
     createdBy: "admin1",
+    articleInputType: "html",
+    articleContent: "",
+    baseImageUrl: ""
   },
   {
     id: "2",
@@ -116,6 +112,9 @@ export const mockTopics: Topic[] = [
     createdAt: "2024-01-20T13:30:00Z",
     updatedAt: "2024-01-20T14:00:00Z",
     createdBy: "admin1",
+    articleInputType: "html",
+    articleContent: "",
+    baseImageUrl: ""
   },
   {
     id: "3",
@@ -132,10 +131,13 @@ export const mockTopics: Topic[] = [
     pdfUrl: "https://example.com/lifestyle.pdf",
     publishTiming: "later",
     scheduledAt: "2024-02-01T10:00:00Z",
-    status: "scheduled",
+    status: "unpublished",
     createdAt: "2024-01-25T11:00:00Z",
     updatedAt: "2024-01-25T11:00:00Z",
     createdBy: "admin1",
+    articleInputType: "html",
+    articleContent: "",
+    baseImageUrl: ""
   },
   {
     id: "4",
@@ -154,6 +156,9 @@ export const mockTopics: Topic[] = [
     createdAt: "2024-01-22T08:30:00Z",
     updatedAt: "2024-01-22T09:00:00Z",
     createdBy: "admin1",
+    articleInputType: "html",
+    articleContent: "",
+    baseImageUrl: ""
   },
   {
     id: "5",
@@ -173,5 +178,19 @@ export const mockTopics: Topic[] = [
     createdAt: "2024-01-18T11:30:00Z",
     updatedAt: "2024-01-18T12:00:00Z",
     createdBy: "admin1",
+    articleInputType: "html",
+    articleContent: "",
+    baseImageUrl: ""
   },
 ];
+
+
+export const TOPIC_CATEGORIES = [
+  "Cardiology",
+  "Neurology",
+  "General Health",
+  "Dermatology",
+  "Nutrition",
+  "Physical Therapy",
+  "Sleep Disorders"
+] as const;

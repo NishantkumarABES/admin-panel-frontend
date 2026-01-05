@@ -12,16 +12,13 @@ interface EditGeneralAdFormProps {
 }
 
 export default function EditGeneralAdForm({
-  isOpen,
-  onClose,
-  onSuccess,
-  advertisement,
+  isOpen, onClose, onSuccess, advertisement,
 }: EditGeneralAdFormProps) {
   const [formData, setFormData] = useState({
-    title: "",
-    url: "",
+    title: "", url: "",
     status: "enabled" as "enabled" | "disabled",
   });
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -210,7 +207,7 @@ export default function EditGeneralAdForm({
           ) : (
             <div className="relative">
               <img
-                src={imagePreview}
+                src={BackendBaseURL + imagePreview}
                 alt="Preview"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200"
                 onError={(e) => {

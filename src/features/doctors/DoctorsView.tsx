@@ -1,69 +1,140 @@
-import { useState, useEffect } from "react";
-import { Plus, Search, Filter } from "lucide-react";
-import type { DoctorForm, CreateDoctorDTO, DoctorStatus } from "./doctor.types";
-import { mockDoctors } from "./doctor.types";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
+import type { DoctorUser, CreateDoctorDTO, DoctorAnalytics, DoctorStatus } from "./doctor.types";
+import { mockDoctors, SPECIALTIES } from "./doctor.types";
 import DoctorTable from "./components/DoctorTable";
 import DoctorDetailsModal from "./components/DoctorDetailsModal";
 import AddEditDoctorModal from "./components/AddEditDoctorModal";
-import VerifyDoctorModal from "./components/VerifyDoctorModal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import * as doctorService from "../../services/doctor.service";
 
 export default function DoctorsView() {
-  const [doctors, setDoctors] = useState<DoctorForm[]>([]);
+  const [doctors, setDoctors] = useState<DoctorUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<DoctorStatus | "all">("all");
-  const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
+  const [specialityFilter, setspecialityFilter] = useState<string>("all");
+  const [showAdminCreatedOnly, setShowAdminCreatedOnly] = useState(false);
+  const [analytics, setAnalytics] = useState<DoctorAnalytics | null>(null);
+
+  // speciality dropdown states
+  const [isspecialityDropdownOpen, setIsspecialityDropdownOpen] = useState(false);
+  const [specialitySearchTerm, setspecialitySearchTerm] = useState("");
+  const specialityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // Modal states
-  const [selectedDoctor, setSelectedDoctor] = useState<DoctorForm | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorUser | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
-  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Fetch doctors analytics
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const response = await doctorService.getDoctorsAnalytics();
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+      setAnalytics(null);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   // Fetch doctors
   const fetchDoctors = async () => {
     try {
       setLoading(true);
-      const filters: any = {};
-      if (statusFilter !== "all") filters.status = statusFilter;
-      if (specialtyFilter !== "all") filters.specialty = specialtyFilter;
-      if (searchTerm) filters.search = searchTerm;
+      const filters = {
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        speciality: specialityFilter !== "all" ? specialityFilter : undefined,
+        search: searchTerm || undefined,
+        page: currentPage,
+        page_size: pageSize,
+        by_admin: showAdminCreatedOnly ? true : undefined,
+      };
 
-      const response = await doctorService.getDoctors(filters);
-      setDoctors(response.data);
+      // Try to fetch from API, fallback to mock data on error
+      try {
+        const response = await doctorService.getDoctors(filters);
+        setDoctors(response.data.results);
+        setTotalCount(response.data.count);
+        setHasNext(response.data.next !== null);
+        setHasPrevious(response.data.previous !== null);
+      } catch (error) {
+        console.log("Using mock data - API not available");
+        let filteredData = [...mockDoctors];
+
+        // Apply speciality filter
+        if (specialityFilter !== "all") {
+          filteredData = filteredData.filter(d => d.specialization === specialityFilter);
+        }
+
+        // Apply search filter
+        if (searchTerm) {
+          const search = searchTerm.toLowerCase();
+          filteredData = filteredData.filter(
+            d =>
+              d.full_name.toLowerCase().includes(search) ||
+              d.email.toLowerCase().includes(search) ||
+              d.phone.toLowerCase().includes(search) ||
+              d.license_number.toLowerCase().includes(search)
+          );
+        }
+
+        setDoctors(filteredData);
+        setTotalCount(filteredData.length);
+      }
     } catch (error) {
       console.error("Failed to fetch doctors:", error);
     } finally {
-      setDoctors(mockDoctors);
       setLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   fetchDoctors();
-  // }, [statusFilter]);
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
-useEffect(() => {
-  setDoctors(mockDoctors);
-  setLoading(false);
-}, []);
-
-  // Handle search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm !== undefined) {
-        fetchDoctors();
-      }
-    }, 500);
+      fetchDoctors();
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter, specialityFilter, showAdminCreatedOnly, currentPage, pageSize]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, specialityFilter, showAdminCreatedOnly]);
+
+  // Close speciality dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (specialityDropdownRef.current && !specialityDropdownRef.current.contains(event.target as Node)) {
+        setIsspecialityDropdownOpen(false);
+        setspecialitySearchTerm("");
+      }
+    };
+
+    if (isspecialityDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isspecialityDropdownOpen]);
 
   // Handlers
-  const handleView = (doctor: DoctorForm) => {
+  const handleView = (doctor: DoctorUser) => {
     setSelectedDoctor(doctor);
     setIsDetailsModalOpen(true);
   };
@@ -73,51 +144,37 @@ useEffect(() => {
     setIsAddEditModalOpen(true);
   };
 
-  const handleEdit = (doctor: DoctorForm) => {
+  const handleEdit = (doctor: DoctorUser) => {
     setSelectedDoctor(doctor);
     setIsAddEditModalOpen(true);
   };
 
-  const handleVerify = (doctor: DoctorForm) => {
-    setSelectedDoctor(doctor);
-    setIsVerifyModalOpen(true);
-  };
-
-  const handleDelete = (doctor: DoctorForm) => {
+  const handleDelete = (doctor: DoctorUser) => {
     setSelectedDoctor(doctor);
     setIsDeleteDialogOpen(true);
   };
 
   // Submit handlers
-  const handleAddEditSubmit = async (data: CreateDoctorDTO) => {
+  const handleAddEditSubmit = async (data: CreateDoctorDTO): Promise<{ password?: string; error?: string }> => {
     try {
       if (selectedDoctor) {
         await doctorService.updateDoctor({ ...data, id: selectedDoctor.id });
+        fetchDoctors();
+        fetchAnalytics();
+        return {};
       } else {
-        await doctorService.createDoctor(data);
+        const result = await doctorService.createDoctor(data);
+        fetchDoctors();
+        fetchAnalytics();
+        return { password: result.password };
       }
-      fetchDoctors();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save doctor:", error);
-    }
-  };
-
-  const handleVerifySubmit = async (
-    doctorId: string,
-    action: "verified" | "rejected",
-    notes?: string,
-    rejectionReason?: string
-  ) => {
-    try {
-      await doctorService.verifyDoctor({
-        id: doctorId,
-        status: action,
-        notes,
-        rejectionReason,
-      });
-      fetchDoctors();
-    } catch (error) {
-      console.error("Failed to verify doctor:", error);
+      const errorMessage = error?.response?.data?.message
+        || error?.response?.data?.error
+        || error?.message
+        || (selectedDoctor ? "Failed to update doctor. Please try again." : "Failed to add doctor. Please try again.");
+      return { error: errorMessage };
     }
   };
 
@@ -131,73 +188,189 @@ useEffect(() => {
     }
   };
 
-  // Get unique specialities for filter
-  const uniqueSpecialities = Array.from(
-    new Set(doctors.map((doctor) => doctor.specialty))
-  ).sort();
+  // Filter specialties based on search term
+  const filteredSpecialties = SPECIALTIES.filter(speciality =>
+    speciality.toLowerCase().includes(specialitySearchTerm.toLowerCase())
+  );
 
-  const filteredDoctors = doctors;
+  // Get display label for selected speciality
+  const getspecialityDisplayLabel = () => {
+    if (specialityFilter === "all") return "All specialities";
+    return specialityFilter;
+  };
+
+  // Use API analytics data if available, or totalCount from pagination, or calculate from current doctors
+  const stats = analytics
+    ? {
+        total: analytics.total_doctors,
+        active: analytics.active_doctors,
+        inactive: analytics.inactive_doctors,
+      }
+    : {
+        total: totalCount || doctors.length,
+        active: doctors.filter(d => d.is_active).length,
+        inactive: doctors.filter(d => !d.is_active).length,
+      };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Total Doctors</div>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <div className="text-2xl font-bold text-gray-900 mt-1">
+              {stats.total}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Active</div>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <div className="text-2xl font-bold text-emerald-600 mt-1">
+              {stats.active}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Inactive</div>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <div className="text-2xl font-bold text-amber-600 mt-1">
+              {stats.inactive}
+            </div>
+          )}
+        </div>
+      </div>
+      
       {/* Filters and Actions - All in one row */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between min-w-0">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
           {/* Left side: Search + Filters */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
             {/* Search */}
-            <div className="flex-1 min-w-0 w-full sm:min-w-[280px] sm:max-w-md relative">
+            <div className="flex-1 min-w-0 w-full sm:min-w-75 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, email, or license number..."
+                placeholder="Search doctor by name, email, or phone..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
 
             {/* Filters group */}
             <div className="flex flex-wrap items-center gap-4 min-w-0">
-              {/* Specialty Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <select
-                  value={specialtyFilter}
-                  onChange={(e) => setSpecialtyFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All specialities</option>
-                  {uniqueSpecialities.map((specialty) => (
-                    <option key={specialty} value={specialty}>
-                      {specialty}
-                    </option>
-                  ))}
-                </select>
+              {/* speciality Filter - Searchable Dropdown */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-60 relative" ref={specialityDropdownRef}>
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                <div className="flex-1 min-w-0 relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsspecialityDropdownOpen(!isspecialityDropdownOpen)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-left flex items-center justify-between gap-2 bg-white"
+                  >
+                    <span className="truncate">{getspecialityDisplayLabel()}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isspecialityDropdownOpen && (
+                    <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-hidden">
+                      {/* Search Input */}
+                      <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
+                        <div className="relative">
+                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type="text"
+                            value={specialitySearchTerm}
+                            onChange={(e) => setspecialitySearchTerm(e.target.value)}
+                            placeholder="Search specialties..."
+                            className="w-full pl-8 pr-8 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          {specialitySearchTerm && (
+                            <button
+                              onClick={() => setspecialitySearchTerm("")}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Options List */}
+                      <div className="overflow-y-auto max-h-64">
+                        <button
+                          onClick={() => {
+                            setspecialityFilter("all");
+                            setIsspecialityDropdownOpen(false);
+                            setspecialitySearchTerm("");
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
+                            specialityFilter === "all" ? "bg-gray-100 font-medium" : ""
+                          }`}
+                        >
+                          All specialities
+                        </button>
+                        {filteredSpecialties.length > 0 ? (
+                          filteredSpecialties.map((speciality) => (
+                            <button
+                              key={speciality}
+                              onClick={() => {
+                                setspecialityFilter(speciality);
+                                setIsspecialityDropdownOpen(false);
+                                setspecialitySearchTerm("");
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
+                                specialityFilter === speciality ? "bg-gray-100 font-medium" : ""
+                              }`}
+                            >
+                              {speciality}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            No specialties found
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Status Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as DoctorStatus | "all")}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
                 >
                   <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="verified">Verified</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </div>
             </div>
           </div>
 
           {/* Right side: Add Doctor Button */}
-          <div className="flex justify-end lg:justify-normal flex-shrink-0">
+          <div className="flex justify-end lg:justify-normal shrink-0">
             <button
               onClick={handleAdd}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4" />
               Add Doctor
@@ -205,52 +378,95 @@ useEffect(() => {
           </div>
         </div>
       </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Total Doctors</div>
-          <div className="text-2xl font-bold text-gray-900">
-            {doctors.length}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Verified</div>
-          <div className="text-2xl font-bold text-emerald-600">
-            {doctors.filter((d) => d.status === "verified").length}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Pending</div>
-          <div className="text-2xl font-bold text-amber-600">
-            {doctors.filter((d) => d.status === "pending").length}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Rejected</div>
-          <div className="text-2xl font-bold text-red-600">
-            {doctors.filter((d) => d.status === "rejected").length}
-          </div>
-        </div>
-      </div>
-
+      
       {/* Table */}
-      {loading ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading doctors...</p>
-        </div>
-      ) : (
-        <DoctorTable
-          doctors={filteredDoctors}
-          onView={handleView}
-          onEdit={handleEdit}
-          onVerify={handleVerify}
-          onDelete={handleDelete}
-        />
-      )}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-gray-600">Loading doctors...</div>
+        ) : doctors.length === 0 ? (
+          <div className="p-8 text-center text-gray-600">
+            No doctors found. Try adjusting your filters.
+          </div>
+        ) : (
+          <>
+            <DoctorTable
+              doctors={doctors}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+
+            {/* Pagination */}
+            {!loading && doctors.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} doctors
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="pageSize" className="text-sm text-gray-600">
+                          Per page:
+                        </label>
+                        <select
+                          id="pageSize"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+                    
+
+                      <div className="flex items-start">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={showAdminCreatedOnly}
+                            onChange={(e) => setShowAdminCreatedOnly(e.target.checked)}
+                            className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                          />
+                          <span className="text-sm text-gray-700 whitespace-nowrap">Show only admin created accounts</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!hasPrevious}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <div className="px-3 py-1.5 text-sm text-gray-600">
+                        Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!hasNext}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Modals */}
       <DoctorDetailsModal
@@ -262,15 +478,11 @@ useEffect(() => {
       <AddEditDoctorModal
         doctor={selectedDoctor}
         isOpen={isAddEditModalOpen}
-        onClose={() => setIsAddEditModalOpen(false)}
+        onClose={() => {
+          setIsAddEditModalOpen(false);
+          setSelectedDoctor(null);
+        }}
         onSubmit={handleAddEditSubmit}
-      />
-
-      <VerifyDoctorModal
-        doctor={selectedDoctor}
-        isOpen={isVerifyModalOpen}
-        onClose={() => setIsVerifyModalOpen(false)}
-        onSubmit={handleVerifySubmit}
       />
 
       <ConfirmDialog
@@ -278,7 +490,7 @@ useEffect(() => {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Doctor"
-        message={`Are you sure you want to delete Dr. ${selectedDoctor?.fullName}? This action cannot be undone.`}
+        message={`Are you sure you want to delete Dr. ${selectedDoctor?.full_name}? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />

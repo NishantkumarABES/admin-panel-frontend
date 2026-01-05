@@ -1,12 +1,21 @@
-import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package } from "lucide-react";
+import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getDashboardMetrics, type DashboardMetrics } from "../../services/dashboard.service";
+import { getDashboardMetrics, getDashboardAnalytics, type DashboardMetrics, type DashboardAnalytics } from "../../services/dashboard.service";
+import GrowthTrendChart from "../../components/charts/GrowthTrendChart";
+import SpecializationChart from "../../components/charts/SpecializationChart";
+import CategoryDistributionChart from "../../components/charts/CategoryDistributionChart";
+import UserStatusChart from "../../components/charts/UserStatusChart";
+import VerificationChart from "../../components/charts/VerificationChart";
+import StatusDistributionChart from "../../components/charts/StatusDistributionChart";
+import { generateMockAnalytics } from "../../utils/mockAnalyticsData";
 
 export default function DashboardView() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -25,6 +34,24 @@ export default function DashboardView() {
 
     fetchMetrics();
   }, []);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      if (!showAnalytics) return;
+
+      try {
+        const response = await getDashboardAnalytics();
+        setAnalytics(response.data);
+      } catch (err) {
+        console.error("Error fetching dashboard analytics:", err);
+        // Use mock data for development if API is not ready
+        console.log("Using mock analytics data for development");
+        setAnalytics(generateMockAnalytics());
+      }
+    };
+
+    fetchAnalytics();
+  }, [showAnalytics]);
 
   if (loading) {
     return (
@@ -59,6 +86,26 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-6">
+      {/* Header with Analytics Toggle */}
+      <div className="flex items-center justify-between">
+        {/* <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="text-sm text-gray-600 mt-1">Monitor your platform's key metrics and analytics</p>
+        </div> */}
+        {/*
+        <button
+          onClick={() => setShowAnalytics(!showAnalytics)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            showAnalytics
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+          }`}
+        >
+          <BarChart3 className="w-5 h-5" />
+          {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+        </button>
+        */}
+      </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -212,6 +259,72 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* Analytics Section */}
+      {showAnalytics && analytics && (
+        <div className="space-y-6">
+          <div className="border-t border-gray-200 pt-6">
+            <div className="flex items-center gap-2 mb-6">
+              <BarChart3 className="w-6 h-6 text-blue-600" />
+              <h2 className="text-xl font-bold text-gray-900">Detailed Analytics</h2>
+            </div>
+
+            {/* Growth Trend Chart - Full Width */}
+            {analytics.growthTrend && analytics.growthTrend.length > 0 && (
+              <div className="mb-6">
+                <GrowthTrendChart data={analytics.growthTrend} />
+              </div>
+            )}
+
+            {/* Two Column Layout for Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Specialization Chart */}
+              {analytics.specializations && analytics.specializations.length > 0 && (
+                <SpecializationChart data={analytics.specializations} />
+              )}
+
+              {/* Topic Categories Chart */}
+              {analytics.topicCategories && analytics.topicCategories.length > 0 && (
+                <CategoryDistributionChart
+                  data={analytics.topicCategories}
+                  title="Topic Categories Distribution"
+                />
+              )}
+            </div>
+
+            {/* Three Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              {/* User Status Chart */}
+              {analytics.userStatus && analytics.userStatus.length > 0 && (
+                <UserStatusChart data={analytics.userStatus} />
+              )}
+
+              {/* Verification Status Chart */}
+              {analytics.verification && analytics.verification.length > 0 && (
+                <VerificationChart data={analytics.verification} />
+              )}
+
+              {/* Topic Status Distribution */}
+              {analytics.topicStatus && analytics.topicStatus.length > 0 && (
+                <StatusDistributionChart
+                  data={analytics.topicStatus}
+                  title="Content Status"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State for Analytics */}
+      {showAnalytics && !analytics && (
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading analytics...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Trash2, Filter } from "lucide-react";
+import { Plus, Search, Edit, Filter, ChevronLeft, ChevronRight} from "lucide-react"; //Trash2 
 import type { GeneralAdvertisement } from "./advertisement.types";
 import { mockGeneralAds } from "./advertisement.types";
 import { advertisementService } from "../../services/advertisement.service";
@@ -8,10 +8,18 @@ import AddGeneralAdForm from "./components/AddGeneralAdForm";
 import EditGeneralAdForm from "./components/EditGeneralAdForm";
 
 export default function AdvertisementsView() {
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const [generalAds, setGeneralAds] = useState<GeneralAdvertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -38,11 +46,17 @@ export default function AdvertisementsView() {
       const filters = {
         status: statusFilter !== "all" ? statusFilter : undefined,
         search: searchTerm || undefined,
+        page: currentPage,
+        page_size: pageSize,
       };
 
       try {
         const response = await advertisementService.getGeneralAds(filters);
-        setGeneralAds(Array.isArray(response.data) ? response.data : [...mockGeneralAds]);
+        console.log("API response:", response);
+        setGeneralAds(Array.isArray(response.data.results) ? response.data.results : [...mockGeneralAds]);
+        setTotalCount(response.data.count);
+        setHasNext(!!response.data.next);
+        setHasPrevious(!!response.data.previous);
       } catch (error) {
         console.log("Using mock data - API not available");
         let filteredData = [...mockGeneralAds];
@@ -95,10 +109,10 @@ export default function AdvertisementsView() {
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (ad: GeneralAdvertisement) => {
-    setSelectedAd(ad);
-    setIsDeleteDialogOpen(true);
-  };
+  // const handleDelete = (ad: GeneralAdvertisement) => {
+  //   setSelectedAd(ad);
+  //   setIsDeleteDialogOpen(true);
+  // };
 
   const handleConfirmDelete = async () => {
     if (!selectedAd) return;
@@ -116,7 +130,6 @@ export default function AdvertisementsView() {
       setSelectedAd(null);
     }
   };
-
   const stats = {
     total: generalAds.length,
     enabled: generalAds.filter(ad => ad.status === "enabled").length,
@@ -228,7 +241,7 @@ export default function AdvertisementsView() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <img
-                              src={ad.image}
+                              src={BackendBaseURL + ad.image}
                               alt={ad.title}
                               className="h-12 w-20 object-cover rounded border border-gray-200"
                               onError={(e) => {
@@ -248,13 +261,13 @@ export default function AdvertisementsView() {
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
-                              <button
+                              {/* <button
                                 onClick={() => handleDelete(ad)}
                                 className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                                 title="Delete Advertisement"
                               >
                                 <Trash2 className="w-4 h-4" />
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>
@@ -263,8 +276,63 @@ export default function AdvertisementsView() {
                   </table>
                 </div>
               )}
+            
+              {/* Pagination */}
+              {!loading && generalAds.length > 0 && (
+                <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} advertisements
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="pageSize" className="text-sm text-gray-600">
+                          Per page:
+                        </label>
+                        <select
+                          id="pageSize"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!hasPrevious}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <div className="px-3 py-1.5 text-sm text-gray-600">
+                        Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!hasNext}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-        </div>
+          </div>
       </div>
 
       {/* Modals */}

@@ -7,6 +7,7 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
 }
 
 export default function Modal({
@@ -15,6 +16,7 @@ export default function Modal({
   title,
   children,
   size = "md",
+  className = "",
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -36,7 +38,7 @@ export default function Modal({
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col`}
+          className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col ${className}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

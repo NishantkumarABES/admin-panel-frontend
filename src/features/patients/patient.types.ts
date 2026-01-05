@@ -1,17 +1,28 @@
-export type PatientStatus = "active" | "inactive" | "suspended";
+export type PatientStatus = "active" | "inactive";
 
-export interface PatientForm {
+// API Response User
+export interface PatientUser {
   id: string;
-  firstName: string;
-  lastName: string;
+  full_name: string;
   email: string;
   phone: string;
-  status: PatientStatus;
-  dateOfBirth?: string;
-  gender?: string;
-  address?: string;
-  emergencyContact?: string;
-  createdAt?: string;
+  country_code: string;
+  date_of_birth: string;
+  gender: "male" | "female" | "other";
+  state: string;
+  is_email_verified: boolean;
+  is_phone_verified: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Paginated Response
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 export interface CreatePatientDTO {
@@ -33,60 +44,56 @@ export interface UpdatePatientDTO extends CreatePatientDTO {
 export interface PatientFilters {
   status?: string;
   search?: string;
+  page?: number;
+  page_size?: number;
 }
 
 // Mock data for development
-export const mockPatients: PatientForm[] = [
+export const mockPatients: PatientUser[] = [
   {
     id: "1",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    status: "active",
-    dateOfBirth: "1985-03-15",
-    gender: "Male",
-    address: "123 Main St, New York, NY 10001",
-    emergencyContact: "+1 (555) 987-6543",
-    createdAt: "2024-01-15",
+    full_name: "Alice Johnson",
+    email: "alice.johnson@example.com",
+    phone: "+1 555-123-4567",
+    country_code : "+1",
+    date_of_birth: "1980-05-15",
+    gender: "female",
+    state: "active",
+    is_email_verified: true,
+    is_phone_verified: false,
+    is_active: true,
+    created_at: "2023-01-15T10:00:00Z",
+    updated_at: "2023-01-15T10:00:00Z",
   },
   {
     id: "2",
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "+1 (555) 234-5678",
-    status: "active",
-    dateOfBirth: "1990-07-22",
-    gender: "Female",
-    address: "456 Oak Ave, Los Angeles, CA 90001",
-    emergencyContact: "+1 (555) 876-5432",
-    createdAt: "2024-02-20",
+    full_name: "Bob Smith",
+    email: "bob.smith@example.com",
+    phone: "+1 555-987-6543",
+    country_code : "+1",
+    date_of_birth: "1975-09-20",
+    gender: "male",
+    state: "inactive",
+    is_email_verified: true,
+    is_phone_verified: true,
+    is_active: false,
+    created_at: "2023-02-01T11:30:00Z",
+    updated_at: "2023-02-01T11:30:00Z",
   },
   {
     id: "3",
-    firstName: "Michael",
-    lastName: "Johnson",
-    email: "michael.j@example.com",
-    phone: "+1 (555) 345-6789",
-    status: "inactive",
-    dateOfBirth: "1978-11-30",
-    gender: "Male",
-    address: "789 Pine Rd, Chicago, IL 60601",
-    emergencyContact: "+1 (555) 765-4321",
-    createdAt: "2024-03-10",
+    full_name: "Charlie Brown",
+    email: "charlie.brown@example.com",
+    phone: "+1 555-111-2222",
+    country_code : "+1",
+    date_of_birth: "1992-11-01",
+    gender: "male",
+    state: "active",
+    is_email_verified: false,
+    is_phone_verified: false,
+    is_active: true,
+    created_at: "2023-03-20T09:00:00Z",
+    updated_at: "2023-03-20T09:00:00Z",
   },
-  {
-    id: "4",
-    firstName: "Emily",
-    lastName: "Brown",
-    email: "emily.brown@example.com",
-    phone: "+1 (555) 456-7890",
-    status: "active",
-    dateOfBirth: "1995-05-18",
-    gender: "Female",
-    address: "321 Elm St, Houston, TX 77001",
-    emergencyContact: "+1 (555) 654-3210",
-    createdAt: "2024-04-05",
-  }
 ];
+
