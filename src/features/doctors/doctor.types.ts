@@ -134,6 +134,7 @@ export const mockDoctors: DoctorUser[] = [
 ];
 
 export const SPECIALTIES = [
+  "Multispecialty",
   "General Medicine",
   "General Surgery",
   "Cardiology",
