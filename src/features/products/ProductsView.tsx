@@ -15,7 +15,6 @@ export default function ProductsView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProductStatus | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [prescriptionFilter, setPrescriptionFilter] = useState<"all" | "required" | "not_required">("all");
   const [analytics, setAnalytics] = useState<ProductAnalytics | null>(null);
 
   // Category dropdown states
@@ -26,7 +25,7 @@ export default function ProductsView() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
@@ -48,7 +47,7 @@ export default function ProductsView() {
       const total = mockProducts.length;
       const active = mockProducts.filter((p: Product) => p.is_active).length;
       const inactive = total - active;
-      setAnalytics({ total_products: total, active_products: active, inactive_products: inactive });
+      setAnalytics({ total_products: total, instock_products: active, outofstock_products: inactive, success: true});
     } finally {
       setAnalyticsLoading(false);
     }
@@ -64,9 +63,6 @@ export default function ProductsView() {
         search: searchTerm || undefined,
         page: currentPage,
         page_size: pageSize,
-        is_prescription_required: prescriptionFilter !== "all" 
-          ? (prescriptionFilter === "required" ? true : false)
-          : undefined,
       };
 
       // Try to fetch from API, fallback to mock data on error
@@ -83,21 +79,15 @@ export default function ProductsView() {
         // Apply status filter
         if (statusFilter !== "all") {
           filteredData = filteredData.filter(p => 
-            statusFilter === "active" ? p.is_active : !p.is_active
+            statusFilter === "instock" ? p.is_active : !p.is_active
           );
         }
 
         // Apply category filter
         if (categoryFilter !== "all") {
-          filteredData = filteredData.filter(p => p.category_name === categoryFilter);
+          filteredData = filteredData.filter(p => p.category === categoryFilter);
         }
 
-        // Apply prescription filter
-        if (prescriptionFilter !== "all") {
-          filteredData = filteredData.filter(p => 
-            prescriptionFilter === "required" ? p.is_prescription_required : !p.is_prescription_required
-          );
-        }
 
         // Apply search filter
         if (searchTerm) {
@@ -130,12 +120,12 @@ export default function ProductsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, categoryFilter, prescriptionFilter, currentPage, pageSize]);
+  }, [searchTerm, statusFilter, categoryFilter, currentPage, pageSize]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, categoryFilter, prescriptionFilter]);
+  }, [searchTerm, statusFilter, categoryFilter]);
 
   // Close category dropdown when clicking outside
   useEffect(() => {
@@ -206,9 +196,9 @@ export default function ProductsView() {
   // };
 
   // Filter categories based on search term
-  // const filteredCategories = PRODUCT_CATEGORIES.filter((category: Product) =>
-  //   category.toLowerCase().includes(categorySearchTerm.toLowerCase())
-  // );
+  const filteredCategories = PRODUCT_CATEGORIES.filter((category) =>
+    category.toLowerCase().includes(categorySearchTerm.toLowerCase())
+  );
 
   // Get display label for selected category
   const getCategoryDisplayLabel = () => {
@@ -220,13 +210,13 @@ export default function ProductsView() {
   const stats = analytics
     ? {
         total: analytics.total_products,
-        active: analytics.active_products,
-        inactive: analytics.inactive_products,
+        instock: analytics.instock_products,
+        outofstock: analytics.outofstock_products,
       }
     : {
         total: totalCount || products.length,
-        active: products.filter(p => p.is_active).length,
-        inactive: products.filter(p => !p.is_active).length,
+        instock: products.filter(p => p.is_active).length,
+        outofstock: products.filter(p => !p.is_active).length,
       };
 
   return (
@@ -245,23 +235,23 @@ export default function ProductsView() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Active Products</div>
+          <div className="text-sm text-gray-600 mb-1">In Stock Products</div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
             <div className="text-2xl font-bold text-emerald-600 mt-1">
-              {stats.active}
+              {stats.instock}
             </div>
           )}
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Inactive Products</div>
+          <div className="text-sm text-gray-600 mb-1">Out of Stock Products</div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
             <div className="text-2xl font-bold text-amber-600 mt-1">
-              {stats.inactive}
+              {stats.outofstock}
             </div>
           )}
         </div>
@@ -279,7 +269,7 @@ export default function ProductsView() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, SKU, or description..."
+                placeholder="Search by name, brand, or description..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
@@ -340,7 +330,7 @@ export default function ProductsView() {
                           All Categories
                         </button>
                         {filteredCategories.length > 0 ? (
-                          filteredCategories.map((category: Product) => (
+                          filteredCategories.map((category) => (
                             <button
                               key={category}
                               onClick={() => {
@@ -375,22 +365,8 @@ export default function ProductsView() {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
                 >
                   <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              {/* Prescription Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-48">
-                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
-                <select
-                  value={prescriptionFilter}
-                  onChange={(e) => setPrescriptionFilter(e.target.value as "all" | "required" | "not_required")}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All Prescriptions</option>
-                  <option value="required">Rx Required</option>
-                  <option value="not_required">No Rx Required</option>
+                  <option value="instock">In Stock</option>
+                  <option value="outofstock">Out of Stock</option>
                 </select>
               </div>
             </div>

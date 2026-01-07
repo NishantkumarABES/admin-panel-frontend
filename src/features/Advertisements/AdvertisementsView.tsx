@@ -52,7 +52,7 @@ export default function AdvertisementsView() {
 
       try {
         const response = await advertisementService.getGeneralAds(filters);
-        console.log("API response:", response);
+        // console.log("API response:", response);
         setGeneralAds(Array.isArray(response.data.results) ? response.data.results : [...mockGeneralAds]);
         setTotalCount(response.data.count);
         setHasNext(!!response.data.next);

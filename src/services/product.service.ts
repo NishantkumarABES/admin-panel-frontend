@@ -1,6 +1,6 @@
 import { api } from "./api";
 import type { 
-    PaginatedResponse, CreateProductDTO, UpdateProductDTO,  Product, 
+    PaginatedResponse, CreateProductDTO, UpdateProductDTO,  Product, ProductAnalytics
 } from "../features/products/product.types";
 
 export interface ProductFilters {
@@ -9,10 +9,10 @@ export interface ProductFilters {
     search?: string;
     status?: string;
     category?: string;
-    is_prescription_required?: boolean;
 }
 
-
+export const getProductsAnalytics = () =>
+  api.get<ProductAnalytics>("/analytics/admin/products/metrics/");
 
 export const getProducts = async (filters: ProductFilters = {}): Promise<{ data: PaginatedResponse<Product> }> => {
     const params = new URLSearchParams();
@@ -32,23 +32,25 @@ export const getProducts = async (filters: ProductFilters = {}): Promise<{ data:
     if (filters.category) {
         params.append("category", filters.category);
     }
-    if (filters.is_prescription_required !== undefined) {
-        params.append("is_prescription_required", filters.is_prescription_required.toString());
-    }
 
     const queryString = params.toString();
     const response = await api.get<PaginatedResponse<Product>>(
-        `/products${queryString ? `?${queryString}` : ""}`
+        `/commerce/admin/products/${queryString ? `?${queryString}` : ""}`
     );
 
     return { data: response.data };
 };
 
 export const createProduct = async (productData: CreateProductDTO): Promise<{ data: Product }> => {
-    const payload = {
-        ...productData,
-    }
-    const response = await api.post<Product>("/products", payload);
+    const formData = new FormData();
+    Object.entries(productData).forEach(([key, value]) => {
+        if (key === "images" && Array.isArray(value)) {
+        value.forEach(file => formData.append("images", file));
+        } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+        }
+    });
+    const response = await api.post<Product>("/commerce/admin/products/", formData);
     return { data: response.data };
 };
 

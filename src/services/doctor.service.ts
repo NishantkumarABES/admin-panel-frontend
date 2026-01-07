@@ -72,7 +72,7 @@ export const getDoctors = async (filters?: DoctorFilters): Promise<{ data: Pagin
 
 // Get doctors analytics
 export const getDoctorsAnalytics = () =>
-  api.get<DoctorAnalytics>("/analytics/admin/doctors/analytics/");
+  api.get<DoctorAnalytics>("/analytics/admin/doctors/metrics/");
 
 
 // Get a single doctor by ID

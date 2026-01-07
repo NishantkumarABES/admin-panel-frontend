@@ -1,4 +1,4 @@
-import { Package, Tag, DollarSign, FileText, Pill, Box } from "lucide-react";
+import { Package, Tag, DollarSign, FileText, Box } from "lucide-react"; // pill
 import type { Product } from "../product.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -10,16 +10,12 @@ interface ProductDetailsModalProps {
 }
 
 export default function ProductDetailsModal({
-  product,
-  isOpen,
-  onClose,
+  product, isOpen, onClose,
 }: ProductDetailsModalProps) {
   if (!product) return null;
-
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const InfoRow = ({
-    icon: Icon,
-    label,
-    value,
+    icon: Icon, label, value,
   }: {
     icon: React.ElementType;
     label: string;
@@ -52,14 +48,9 @@ export default function ProductDetailsModal({
             <h3 className="text-xl font-semibold text-gray-900 mb-1">
               {product.name}
             </h3>
-            <p className="text-sm text-gray-600 mb-3">{product.category_name}</p>
+            <p className="text-sm text-gray-600 mb-3">{product.category}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge status={product.is_active ? "active" : "inactive"} size="sm" />
-              {product.is_prescription_required && (
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                  Prescription Required
-                </span>
-              )}
               {product.stock_quantity === 0 && (
                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
                   Out of Stock
@@ -76,7 +67,7 @@ export default function ProductDetailsModal({
           </h4>
           <div className="space-y-2">
             <InfoRow icon={Tag} label="SKU" value={product.sku} />
-            <InfoRow icon={Package} label="Category" value={product.category_name} />
+            <InfoRow icon={Package} label="Category" value={product.category} />
             <InfoRow 
               icon={FileText} 
               label="Description" 
@@ -134,11 +125,6 @@ export default function ProductDetailsModal({
                 </span>
               }
             />
-            <InfoRow 
-              icon={Pill} 
-              label="Prescription Required" 
-              value={product.is_prescription_required ? "Yes" : "No"} 
-            />
           </div>
         </div>
 
@@ -152,7 +138,7 @@ export default function ProductDetailsModal({
               {product.images.map((image) => (
                 <div key={image.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
                   <img 
-                    src={image.image} 
+                    src={BackendBaseURL + image.image} 
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

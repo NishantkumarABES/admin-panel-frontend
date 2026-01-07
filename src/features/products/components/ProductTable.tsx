@@ -10,10 +10,9 @@ interface ProductTableProps {
 }
 
 export default function ProductTable({
-  products,
-  onView,
-  onEdit,
+  products, onView, onEdit,
 }: ProductTableProps) {
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   if (products.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -28,23 +27,20 @@ export default function ProductTable({
         <table className="w-full table-auto divide-y divide-gray-200 min-w-max">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap w-115">
                 Product Name
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                SKU
+                Category
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Category
+                Brand
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Price
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Stock
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Prescription
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Status
@@ -61,7 +57,14 @@ export default function ProductTable({
                 className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-3">
+                    {product.images[0] && (
+                        <img
+                          src={BackendBaseURL + product.images[0].image}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                    )}
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {product.name}
@@ -74,14 +77,19 @@ export default function ProductTable({
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">
+                {/* <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900 font-mono">
                     {product.sku}
                   </div>
-                </td>
+                </td> */}
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {product.category_name}
+                    {product.category}
+                  </div>
+                </td>
+                 <td className="px-4 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900 font-mono">
+                    {product.brand || "-"}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
@@ -104,18 +112,7 @@ export default function ProductTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  {product.is_prescription_required ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                      Rx Required
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                      No Rx
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <StatusBadge status={product.is_active ? "active" : "inactive"} size="sm" />
+                  <StatusBadge status={product.is_active ? "instock" : "outofstock"} size="sm" />
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">

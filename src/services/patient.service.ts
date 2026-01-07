@@ -20,7 +20,7 @@ export interface PaginatedPatients {
 
 export const patientService = {
   getAnalytics: () => {
-    return api.get<PatientAnalytics>("/analytics/admin/patients/analytics/");
+    return api.get<PatientAnalytics>("/analytics/admin/patients/metrics/");
   },
 
   getPatients: async (filters?: PatientFilters): Promise<{ data: PaginatedPatients }> => {

@@ -1,5 +1,5 @@
 // API Response Types
-export type ProductStatus = "active" | "inactive";
+export type ProductStatus = "instock" | "outofstock";
 
 export interface ProductImage {
   id: string;
@@ -12,11 +12,10 @@ export interface Product {
   name: string;
   sku: string;
   category: string;
-  category_name: string;
+  brand?: string;
   description: string;
   price: string;
   tax_percentage: string;
-  is_prescription_required: boolean;
   is_active: boolean;
   stock_quantity: number;
   images: ProductImage[];
@@ -34,19 +33,19 @@ export interface PaginatedResponse<T> {
 
 export interface ProductAnalytics {
   total_products: number;
-  active_products: number;
-  inactive_products: number;
+  instock_products: number;
+  outofstock_products: number;
+  success: boolean;
 }
 
 // DTO for creating/editing products
 export interface CreateProductDTO {
   name: string;
-  sku: string;
   category: string;
+  brand?: string;
   description: string;
   price: string;
   tax_percentage: string;
-  is_prescription_required: boolean;
   is_active: boolean;
   stock_quantity: number;
   images?: File[];
@@ -62,12 +61,11 @@ export const mockProducts: Product[] = [
     id: "1",
     name: "Paracetamol 500mg",
     sku: "MED-001",
-    category: "1",
-    category_name: "Tablets",
+    brand: "HealthCorp",
+    category: "supplies",
     description: "Pain relief and fever reducer",
     price: "50.00",
     tax_percentage: "5.00",
-    is_prescription_required: false,
     is_active: true,
     stock_quantity: 500,
     images: [],
@@ -78,12 +76,11 @@ export const mockProducts: Product[] = [
     id: "2",
     name: "Amoxicillin 250mg",
     sku: "MED-002",
-    category: "2",
-    category_name: "Capsules",
+    brand: "BioPharma",
+    category: "supplies",
     description: "Antibiotic for bacterial infections",
     price: "120.00",
     tax_percentage: "5.00",
-    is_prescription_required: true,
     is_active: true,
     stock_quantity: 300,
     images: [],
@@ -94,12 +91,11 @@ export const mockProducts: Product[] = [
     id: "3",
     name: "Vitamin D3 Supplement",
     sku: "MED-003",
-    category: "3",
-    category_name: "Supplements",
+    brand: "NutriHealth",
+    category: "supplies",
     description: "Vitamin D3 for bone health",
     price: "250.00",
     tax_percentage: "12.00",
-    is_prescription_required: false,
     is_active: false,
     stock_quantity: 0,
     images: [],
@@ -109,14 +105,11 @@ export const mockProducts: Product[] = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-  "Tablets",
-  "Capsules",
-  "Syrups",
-  "Injections",
-  "Creams & Ointments",
-  "Supplements",
-  "Medical Devices",
-  "First Aid",
-  "Personal Care",
-  "Baby Care",
+  'diagnostics',
+  'ppe',
+  'monitoring',
+  'supplies'
 ] as const;
+
+
+

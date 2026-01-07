@@ -13,23 +13,19 @@ interface AddEditProductModalProps {
 
 const initialFormData: CreateProductDTO = {
   name: "",
-  sku: "",
   category: "",
   description: "",
   price: "",
-  tax_percentage: "5.00",
-  is_prescription_required: false,
+  tax_percentage: "",
   is_active: true,
   stock_quantity: 0,
   images: [],
 };
 
 export default function AddEditProductModal({
-  product,
-  isOpen,
-  onClose,
-  onSubmit,
+  product, isOpen, onClose, onSubmit,
 }: AddEditProductModalProps) {
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const [formData, setFormData] = useState<CreateProductDTO>(initialFormData);
   const [categorySearch, setCategorySearch] = useState("");
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -48,12 +44,11 @@ export default function AddEditProductModal({
     if (product) {
       setFormData({
         name: product.name,
-        sku: product.sku,
         category: product.category,
+        brand: product.brand,
         description: product.description,
         price: product.price,
         tax_percentage: product.tax_percentage,
-        is_prescription_required: product.is_prescription_required,
         is_active: product.is_active,
         stock_quantity: product.stock_quantity,
         images: [],
@@ -214,16 +209,16 @@ export default function AddEditProductModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  SKU *
+                  Brand 
                 </label>
                 <input
                   type="text"
-                  value={formData.sku}
+                  value={formData.brand}
                   onChange={(e) =>
-                    setFormData({ ...formData, sku: e.target.value })
+                    setFormData({ ...formData, brand: e.target.value })
                   }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="Enter SKU"
+                  placeholder="Enter brand"
                   required
                 />
               </div>
@@ -324,7 +319,7 @@ export default function AddEditProductModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax Percentage (%) *
+                  Tax Percentage (%) - optional
                 </label>
                 <input
                   type="number"
@@ -348,8 +343,7 @@ export default function AddEditProductModal({
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Stock & Requirements
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Stock Quantity *
                 </label>
@@ -357,40 +351,20 @@ export default function AddEditProductModal({
                   type="number"
                   value={formData.stock_quantity}
                   onChange={(e) =>
-                    setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })
+                    setFormData({
+                      ...formData,
+                      stock_quantity: parseInt(e.target.value, 10) || 0,
+                    })
                   }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder="0"
                   min="0"
                   required
                 />
               </div>
-              <div className="col-span-2 space-y-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_prescription_required}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_prescription_required: e.target.checked })
-                    }
-                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
-                  />
-                  <span className="text-sm text-gray-700">Prescription Required</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_active: e.target.checked })
-                    }
-                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
-                  />
-                  <span className="text-sm text-gray-700">Active Status</span>
-                </label>
-              </div>
-            </div>
           </div>
+
 
           {/* Product Images */}
           <div>
@@ -421,7 +395,7 @@ export default function AddEditProductModal({
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
                       <img 
-                        src={preview} 
+                        src={BackendBaseURL + preview} 
                         alt={`Preview ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
