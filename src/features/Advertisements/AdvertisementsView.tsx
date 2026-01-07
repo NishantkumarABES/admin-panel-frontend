@@ -8,7 +8,7 @@ import AddGeneralAdForm from "./components/AddGeneralAdForm";
 import EditGeneralAdForm from "./components/EditGeneralAdForm";
 
 export default function AdvertisementsView() {
-  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
+  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const [generalAds, setGeneralAds] = useState<GeneralAdvertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");

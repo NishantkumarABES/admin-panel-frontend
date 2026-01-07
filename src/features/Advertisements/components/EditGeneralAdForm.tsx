@@ -18,7 +18,7 @@ export default function EditGeneralAdForm({
     title: "", url: "",
     status: "enabled" as "enabled" | "disabled",
   });
-  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
+  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});

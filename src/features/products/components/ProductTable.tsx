@@ -12,7 +12,8 @@ interface ProductTableProps {
 export default function ProductTable({
   products, onView, onEdit,
 }: ProductTableProps) {
-  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
+  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  // console.log(BackendBaseURL);
   if (products.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">

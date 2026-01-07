@@ -13,7 +13,7 @@ export default function ProductDetailsModal({
   product, isOpen, onClose,
 }: ProductDetailsModalProps) {
   if (!product) return null;
-  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
+  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const InfoRow = ({
     icon: Icon, label, value,
   }: {
