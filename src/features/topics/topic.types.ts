@@ -20,6 +20,8 @@ export interface Topic {
   // Article-based fields
   articleInputType: ArticleInputType;
   articleContent: string;
+  articleUrl?: string;
+  summary?: string;
   baseImageUrl: string;
   imageUrlOverride?: string;
   titleOverride?: string;
@@ -32,8 +34,6 @@ export interface Topic {
   videoUrl?: string; // Format 3
 
   // Publishing
-  publishTiming: PublishTiming;
-  scheduledAt?: string;
   publishedAt?: string;
   status: TopicStatus;
 
@@ -52,6 +52,7 @@ export interface CreateTopicDTO {
   baseImageUrl: string;
   imageUrlOverride?: string;
   titleOverride?: string;
+  summary?: string;
 }
 
 export interface UpdateTopicDTO extends Partial<CreateTopicDTO> {

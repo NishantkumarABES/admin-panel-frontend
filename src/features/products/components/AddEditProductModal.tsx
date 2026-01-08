@@ -16,7 +16,7 @@ const initialFormData: CreateProductDTO = {
   category: "",
   description: "",
   price: "",
-  tax_percentage: "",
+  tax_percentage: "0",
   is_active: true,
   stock_quantity: 0,
   images: [],
@@ -55,7 +55,9 @@ export default function AddEditProductModal({
       });
       // Set existing image previews
       if (product.images && product.images.length > 0) {
-        setImagePreviews(product.images.map(img => img.image));
+        setImagePreviews(product.images.map(img => {
+          return BackendBaseURL + img.image
+        }));
       }
     } else {
       setFormData(initialFormData);
@@ -83,23 +85,50 @@ export default function AddEditProductModal({
     category.toLowerCase().includes(categorySearch.toLowerCase())
   );
 
+  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = Array.from(e.target.files || []);
+  //   if (files.length > 0) {
+  //     setFormData({ ...formData, images: files });
+      
+  //     // Create previews
+  //     const previews = files.map(file => URL.createObjectURL(file));
+  //     setImagePreviews(previews);
+  //   }
+  // };
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setFormData({ ...formData, images: files });
-      
-      // Create previews
-      const previews = files.map(file => URL.createObjectURL(file));
-      setImagePreviews(previews);
-    }
+    if (files.length === 0) return;
+
+    // Append new images to existing ones
+    setFormData(prev => ({
+      ...prev,
+      images: [...(prev.images || []), ...files],
+    }));
+
+    // Append previews
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(prev => [...prev, ...newPreviews]);
+
+    // Reset input so the same file can be re-selected if needed
+    e.target.value = "";
   };
 
+
+  // const handleRemoveImage = (index: number) => {
+  //   const newImages = formData.images?.filter((_, i) => i !== index) || [];
+  //   const newPreviews = imagePreviews.filter((_, i) => i !== index);
+  //   setFormData({ ...formData, images: newImages });
+  //   setImagePreviews(newPreviews);
+  // };
   const handleRemoveImage = (index: number) => {
-    const newImages = formData.images?.filter((_, i) => i !== index) || [];
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages });
-    setImagePreviews(newPreviews);
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== index) || [],
+    }));
+
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,7 +238,7 @@ export default function AddEditProductModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Brand 
+                  Brand *
                 </label>
                 <input
                   type="text"
@@ -332,7 +361,6 @@ export default function AddEditProductModal({
                   placeholder="0.00"
                   min="0"
                   max="100"
-                  required
                 />
               </div>
             </div>
@@ -393,12 +421,16 @@ export default function AddEditProductModal({
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-4 gap-3">
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                      <img 
-                        src={BackendBaseURL + preview} 
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group"
+                    >
+                      <img
+                        src={preview}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
+
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}

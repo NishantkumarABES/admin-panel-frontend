@@ -1,0 +1,625 @@
+import { useState, useEffect, useRef } from "react";
+import type { Event, CreateEventDTO, EventType, EventFormat } from "../event.types";
+import { EVENT_TYPES, EVENT_FORMATS, SPECIALIZATIONS } from "../event.types";
+import { ChevronDown, Search, AlertCircle, X, Upload, XCircle } from "lucide-react";
+
+interface AddEditEventModalProps {
+  event: Event | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateEventDTO) => Promise<{ error?: string }>;
+}
+
+// Simple Modal Component
+const Modal = ({ isOpen, onClose, title, children, size = "lg" }: any) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
+        
+        <div className={`relative inline-block w-full ${size === "lg" ? "max-w-4xl" : "max-w-2xl"} p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <XCircle className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="max-h-[70vh] overflow-y-auto">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const initialFormData: CreateEventDTO = {
+  title: "",
+  description: "",
+  event_type: "webinar",
+  specialization: "",
+  start_date: "",
+  end_date: "",
+  start_time: "",
+  end_time: "",
+  format: "live",
+  is_free: true,
+  registration_fee: "0.00",
+  cme_credits: 0,
+  max_attendees: 100,
+  certificate_available: false,
+  agenda: "",
+  venue: "",
+  meeting_link: "",
+  is_featured: false,
+  images: [],
+};
+
+export default function AddEditEventModal({
+  event, isOpen, onClose, onSubmit,
+}: AddEditEventModalProps) {
+  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  const [formData, setFormData] = useState<CreateEventDTO>(initialFormData);
+  const [specializationSearch, setSpecializationSearch] = useState("");
+  const [isSpecializationDropdownOpen, setIsSpecializationDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Image preview
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (event) {
+      setFormData({
+        title: event.title,
+        description: event.description,
+        event_type: event.event_type,
+        specialization: event.specialization,
+        start_date: event.start_date,
+        end_date: event.end_date,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        format: event.format,
+        is_free: event.is_free,
+        registration_fee: event.registration_fee,
+        cme_credits: event.cme_credits,
+        max_attendees: event.max_attendees,
+        certificate_available: event.certificate_available,
+        agenda: event.agenda,
+        venue: event.venue,
+        meeting_link: event.meeting_link,
+        is_featured: event.is_featured,
+        images: [],
+      });
+      // Set existing image previews
+      if (event.images && event.images.length > 0) {
+        setImagePreviews(event.images.map(img => img.image));
+      }
+    } else {
+      setFormData(initialFormData);
+      setImagePreviews([]);
+    }
+    // Reset submission states when modal opens/closes
+    setSubmitSuccess(false);
+    setSubmitError(null);
+  }, [event, isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsSpecializationDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter specializations based on search
+  const filteredSpecializations = SPECIALIZATIONS.filter((spec) =>
+    spec.toLowerCase().includes(specializationSearch.toLowerCase())
+  );
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setFormData({ ...formData, images: files });
+      
+      // Create previews
+      const previews = files.map(file => URL.createObjectURL(file));
+      setImagePreviews(previews);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = formData.images?.filter((_, i) => i !== index) || [];
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: newImages });
+    setImagePreviews(newPreviews);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const result = await onSubmit(formData);
+
+      if (result.error) {
+        setSubmitError(result.error);
+      } else {
+        setSubmitSuccess(true);
+        setTimeout(() => {
+          handleClose();
+        }, 1500);
+      }
+    } catch (error: any) {
+      setSubmitError(error?.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFormData(initialFormData);
+    setSpecializationSearch("");
+    setIsSpecializationDropdownOpen(false);
+    setSubmitSuccess(false);
+    setSubmitError(null);
+    setImagePreviews([]);
+    onClose();
+  };
+
+  const handleSpecializationSelect = (spec: string) => {
+    setFormData({ ...formData, specialization: spec });
+    setSpecializationSearch("");
+    setIsSpecializationDropdownOpen(false);
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={event ? "Edit Event" : "Add Event"}
+      size="lg"
+    >
+      {/* Success State */}
+      {submitSuccess ? (
+        <div className="space-y-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p className="text-sm text-emerald-800">
+              Event <span className="font-semibold">{formData.title}</span> has been successfully {event ? "updated" : "added"}.
+            </p>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Form State */
+        <div className="space-y-6">
+          {/* Error Message */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-red-800">{submitError}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Basic Details */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Basic Details
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Title *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter event title"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Type *
+                </label>
+                <select
+                  value={formData.event_type}
+                  onChange={(e) => setFormData({ ...formData, event_type: e.target.value as EventType })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                >
+                  {EVENT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative" ref={dropdownRef}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Specialization *
+                </label>
+                <div
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
+                  onClick={() => setIsSpecializationDropdownOpen(!isSpecializationDropdownOpen)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={formData.specialization ? "text-gray-900" : "text-gray-500"}>
+                      {formData.specialization || "Select Specialization"}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isSpecializationDropdownOpen ? "rotate-180" : ""}`} />
+                  </div>
+                </div>
+
+                {isSpecializationDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-gray-200">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          placeholder="Search specializations..."
+                          value={specializationSearch}
+                          onChange={(e) => setSpecializationSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {filteredSpecializations.length > 0 ? (
+                        filteredSpecializations.map((spec) => (
+                          <div
+                            key={spec}
+                            className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                              formData.specialization === spec ? "bg-gray-50 font-medium" : ""
+                            }`}
+                            onClick={() => handleSpecializationSelect(spec)}
+                          >
+                            {spec}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                          No specializations found
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter event description"
+                  rows={3}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Date & Time */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Date & Time
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Time *
+                </label>
+                <input
+                  type="time"
+                  value={formData.start_time}
+                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Time *
+                </label>
+                <input
+                  type="time"
+                  value={formData.end_time}
+                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Event Format & Location */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Format & Location
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Format *
+                </label>
+                <select
+                  value={formData.format}
+                  onChange={(e) => setFormData({ ...formData, format: e.target.value as EventFormat })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                >
+                  {EVENT_FORMATS.map((format) => (
+                    <option key={format} value={format}>
+                      {format.charAt(0).toUpperCase() + format.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Attendees *
+                </label>
+                <input
+                  type="number"
+                  value={formData.max_attendees}
+                  onChange={(e) => setFormData({ ...formData, max_attendees: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  min="1"
+                  required
+                />
+              </div>
+              {(formData.format === "live" || formData.format === "hybrid") && (
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Venue
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.venue}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="Enter venue address"
+                  />
+                </div>
+              )}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Meeting Link
+                </label>
+                <input
+                  type="url"
+                  value={formData.meeting_link}
+                  onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="https://meet.example.com/event"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Registration & Credits */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Registration & Credits
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="is_free"
+                  checked={formData.is_free}
+                  onChange={(e) => setFormData({ ...formData, is_free: e.target.checked, registration_fee: e.target.checked ? "0.00" : formData.registration_fee })}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                />
+                <label htmlFor="is_free" className="text-sm font-medium text-gray-700">
+                  Free Event
+                </label>
+              </div>
+              {!formData.is_free && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Registration Fee (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.registration_fee}
+                    onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    min="0"
+                    required
+                  />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CME Credits
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.cme_credits}
+                    onChange={(e) => setFormData({ ...formData, cme_credits: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    min="0"
+                  />
+                </div>
+                <div className="flex items-center gap-3 pt-6">
+                  <input
+                    type="checkbox"
+                    id="certificate_available"
+                    checked={formData.certificate_available}
+                    onChange={(e) => setFormData({ ...formData, certificate_available: e.target.checked })}
+                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                  />
+                  <label htmlFor="certificate_available" className="text-sm font-medium text-gray-700">
+                    Certificate Available
+                  </label>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="is_featured"
+                  checked={formData.is_featured}
+                  onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                />
+                <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
+                  Featured Event
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Agenda */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Agenda
+            </h3>
+            <textarea
+              value={formData.agenda}
+              onChange={(e) => setFormData({ ...formData, agenda: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              placeholder="Enter event agenda (e.g., 9:00 AM - Registration, 10:00 AM - Session 1, etc.)"
+              rows={5}
+            />
+          </div>
+
+          {/* Event Images */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Event Images
+            </h3>
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center justify-center gap-2 text-sm text-gray-600"
+              >
+                <Upload className="w-5 h-5" />
+                Upload Images
+              </button>
+              
+              {/* Image Previews */}
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-4 gap-3">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                      <img 
+                        src={BackendBaseURL + preview} 
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>{event ? "Updating..." : "Adding..."}</span>
+                </>
+              ) : (
+                <span>{event ? "Update Event" : "Add Event"}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}

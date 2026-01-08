@@ -33,7 +33,7 @@ export default function EditGeneralAdForm({
         url: advertisement.url,
         status: advertisement.status,
       });
-      setImagePreview(advertisement.image);
+      setImagePreview(BackendBaseURL + advertisement.image);
       setImage(null);
     }
   }, [advertisement]);
@@ -207,7 +207,7 @@ export default function EditGeneralAdForm({
           ) : (
             <div className="relative">
               <img
-                src={BackendBaseURL + imagePreview}
+                src={imagePreview}
                 alt="Preview"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200"
                 onError={(e) => {

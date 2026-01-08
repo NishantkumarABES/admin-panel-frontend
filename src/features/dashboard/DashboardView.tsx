@@ -165,11 +165,11 @@ export default function DashboardView() {
             <TrendingUp className="w-5 h-5 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold text-gray-900 mb-1">
-            {0}
+            {metrics.products.total.toLocaleString()}
           </div>
           <div className="text-sm text-gray-600">Total Products</div>
           <div className="text-xs text-emerald-600 mt-2">
-            +0.0% from last month
+            {metrics.products.growth_percent.toFixed(1)}% from last month
           </div>
         </div>
       </div>

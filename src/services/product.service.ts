@@ -55,9 +55,14 @@ export const createProduct = async (productData: CreateProductDTO): Promise<{ da
 };
 
 export const updateProduct = async (productData: UpdateProductDTO): Promise<{ data: Product }> => {
-    const payload = {
-        ...productData,
-    }
-    const response = await api.patch<Product>(`/products/${productData.id}`, payload);
+    const formData = new FormData();
+    Object.entries(productData).forEach(([key, value]) => {
+        if (key === "images" && Array.isArray(value)) {
+        value.forEach(file => formData.append("images", file));
+        } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+        }
+    });
+    const response = await api.patch<Product>(`/commerce/admin/products/${productData.id}/`, formData);
     return { data: response.data };
 }

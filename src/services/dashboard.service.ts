@@ -42,6 +42,7 @@ export interface DashboardMetrics {
   doctors: MetricData;
   patients: MetricData;
   topics: MetricData;
+  products: MetricData;
 }
 
 export interface DashboardAnalytics {

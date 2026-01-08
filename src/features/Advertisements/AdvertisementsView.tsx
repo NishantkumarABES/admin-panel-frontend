@@ -8,7 +8,7 @@ import AddGeneralAdForm from "./components/AddGeneralAdForm";
 import EditGeneralAdForm from "./components/EditGeneralAdForm";
 
 export default function AdvertisementsView() {
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const [generalAds, setGeneralAds] = useState<GeneralAdvertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,7 +75,6 @@ export default function AdvertisementsView() {
               ad.url.toLowerCase().includes(search)
           );
         }
-
         setGeneralAds(filteredData);
       }
     } catch (error) {
@@ -209,7 +208,7 @@ export default function AdvertisementsView() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Title
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-130">
                           URL
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -235,7 +234,7 @@ export default function AdvertisementsView() {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-600 max-w-xs truncate">
+                            <div className="text-sm text-gray-600  truncate">
                               {ad.url}
                             </div>
                           </td>
