@@ -12,7 +12,7 @@ interface ProductTableProps {
 export default function ProductTable({
   products, onView, onEdit,
 }: ProductTableProps) {
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   // console.log(BackendBaseURL);
   if (products.length === 0) {
     return (
@@ -61,7 +61,7 @@ export default function ProductTable({
                   <div className="flex items-center gap-3">
                     {product.images[0] && (
                         <img
-                          src={BackendBaseURL + product.images[0].image}
+                          src={product.images[0].image}
                           alt={product.name}
                           className="w-10 h-10 rounded object-cover"
                         />

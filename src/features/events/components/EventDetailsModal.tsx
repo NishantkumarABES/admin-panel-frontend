@@ -14,7 +14,7 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
+        <div className="fixed inset-0 transition-opacity bg-black/50" onClick={onClose}></div>
         
         <div className="relative inline-block w-full max-w-3xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
@@ -181,18 +181,18 @@ export default function EventDetailsModal({
                 value={event.venue}
               />
             )}
-            {event.meeting_link && (
+            {event.event_link && (
               <InfoRow 
                 icon={Video} 
                 label="Meeting Link" 
                 value={
                   <a 
-                    href={event.meeting_link} 
+                    href={event.event_link} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 underline"
                   >
-                    {event.meeting_link}
+                    {event.event_link}
                   </a>
                 }
               />
@@ -203,7 +203,7 @@ export default function EventDetailsModal({
         {/* Registration & Capacity */}
         <div>
           <h4 className="text-sm font-semibold text-gray-900 mb-3">
-            Registration & Capacity
+            Registration
           </h4>
           <div className="space-y-2">
             <InfoRow 
@@ -211,32 +211,7 @@ export default function EventDetailsModal({
               label="Registration Fee" 
               value={event.is_free ? "Free" : `₹${parseFloat(event.registration_fee).toFixed(2)}`}
             />
-            <InfoRow 
-              icon={Users} 
-              label="Attendees" 
-              value={
-                <div>
-                  <div className="mb-2">{event.current_attendees} / {event.max_attendees} registered</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${(event.current_attendees / event.max_attendees) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              }
-            />
-            {event.cme_credits > 0 && (
-              <InfoRow 
-                icon={Award} 
-                label="CME Credits" 
-                value={
-                  <span className="font-semibold text-amber-600">
-                    {event.cme_credits} Credits
-                  </span>
-                }
-              />
-            )}
+            
             <InfoRow 
               icon={event.certificate_available ? CheckCircle : XCircle} 
               label="Certificate" 

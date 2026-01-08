@@ -3,6 +3,7 @@ import type {
   Topic,
   CreateTopicDTO,
   UpdateTopicDTO,
+  ArticleExtractionResponse,
 } from "../features/topics/topic.types";
 
 export const getTopics = async (filters?: {
@@ -73,4 +74,21 @@ export const publishTopic = async (id: string) => {
 
 export const unpublishTopic = async (id: string) => {
   return api.post(`/topics/${id}/unpublish`);
+};
+
+export const extractArticleFromUrl = async (
+  url: string
+): Promise<ArticleExtractionResponse> => {
+  try {
+    const response = await api.post<ArticleExtractionResponse>(
+      "/topics/extract-article",
+      { url }
+    );
+    return response.data;
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error || "Failed to extract article content",
+    };
+  }
 };

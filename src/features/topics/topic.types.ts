@@ -44,15 +44,29 @@ export interface Topic {
   lastModifiedBy?: string;
 }
 
+// Article extraction response from backend
+export interface ArticleExtractionResponse {
+  success: boolean;
+  title?: string;
+  summary?: string;
+  images?: string[];
+  error?: string;
+}
+
 // DTO for creating/editing topics
 export interface CreateTopicDTO {
-  // Article-based fields
-  articleInputType: ArticleInputType;
-  articleContent: string;
-  baseImageUrl: string;
+  // Article-based fields (for AI-assisted workflow)
+  articleUrl?: string;
+  title?: string;
+  summary?: string;
+  selectedImage?: File | string; // File for upload or URL for extracted
+
+  // Legacy fields (for manual workflow)
+  articleInputType?: ArticleInputType;
+  articleContent?: string;
+  baseImageUrl?: string;
   imageUrlOverride?: string;
   titleOverride?: string;
-  summary?: string;
 }
 
 export interface UpdateTopicDTO extends Partial<CreateTopicDTO> {

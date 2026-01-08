@@ -25,7 +25,7 @@ const initialFormData: CreateProductDTO = {
 export default function AddEditProductModal({
   product, isOpen, onClose, onSubmit,
 }: AddEditProductModalProps) {
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const [formData, setFormData] = useState<CreateProductDTO>(initialFormData);
   const [categorySearch, setCategorySearch] = useState("");
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -56,7 +56,7 @@ export default function AddEditProductModal({
       // Set existing image previews
       if (product.images && product.images.length > 0) {
         setImagePreviews(product.images.map(img => {
-          return BackendBaseURL + img.image
+          return img.image
         }));
       }
     } else {

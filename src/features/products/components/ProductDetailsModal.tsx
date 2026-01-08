@@ -13,7 +13,7 @@ export default function ProductDetailsModal({
   product, isOpen, onClose,
 }: ProductDetailsModalProps) {
   if (!product) return null;
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+  // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const InfoRow = ({
     icon: Icon, label, value,
   }: {
@@ -138,7 +138,7 @@ export default function ProductDetailsModal({
               {product.images.map((image) => (
                 <div key={image.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
                   <img 
-                    src={BackendBaseURL + image.image} 
+                    src={image.image} 
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

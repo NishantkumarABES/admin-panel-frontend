@@ -1,4 +1,4 @@
-import { Eye, Edit, Calendar, Clock, Users, Award } from "lucide-react";
+import { Eye, Edit, Calendar, Clock, ExternalLink  } from "lucide-react";
 import type { Event } from "../event.types";
 
 interface EventTableProps {
@@ -86,10 +86,7 @@ export default function EventTable({
                 Date & Time
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Attendees
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                CME Credits
+                Event Link
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Status
@@ -148,23 +145,20 @@ export default function EventTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-900">
-                        {event.max_attendees}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  {event.cme_credits > 0 ? (
-                    <div className="flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-amber-600" />
-                      <span className="text-sm font-medium text-gray-900">
-                        {event.cme_credits}
+                  {event.event_link ? (
+                    <a
+                      href={event.event_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <span className="truncate max-w-45">
+                        {event.event_link}
                       </span>
-                    </div>
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
                   ) : (
-                    <span className="text-sm text-gray-400">N/A</span>
+                    <span className="text-gray-400">—</span>
                   )}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">

@@ -17,7 +17,7 @@ const Modal = ({ isOpen, onClose, title, children, size = "lg" }: any) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
+        <div className="fixed inset-0 transition-opacity bg-black/50" onClick={onClose}></div>
         
         <div className={`relative inline-block w-full ${size === "lg" ? "max-w-4xl" : "max-w-2xl"} p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
@@ -50,12 +50,10 @@ const initialFormData: CreateEventDTO = {
   format: "live",
   is_free: true,
   registration_fee: "0.00",
-  cme_credits: 0,
-  max_attendees: 100,
   certificate_available: false,
   agenda: "",
   venue: "",
-  meeting_link: "",
+  event_link: "",
   is_featured: false,
   images: [],
 };
@@ -92,12 +90,10 @@ export default function AddEditEventModal({
         format: event.format,
         is_free: event.is_free,
         registration_fee: event.registration_fee,
-        cme_credits: event.cme_credits,
-        max_attendees: event.max_attendees,
         certificate_available: event.certificate_available,
         agenda: event.agenda,
         venue: event.venue,
-        meeting_link: event.meeting_link,
+        event_link: event.event_link,
         is_featured: event.is_featured,
         images: [],
       });
@@ -414,19 +410,7 @@ export default function AddEditEventModal({
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Attendees *
-                </label>
-                <input
-                  type="number"
-                  value={formData.max_attendees}
-                  onChange={(e) => setFormData({ ...formData, max_attendees: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  min="1"
-                  required
-                />
-              </div>
+              
               {(formData.format === "live" || formData.format === "hybrid") && (
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -443,12 +427,12 @@ export default function AddEditEventModal({
               )}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Meeting Link
+                  Event Link
                 </label>
                 <input
                   type="url"
-                  value={formData.meeting_link}
-                  onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
+                  value={formData.event_link}
+                  onChange={(e) => setFormData({ ...formData, event_link: e.target.value })}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder="https://meet.example.com/event"
                 />
@@ -463,16 +447,44 @@ export default function AddEditEventModal({
             </h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="is_free"
-                  checked={formData.is_free}
-                  onChange={(e) => setFormData({ ...formData, is_free: e.target.checked, registration_fee: e.target.checked ? "0.00" : formData.registration_fee })}
-                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
-                />
-                <label htmlFor="is_free" className="text-sm font-medium text-gray-700">
-                  Free Event
-                </label>
+                <div className="flex items-center gap-3 pt-6">
+                  <input
+                    type="checkbox"
+                    id="is_free"
+                    checked={formData.is_free}
+                    onChange={(e) => setFormData({ ...formData, is_free: e.target.checked, registration_fee: e.target.checked ? "0.00" : formData.registration_fee })}
+                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                  />
+                  <label htmlFor="is_free" className="text-sm font-medium text-gray-700">
+                    Free Event
+                  </label>
+                </div>
+              
+                <div className="flex items-center gap-3 pt-6">
+                  <input
+                    type="checkbox"
+                    id="certificate_available"
+                    checked={formData.certificate_available}
+                    onChange={(e) => setFormData({ ...formData, certificate_available: e.target.checked })}
+                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                  />
+                  <label htmlFor="certificate_available" className="text-sm font-medium text-gray-700">
+                    Certificate Available
+                  </label>
+                </div>
+              
+                <div className="flex items-center gap-3 pt-6">
+                  <input
+                    type="checkbox"
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                  />
+                  <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
+                    Featured Event
+                  </label>
+                </div>
               </div>
               {!formData.is_free && (
                 <div>
@@ -490,44 +502,6 @@ export default function AddEditEventModal({
                   />
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CME Credits
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.cme_credits}
-                    onChange={(e) => setFormData({ ...formData, cme_credits: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    min="0"
-                  />
-                </div>
-                <div className="flex items-center gap-3 pt-6">
-                  <input
-                    type="checkbox"
-                    id="certificate_available"
-                    checked={formData.certificate_available}
-                    onChange={(e) => setFormData({ ...formData, certificate_available: e.target.checked })}
-                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
-                  />
-                  <label htmlFor="certificate_available" className="text-sm font-medium text-gray-700">
-                    Certificate Available
-                  </label>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="is_featured"
-                  checked={formData.is_featured}
-                  onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
-                />
-                <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
-                  Featured Event
-                </label>
-              </div>
             </div>
           </div>
 

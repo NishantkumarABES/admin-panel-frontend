@@ -31,13 +31,10 @@ export interface Event {
   format: EventFormat;
   is_free: boolean;
   registration_fee: string;
-  cme_credits: number;
-  max_attendees: number;
-  current_attendees: number;
   certificate_available: boolean;
   agenda: string;
   venue?: string;
-  meeting_link?: string;
+  event_link?: string;
   status: EventStatus;
   speakers: EventSpeaker[];
   images: EventImage[];
@@ -76,12 +73,10 @@ export interface CreateEventDTO {
   format: EventFormat;
   is_free: boolean;
   registration_fee: string;
-  cme_credits: number;
-  max_attendees: number;
   certificate_available: boolean;
   agenda: string;
   venue?: string;
-  meeting_link?: string;
+  event_link?: string;
   is_featured: boolean;
   images?: File[];
 }
@@ -106,13 +101,10 @@ export const mockEvents: Event[] = [
     format: "hybrid",
     is_free: false,
     registration_fee: "5000.00",
-    cme_credits: 8,
-    max_attendees: 100,
-    current_attendees: 67,
     certificate_available: true,
     agenda: "9:00 AM - Registration\n10:00 AM - Session 1: Heart Failure Management\n12:00 PM - Lunch Break\n1:00 PM - Session 2: Interventional Cardiology\n4:00 PM - Q&A Session",
     venue: "Medical Convention Center, Delhi",
-    meeting_link: "https://meet.example.com/cardio-workshop",
+    event_link: "https://meet.example.com/cardio-workshop",
     status: "upcoming",
     speakers: [
       {
@@ -141,12 +133,9 @@ export const mockEvents: Event[] = [
     format: "live",
     is_free: true,
     registration_fee: "0.00",
-    cme_credits: 4,
-    max_attendees: 200,
-    current_attendees: 145,
     certificate_available: true,
     agenda: "2:00 PM - Introduction to Modern Diabetes Care\n3:00 PM - Case Studies\n4:00 PM - Treatment Protocols",
-    meeting_link: "https://meet.example.com/diabetes-cme",
+    event_link: "https://meet.example.com/diabetes-cme",
     status: "upcoming",
     speakers: [
       {
@@ -174,11 +163,9 @@ export const mockEvents: Event[] = [
     format: "live",
     is_free: true,
     registration_fee: "0.00",
-    cme_credits: 0,
-    max_attendees: 150,
-    current_attendees: 150,
     certificate_available: false,
     agenda: "10:00 AM - Understanding Mental Health\n11:00 AM - When to Seek Help\n11:30 AM - Q&A",
+    event_link: "https://meet.example.com/mental-health-education",
     venue: "Community Health Center, Mumbai",
     status: "completed",
     speakers: [
