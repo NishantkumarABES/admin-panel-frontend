@@ -15,6 +15,7 @@ export interface Product {
   brand?: string;
   description: string;
   price: string;
+  discount_percentage: string;
   tax_percentage: string;
   is_active: boolean;
   stock_quantity: number;
@@ -45,6 +46,7 @@ export interface CreateProductDTO {
   brand?: string;
   description: string;
   price: string;
+  discount_percentage: string;
   tax_percentage: string;
   is_active: boolean;
   stock_quantity: number;
@@ -65,6 +67,7 @@ export const mockProducts: Product[] = [
     category: "supplies",
     description: "Pain relief and fever reducer",
     price: "50.00",
+    discount_percentage: "0.00",
     tax_percentage: "5.00",
     is_active: true,
     stock_quantity: 500,
@@ -80,6 +83,7 @@ export const mockProducts: Product[] = [
     category: "supplies",
     description: "Antibiotic for bacterial infections",
     price: "120.00",
+    discount_percentage: "10.00",
     tax_percentage: "5.00",
     is_active: true,
     stock_quantity: 300,
@@ -95,6 +99,7 @@ export const mockProducts: Product[] = [
     category: "supplies",
     description: "Vitamin D3 for bone health",
     price: "250.00",
+    discount_percentage: "15.00",
     tax_percentage: "12.00",
     is_active: false,
     stock_quantity: 0,

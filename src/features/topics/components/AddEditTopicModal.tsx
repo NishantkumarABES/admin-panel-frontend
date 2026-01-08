@@ -1,17 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import type {
-  Topic,
-  CreateTopicDTO,
-  ArticleExtractionResponse,
+import type { Topic, CreateTopicDTO, ArticleExtractionResponse,
 } from "../topic.types";
 import Modal from "../../../components/common/Modal";
-import {
-  Link,
-  AlertCircle,
-  Loader2,
-  Check,
-  Upload,
-  X,
+import { Link, AlertCircle, Loader2, Check, Upload, X,
 } from "lucide-react";
 import * as topicService from "../../../services/topic.service";
 
@@ -176,7 +167,7 @@ export default function AddEditTopicModal({
   };
 
   // Handle final form submission
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -193,12 +184,37 @@ export default function AddEditTopicModal({
       return;
     }
 
+    // Cleanup unselected images if there are extracted images
+    if (extractedImages.length > 0) {
+      const unselectedImages = extractedImages.filter((_, index) => index !== selectedImageIndex);
+      if (unselectedImages.length > 0) {
+        await topicService.cleanupUnwantedImages(unselectedImages);
+      }
+    }
+
     onSubmit(formData);
-    handleClose();
+
+    // Clear state without calling cleanup again
+    setMode("article_input");
+    setArticleUrl("");
+    setUrlError("");
+    setFormData(initialFormData);
+    setExtractedData(null);
+    setExtractedImages([]);
+    setSelectedImageIndex(null);
+    setProcessingError("");
+    setIsSubmitting(false);
+    setImagePreview("");
+    onClose();
   };
 
   // Close modal
-  const handleClose = () => {
+  const handleClose = async () => {
+    // Cleanup extracted images if user cancels after extraction
+    if (extractedImages.length > 0) {
+      await topicService.cleanupUnwantedImages(extractedImages);
+    }
+
     setMode("article_input");
     setArticleUrl("");
     setUrlError("");

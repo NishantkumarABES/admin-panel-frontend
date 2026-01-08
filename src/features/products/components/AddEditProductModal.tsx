@@ -16,6 +16,7 @@ const initialFormData: CreateProductDTO = {
   category: "",
   description: "",
   price: "",
+  discount_percentage: "0",
   tax_percentage: "0",
   is_active: true,
   stock_quantity: 0,
@@ -48,6 +49,7 @@ export default function AddEditProductModal({
         brand: product.brand,
         description: product.description,
         price: product.price,
+        discount_percentage: product.discount_percentage,
         tax_percentage: product.tax_percentage,
         is_active: product.is_active,
         stock_quantity: product.stock_quantity,
@@ -344,6 +346,23 @@ export default function AddEditProductModal({
                   placeholder="0.00"
                   min="0"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Discount Percentage (%) - optional
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.discount_percentage}
+                  onChange={(e) =>
+                    setFormData({ ...formData, discount_percentage: e.target.value })
+                  }
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="0.00"
+                  min="0"
+                  max="100"
                 />
               </div>
               <div>

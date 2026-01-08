@@ -97,8 +97,15 @@ export default function ProductTable({
                   <div className="text-sm font-medium text-gray-900">
                     ₹{parseFloat(product.price).toFixed(2)}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    +{product.tax_percentage}% tax
+                  <div className="flex items-center gap-1">
+                    {parseFloat(product.discount_percentage) > 0 && (
+                      <div className="text-xs text-emerald-600">
+                        -{product.discount_percentage}% off
+                      </div>
+                    )}
+                    <div className="text-xs text-red-500">
+                      +{product.tax_percentage}% tax
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">

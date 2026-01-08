@@ -34,9 +34,13 @@ export default function ProductDetailsModal({
   };
 
   const calculateTotalPrice = () => {
-    const basePrice = parseFloat(product.price);
-    const taxAmount = (basePrice * parseFloat(product.tax_percentage)) / 100;
-    return (basePrice + taxAmount).toFixed(2);
+    const basePrice = Number(product?.price) || 0;
+    const discountPercentage = Number(product?.discount_percentage) || 0;
+    const taxPercentage = Number(product?.tax_percentage) || 0;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    const priceAfterDiscount = basePrice - discountAmount;
+    const taxAmount = (priceAfterDiscount * taxPercentage) / 100;
+    return (priceAfterDiscount + taxAmount).toFixed(2);
   };
 
   return (
@@ -82,19 +86,30 @@ export default function ProductDetailsModal({
             Pricing Information
           </h4>
           <div className="space-y-2">
-            <InfoRow 
-              icon={DollarSign} 
-              label="Base Price" 
-              value={`₹${parseFloat(product.price).toFixed(2)}`} 
+            <InfoRow
+              icon={DollarSign}
+              label="Base Price"
+              value={`₹${parseFloat(product.price).toFixed(2)}`}
             />
-            <InfoRow 
-              icon={DollarSign} 
-              label="Tax Percentage" 
-              value={`${product.tax_percentage}%`} 
+            {parseFloat(product.discount_percentage) > 0 && (
+              <InfoRow
+                icon={DollarSign}
+                label="Discount"
+                value={
+                  <span className="font-medium text-emerald-600">
+                    {product.discount_percentage}% off
+                  </span>
+                }
+              />
+            )}
+            <InfoRow
+              icon={DollarSign}
+              label="Tax Percentage"
+              value={`${product.tax_percentage}%`}
             />
-            <InfoRow 
-              icon={DollarSign} 
-              label="Total Price (incl. tax)" 
+            <InfoRow
+              icon={DollarSign}
+              label="Total Price (incl. discount & tax)"
               value={
                 <span className="font-semibold text-emerald-600">
                   ₹{calculateTotalPrice()}

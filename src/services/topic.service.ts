@@ -81,7 +81,7 @@ export const extractArticleFromUrl = async (
 ): Promise<ArticleExtractionResponse> => {
   try {
     const response = await api.post<ArticleExtractionResponse>(
-      "/topics/extract-article",
+      "/topics/admin/extract-article/",
       { url }
     );
     return response.data;
@@ -90,5 +90,15 @@ export const extractArticleFromUrl = async (
       success: false,
       error: error.response?.data?.error || "Failed to extract article content",
     };
+  }
+};
+
+export const cleanupUnwantedImages = async (imageUrls: string[]) => {
+  try {
+    await api.post("/topics/admin/cleanup-unwanted-images/", {
+      image_urls: imageUrls,
+    });
+  } catch (error: any) {
+    console.error("Failed to cleanup unwanted images:", error);
   }
 };
