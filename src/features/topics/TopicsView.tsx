@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter } from "lucide-react";
-import type { Topic, CreateTopicDTO, TopicStatus } from "./topic.types";
-import { mockTopics } from "./topic.types";
+import type { Topic, CreateTopicDTO, TopicsAnalytics } from "./topic.types";
 import TopicTable from "./components/TopicTable";
 import TopicDetailsModal from "./components/TopicDetailsModal";
 import AddEditTopicModal from "./components/AddEditTopicModal";
@@ -12,55 +11,71 @@ export default function TopicsView() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  // const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<TopicStatus | "all">("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 5;
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState<TopicsAnalytics | null>(null);
 
   // Modal states
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Fetch analytics
+  const fetchAnalytics = async () => {
+    try {
+      const data = await topicService.getTopicsAnalytics();
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+    }
+  };
 
   // Fetch topics
   const fetchTopics = async () => {
     try {
       setLoading(true);
-      const filters: any = {};
-      if (statusFilter !== "all") filters.status = statusFilter;
-      // if (categoryFilter !== "all") filters.category = categoryFilter;
-      if (searchTerm) filters.search = searchTerm;
-      const response = await topicService.getTopics(filters);
-      setTopics(Array.isArray(response.data) ? response.data : [...mockTopics]);
+      const response = await topicService.getTopics({
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        page: currentPage,
+        page_size: pageSize,
+        search: searchTerm || undefined,
+      });
+
+      setTopics(response.results || []);
+      setTotalCount(response.count || 0);
+      setTotalPages(Math.ceil((response.count || 0) / pageSize));
     } catch (error) {
       console.error("Failed to fetch topics:", error);
-      // Use mock data on error
-      setTopics(mockTopics);
+      setTopics([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial fetch
   useEffect(() => {
-    // Use mock data for now
-    setTopics(mockTopics);
-    setLoading(false);
-  }, []);
+    fetchAnalytics();
+    fetchTopics();
+  }, [currentPage]);
 
   // Handle search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm !== undefined) {
-        fetchTopics();
-      }
+      setCurrentPage(1); // Reset to first page on search
+      fetchTopics();
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  // Refetch when filters change
-  // useEffect(() => {
-  //   // fetchTopics();
-  // }, [statusFilter, categoryFilter]);
 
   // Handlers
   const handleView = (topic: Topic) => {
@@ -83,6 +98,11 @@ export default function TopicsView() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handlePublish = (topic: Topic) => {
+    setSelectedTopic(topic);
+    setIsPublishDialogOpen(true);
+  };
+
   // Submit handlers
   const handleAddEditSubmit = async (data: CreateTopicDTO) => {
     try {
@@ -91,9 +111,12 @@ export default function TopicsView() {
       } else {
         await topicService.createTopic(data);
       }
-      fetchTopics();
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsAddEditModalOpen(false);
     } catch (error) {
       console.error("Failed to save topic:", error);
+      alert("Failed to save topic. Please try again.");
     }
   };
 
@@ -101,110 +124,81 @@ export default function TopicsView() {
     if (!selectedTopic) return;
     try {
       await topicService.deleteTopic(selectedTopic.id);
-      fetchTopics();
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Failed to delete topic:", error);
+      alert("Failed to delete topic. Please try again.");
     }
   };
 
-  // Get unique categories for filter
-  // const uniqueCategories = Array.from(
-  //   new Set(topics.map((topic) => topic.category))
-  // ).sort();
-
-  // Get stats for all topics
-  const stats = {
-    total: topics.length,
-    published: topics.filter((t) => t.status === "published").length,
-    // scheduled: topics.filter((t) => t.status === "scheduled").length,
-    unpublished: topics.filter((t) => t.status === "unpublished").length,
+  const handleConfirmPublish = async () => {
+    if (!selectedTopic) return;
+    try {
+      await topicService.togglePublishStatus(selectedTopic.id);
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsPublishDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to update topic status:", error);
+      alert("Failed to update publish status. Please try again.");
+    }
   };
 
   return (
-    
+
     <div className="space-y-6 min-w-0 max-w-full">
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
           <div className="text-sm text-gray-600 mb-1">Total Topics</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {analytics?.total_topics || 0}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
           <div className="text-sm text-gray-600 mb-1">Published</div>
           <div className="text-2xl font-bold text-emerald-600">
-            {stats.published}
+            {analytics?.published_topics || 0}
           </div>
         </div>
-
-        {/* <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Scheduled</div>
-          <div className="text-2xl font-bold text-amber-600">
-            {stats.scheduled}
-          </div>
-        </div> */}
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
           <div className="text-sm text-gray-600 mb-1">Unpublished</div>
-          <div className="text-2xl font-bold text-gray-600">{stats.unpublished}</div>
+          <div className="text-2xl font-bold text-gray-600">
+            {analytics?.unpublished_topics || 0}
+          </div>
         </div>
       </div>
 
-      {/* Filters and Actions */}
+      {/* Search and Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between min-w-0">
-          {/* Left side: Search + Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
-            {/* Search */}
-            <div className="flex-1 min-w-0 w-full sm:min-w-285 sm:max-w-md relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title, category, or author..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              />
-            </div>
-
-            {/* Filters group */}
-            <div className="flex flex-wrap items-center gap-4 min-w-0">
-              {/* Category Filter */}
-              {/* <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
-                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All Categories</option>
-                  {uniqueCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
-
-              {/* Status Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-50">
-                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) =>
-                    setStatusFilter(e.target.value as TopicStatus | "all")
-                  }
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All Status</option>
-                  <option value="published">Published</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Left side: Search */}
+          <div className="flex-1 min-w-0 w-full sm:min-w-300 sm:max-w-md relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title or description..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            />
           </div>
-
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent appearance-none bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="publish">Publish</option>
+              <option value="unpublish">UnPublish</option>
+            </select>
+          </div>
           {/* Right side: Add Topic Button */}
           <div className="flex justify-end lg:justify-normal shrink-0">
             <button
@@ -218,7 +212,7 @@ export default function TopicsView() {
         </div>
       </div>
 
-      
+
 
       {/* Table */}
       {loading ? (
@@ -226,12 +220,42 @@ export default function TopicsView() {
           <p className="text-gray-500">Loading topics...</p>
         </div>
       ) : (
-        <TopicTable
-          topics={topics}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <>
+          <TopicTable
+            topics={topics}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onPublish={handlePublish}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing page {currentPage} of {totalPages} ({totalCount} total topics)
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modals */}
@@ -256,6 +280,20 @@ export default function TopicsView() {
         message={`Are you sure you want to delete "${selectedTopic?.title}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={isPublishDialogOpen}
+        onClose={() => setIsPublishDialogOpen(false)}
+        onConfirm={handleConfirmPublish}
+        title={selectedTopic?.publish_status ? "Unpublish Topic" : "Publish Topic"}
+        message={
+          selectedTopic?.publish_status
+            ? `Are you sure you want to unpublish "${selectedTopic?.title}"? This will make it invisible to users.`
+            : `Are you sure you want to publish "${selectedTopic?.title}"? This will make it visible to users.`
+        }
+        confirmText={selectedTopic?.publish_status ? "Unpublish" : "Publish"}
+        variant={selectedTopic?.publish_status ? "warning" : "success"}
       />
     </div>
   );

@@ -8,7 +8,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: "danger" | "warning" | "info";
+  variant?: "danger" | "warning" | "info" | "success";
 }
 
 export default function ConfirmDialog({
@@ -24,8 +24,7 @@ export default function ConfirmDialog({
   if (!isOpen) return null;
 
   const handleConfirm = () => {
-    onConfirm();
-    onClose();
+    onConfirm(); onClose();
   };
 
   const variantConfig = {
@@ -46,6 +45,12 @@ export default function ConfirmDialog({
       iconClass: "text-blue-600",
       bgClass: "bg-blue-50",
       buttonClass: "bg-blue-600 hover:bg-blue-700",
+    },
+    success: {
+      icon: AlertCircle,
+      iconClass: "text-green-600",
+      bgClass: "bg-green-50",
+      buttonClass: "bg-green-600 hover:bg-green-700",
     },
   };
 

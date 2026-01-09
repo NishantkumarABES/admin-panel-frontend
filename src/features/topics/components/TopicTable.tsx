@@ -1,4 +1,4 @@
-import { Eye, Pencil } from "lucide-react"; // Trash2
+import { Eye, Pencil, CircleCheckBig, CircleX} from "lucide-react"; // Trash2
 import type { Topic } from "../topic.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 
@@ -7,10 +7,11 @@ interface TopicTableProps {
   onView: (topic: Topic) => void;
   onEdit: (topic: Topic) => void;
   onDelete: (topic: Topic) => void;
+  onPublish: (topic: Topic) => void;
 }
 
 export default function TopicTable({
-  topics, onView, onEdit, // onDelete is currently unused
+  topics, onView, onEdit, onPublish, // onDelete is currently unused
 }: TopicTableProps) {
   if (topics.length === 0) {
     return (
@@ -73,24 +74,22 @@ export default function TopicTable({
                     </div>
                   </div>
                 </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {topic.category}
-                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div>
-                    <div className="text-gray-900">{topic.authorName}</div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {topic.authorType}
+                    <div className="text-gray-900">{topic.author_name || "N/A"}</div>
+                    <div className="text-xs text-gray-500">
+                      {topic.author_email || ""}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge
-                    status={topic.status} size = "sm"
+                    status={topic.publish_status ? "published" : "unpublished"}
+                    size="sm"
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {new Date(topic.createdAt).toLocaleDateString()}
+                  {new Date(topic.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                   <div className="flex items-center justify-end gap-2">
@@ -107,6 +106,21 @@ export default function TopicTable({
                       title="Edit"
                     >
                       <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onPublish(topic)}
+                      className={`p-2 rounded transition-colors ${
+                        topic.publish_status
+                          ? "text-orange-600 hover:bg-orange-50"
+                          : "text-green-600 hover:bg-green-50"
+                      }`}
+                      title={topic.publish_status ? "Unpublish" : "Publish"}
+                    >
+                      {topic.publish_status ? (
+                        <CircleX className="w-4 h-4" />
+                      ) : (
+                        <CircleCheckBig className="w-4 h-4" />
+                      )}
                     </button>
                     {/* <button
                       onClick={() => onDelete(topic)}

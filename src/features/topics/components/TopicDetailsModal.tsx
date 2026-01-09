@@ -1,4 +1,4 @@
-import { X, Calendar, User, Tag, FileText, Video, Link, Users } from "lucide-react";
+import { X, Calendar, User, Link, Video } from "lucide-react";
 import type { Topic } from "../topic.types";
 
 interface TopicDetailsModalProps {
@@ -14,32 +14,16 @@ export default function TopicDetailsModal({
 }: TopicDetailsModalProps) {
   if (!isOpen || !topic) return null;
 
-  const getFormatLabel = (format: string) => {
-    switch (format) {
-      case "format1":
-        return "Format 1 (PDF)";
-      case "format2":
-        return "Format 2 (Users)";
-      case "format3":
-        return "Format 3 (Video)";
-      default:
-        return format;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const colors = {
-      published: "bg-emerald-100 text-emerald-800",
-      scheduled: "bg-amber-100 text-amber-800",
-      draft: "bg-gray-100 text-gray-800",
-    };
-    return colors[status as keyof typeof colors] || colors.draft;
+  const getStatusBadge = (publishStatus: boolean) => {
+    return publishStatus
+      ? "bg-emerald-100 text-emerald-800"
+      : "bg-gray-100 text-gray-800";
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div
-        className="fixed inset-0 bg-black/50  transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
 
@@ -82,9 +66,9 @@ export default function TopicDetailsModal({
                     {topic.title}
                   </h3>
                   <span
-                    className={`px-3 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadge(topic.status)}`}
+                    className={`px-3 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadge(topic.publish_status)}`}
                   >
-                    {topic.status}
+                    {topic.publish_status ? "Published" : "Unpublished"}
                   </span>
                 </div>
                 <p className="text-gray-600 leading-relaxed">
@@ -95,35 +79,17 @@ export default function TopicDetailsModal({
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-start gap-3">
-                  <Tag className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Category</div>
-                    <div className="font-medium text-gray-900">
-                      {topic.category}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
                   <User className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-xs text-gray-500 mb-1">Author</div>
                     <div className="font-medium text-gray-900">
-                      {topic.authorName}
+                      {topic.author_name || "N/A"}
                     </div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {topic.authorType}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Format</div>
-                    <div className="font-medium text-gray-900">
-                      {getFormatLabel(topic.format)}
-                    </div>
+                    {topic.author_email && (
+                      <div className="text-xs text-gray-500">
+                        {topic.author_email}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -132,152 +98,59 @@ export default function TopicDetailsModal({
                   <div>
                     <div className="text-xs text-gray-500 mb-1">Created</div>
                     <div className="font-medium text-gray-900">
-                      {new Date(topic.createdAt).toLocaleDateString()}
+                      {new Date(topic.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Format-specific Details */}
-              <div className="border-t border-gray-200 pt-4">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                  Format Details
-                </h4>
-                <div className="space-y-3">
-                  {/* Format 1 - PDF */}
-                  {topic.format === "format1" && topic.pdfUrl && (
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <FileText className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs text-gray-500 mb-1">
-                          PDF Document
+              {/* URLs */}
+              {(topic.source_url || topic.video_url) && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                    Links
+                  </h4>
+                  <div className="space-y-3">
+                    {topic.source_url && (
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Link className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-gray-500 mb-1">
+                            Source URL
+                          </div>
+                          <a
+                            href={topic.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline break-all"
+                          >
+                            {topic.source_url}
+                          </a>
                         </div>
-                        <a
-                          href={topic.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline break-all"
-                        >
-                          {topic.pdfUrl}
-                        </a>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Format 2 - Search Users */}
-                  {topic.format === "format2" && (
-                    <>
-                      {/* {topic.searchUsers && topic.searchUsers.length > 0 && (
-                        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <Users className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="text-xs text-gray-500 mb-1">
-                              Search Users
-                            </div>
-                            <div className="text-sm text-gray-900">
-                              {topic.searchUsers.join(", ")}
-                            </div>
+                    {topic.video_url && (
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Video className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-gray-500 mb-1">
+                            Video URL
                           </div>
+                          <a
+                            href={topic.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline break-all"
+                          >
+                            {topic.video_url}
+                          </a>
                         </div>
-                      )} */}
-
-                      {topic.detailPageType && (
-                        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <Link className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 mb-1">
-                              Detail Page Type
-                            </div>
-                            <div className="text-sm text-gray-900 capitalize mb-2">
-                              {topic.detailPageType.replace("_", " ")}
-                            </div>
-                            {topic.detailPageType === "pdf" && topic.pdfUrl && (
-                              <a
-                                href={topic.pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline break-all"
-                              >
-                                {topic.pdfUrl}
-                              </a>
-                            )}
-                            {topic.detailPageType === "external_url" &&
-                              topic.externalUrl && (
-                                <a
-                                  href={topic.externalUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:underline break-all"
-                                >
-                                  {topic.externalUrl}
-                                </a>
-                              )}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Format 3 - Video */}
-                  {topic.format === "format3" && (
-                    <>
-                      {topic.videoUrl && (
-                        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <Video className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 mb-1">
-                              Video URL
-                            </div>
-                            <a
-                              href={topic.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:underline break-all"
-                            >
-                              {topic.videoUrl}
-                            </a>
-                          </div>
-                        </div>
-                      )}
-
-                      {topic.detailPageType && (
-                        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <Link className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 mb-1">
-                              Detail Page Type
-                            </div>
-                            <div className="text-sm text-gray-900 capitalize mb-2">
-                              {topic.detailPageType.replace("_", " ")}
-                            </div>
-                            {topic.detailPageType === "pdf" && topic.pdfUrl && (
-                              <a
-                                href={topic.pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline break-all"
-                              >
-                                {topic.pdfUrl}
-                              </a>
-                            )}
-                            {topic.detailPageType === "external_url" &&
-                              topic.externalUrl && (
-                                <a
-                                  href={topic.externalUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:underline break-all"
-                                >
-                                  {topic.externalUrl}
-                                </a>
-                              )}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Publishing Details */}
               <div className="border-t border-gray-200 pt-4">
@@ -287,36 +160,21 @@ export default function TopicDetailsModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-xs text-gray-500 mb-1">
-                      Publish Timing
+                      Publishing Time
                     </div>
-                    <div className="text-sm text-gray-900 capitalize">
-                      {topic.publishTiming === "now"
-                        ? "Published Immediately"
-                        : "Scheduled"}
+                    <div className="text-sm text-gray-900">
+                      {new Date(topic.publishing_time).toLocaleString()}
                     </div>
                   </div>
 
-                  {topic.publishedAt && (
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">
-                        Published At
-                      </div>
-                      <div className="text-sm text-gray-900">
-                        {new Date(topic.publishedAt).toLocaleString()}
-                      </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      Last Updated
                     </div>
-                  )}
-
-                  {topic.scheduledAt && (
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">
-                        Scheduled For
-                      </div>
-                      <div className="text-sm text-gray-900">
-                        {new Date(topic.scheduledAt).toLocaleString()}
-                      </div>
+                    <div className="text-sm text-gray-900">
+                      {new Date(topic.updated_at).toLocaleString()}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>

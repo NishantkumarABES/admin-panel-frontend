@@ -16,10 +16,11 @@ interface AddEditTopicModalProps {
 type WorkflowMode = "article_input" | "ai_processing" | "ai_success" | "manual";
 
 const initialFormData: CreateTopicDTO = {
-  articleUrl: "",
   title: "",
-  summary: "",
-  selectedImage: undefined,
+  description: "",
+  image: undefined,
+  source_url: "",
+  publishing_time: new Date().toISOString(),
 };
 
 export default function AddEditTopicModal({
@@ -67,8 +68,10 @@ export default function AddEditTopicModal({
       setMode("manual");
       setFormData({
         title: topic.title || "",
-        summary: topic.summary || "",
-        selectedImage: topic.image || undefined,
+        description: topic.description || "",
+        image: topic.image || undefined,
+        source_url: topic.source_url || "",
+        publishing_time: topic.publishing_time || new Date().toISOString(),
       });
       setImagePreview(topic.image || "");
     }
@@ -110,10 +113,11 @@ export default function AddEditTopicModal({
         setExtractedData(result);
         setExtractedImages(result.images || []);
         setFormData({
-          articleUrl,
           title: result.title,
-          summary: result.summary,
-          selectedImage: undefined,
+          description: result.summary,
+          image: undefined,
+          source_url: articleUrl,
+          publishing_time: new Date().toISOString(),
         });
         setMode("ai_success");
       } else {
@@ -135,7 +139,7 @@ export default function AddEditTopicModal({
   const handleImageSelect = (index: number) => {
     setSelectedImageIndex(index);
     const selectedUrl = extractedImages[index];
-    setFormData({ ...formData, selectedImage: selectedUrl });
+    setFormData({ ...formData, image: selectedUrl });
     setImagePreview(selectedUrl);
   };
 
@@ -143,7 +147,7 @@ export default function AddEditTopicModal({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, selectedImage: file });
+      setFormData({ ...formData, image: file });
       setImagePreview(URL.createObjectURL(file));
       setSelectedImageIndex(null); // Deselect any extracted image
     }
@@ -151,7 +155,7 @@ export default function AddEditTopicModal({
 
   // Remove uploaded/selected image
   const handleRemoveImage = () => {
-    setFormData({ ...formData, selectedImage: undefined });
+    setFormData({ ...formData, image: undefined });
     setImagePreview("");
     setSelectedImageIndex(null);
     if (fileInputRef.current) {
@@ -178,8 +182,8 @@ export default function AddEditTopicModal({
       return;
     }
 
-    if (!formData.summary?.trim()) {
-      alert("Summary is required");
+    if (!formData.description?.trim()) {
+      alert("Description is required");
       setIsSubmitting(false);
       return;
     }
@@ -205,7 +209,6 @@ export default function AddEditTopicModal({
     setProcessingError("");
     setIsSubmitting(false);
     setImagePreview("");
-    onClose();
   };
 
   // Close modal
@@ -360,19 +363,19 @@ export default function AddEditTopicModal({
               />
             </div>
 
-            {/* Summary */}
+            {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Summary (~300 words) *
+                Description (~300 words) *
               </label>
               <textarea
-                value={formData.summary}
+                value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, summary: e.target.value })
+                  setFormData({ ...formData, description: e.target.value })
                 }
                 rows={10}
                 className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-vertical transition-all leading-relaxed"
-                placeholder="Enter topic summary"
+                placeholder="Enter topic description"
                 required
               />
               <p className="text-xs text-gray-500 mt-1.5">
@@ -461,12 +464,12 @@ export default function AddEditTopicModal({
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
               <p className="text-xs font-semibold text-gray-700 mb-1">Source URL:</p>
               <a
-                href={articleUrl}
+                href={formData.source_url || articleUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-blue-600 hover:underline break-all"
               >
-                {articleUrl}
+                {formData.source_url || articleUrl}
               </a>
             </div>
 
@@ -474,7 +477,7 @@ export default function AddEditTopicModal({
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || (!formData.selectedImage && !imagePreview)}
+                disabled={isSubmitting || (!formData.image && !imagePreview)}
                 className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-700 rounded-xl hover:bg-blue-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Submitting..." : "Create Topic"}
@@ -540,15 +543,15 @@ export default function AddEditTopicModal({
               />
             </div>
 
-            {/* Summary/Description */}
+            {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Article Content / Description *
               </label>
               <textarea
-                value={formData.summary}
+                value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, summary: e.target.value })
+                  setFormData({ ...formData, description: e.target.value })
                 }
                 rows={12}
                 className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-vertical transition-all leading-relaxed"

@@ -8,7 +8,7 @@ import AddGeneralAdForm from "./components/AddGeneralAdForm";
 import EditGeneralAdForm from "./components/EditGeneralAdForm";
 
 export default function AdvertisementsView() {
-  const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
+  // const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
   const [generalAds, setGeneralAds] = useState<GeneralAdvertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -240,7 +240,7 @@ export default function AdvertisementsView() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <img
-                              src={BackendBaseURL + ad.image}
+                              src={ad.image}
                               alt={ad.title}
                               className="h-12 w-20 object-cover rounded border border-gray-200"
                               onError={(e) => {
