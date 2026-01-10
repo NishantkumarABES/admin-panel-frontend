@@ -17,7 +17,7 @@ export interface TopicFilters {
 
 // Get topics analytics
 export const getTopicsAnalytics = async () => {
-  const response = await api.get<TopicsAnalytics>("/admin/topics/metrics/");
+  const response = await api.get<TopicsAnalytics>("analytics/admin/topics/metrics/");
   return response.data;
 };
 
@@ -40,7 +40,7 @@ export const getTopics = async (filters: TopicFilters = {}) => {
 
   const queryString = params.toString();
   const response = await api.get<PaginatedResponse<Topic>>(
-    `/admin/topics/${queryString ? `?${queryString}` : ""}`
+    `topics/admin/topics/${queryString ? `?${queryString}` : ""}`
   );
 
   return response.data;

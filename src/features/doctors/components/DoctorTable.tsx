@@ -59,12 +59,24 @@ export default function DoctorTable({
                 className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        Dr. {doctor.full_name}
-                      </div>
+                  <div className="flex items-center gap-3">
+                    {doctor && (
+                      <img
+                        src={
+                          doctor.image
+                            ? doctor.image
+                            : doctor.gender === "male"
+                              ? "/src/assets/placeholders/male_doctor.jpg"
+                              : "/src/assets/placeholders/female_doctor.jpg"
+                        }
+                        alt={doctor.full_name}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                    )}
+                    <div className="text-sm font-medium text-gray-900">
+                      Dr. {doctor.full_name}
                     </div>
+                    
                   </div>
                 </td>
                 <td className="px-4 py-4  wrap-break-words">

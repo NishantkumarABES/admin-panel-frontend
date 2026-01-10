@@ -1,6 +1,7 @@
 import { Eye, Pencil, CircleCheckBig, CircleX} from "lucide-react"; // Trash2
 import type { Topic } from "../topic.types";
 import StatusBadge from "../../../components/common/StatusBadge";
+import { stripHtml } from "../../../utils/stripHtml";
 
 interface TopicTableProps {
   topics: Topic[];
@@ -69,7 +70,7 @@ export default function TopicTable({
                     <div className="max-w-xs">
                       <div className="font-medium truncate">{topic.title}</div>
                       <div className="text-xs text-gray-500 truncate">
-                        {topic.description.substring(0, 50)}...
+                        {stripHtml(topic.description).substring(0, 50)}...
                       </div>
                     </div>
                   </div>

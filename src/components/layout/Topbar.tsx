@@ -11,6 +11,7 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
   "/advertisements": { name: "Advertisements", description: "Manage promotional advertisements" },
   "/cims": {name: "CIMS", description: "Manage CIMS: Clinical Information Management"},
+  "/advisory" : {name: "Advisory", description: "Manage advisory panel and settings" },
   "/audit": { name: "Audit Logs", description: "View system audit logs" },
   "/settings": { name: "Settings", description: "Manage application policies and information" },
 };

@@ -241,8 +241,23 @@ export default function PatientsView() {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {patient.full_name}
+                      <div className="flex items-center gap-3">
+                        {patient && (
+                          <img
+                            src={
+                              patient.image
+                                ? patient.image
+                                : patient.gender === "male"
+                                  ? "/src/assets/placeholders/male_patient.jpg"
+                                  : "/src/assets/placeholders/female_patient.jpg"
+                            }
+                            alt={patient.full_name}
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        )}
+                        <div className="text-sm font-medium text-gray-900">
+                          {patient.full_name}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

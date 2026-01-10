@@ -3,6 +3,7 @@ export type DoctorStatus = "active" | "inactive";
 
 export interface DoctorUser {
   id: string;
+  image: string;
   full_name: string;
   email: string;
   phone: string;
@@ -76,6 +77,7 @@ export const mockDoctors: DoctorUser[] = [
   {
     id: "1",
     full_name: "Alice Johnson",
+    image: "https://example.com/alice.jpg",
     email: "alice.johnson@example.com",
     phone: "+1 555-123-4567",
     country_code : "+1",
@@ -95,6 +97,7 @@ export const mockDoctors: DoctorUser[] = [
   {
     id: "2",
     full_name: "Brian Smith",
+    image: "https://example.com/brian.jpg",
     email: "brian.smith@example.com",
     phone: "+1 555-987-6543",
     country_code : "+1",
@@ -115,6 +118,7 @@ export const mockDoctors: DoctorUser[] = [
   {
     id: "3",
     full_name: "Carol Lee",
+    image: "https://example.com/carol.jpg",
     email: "carol.lee@example.com",
     phone: "+1 555-222-3333",
     country_code : "+1",

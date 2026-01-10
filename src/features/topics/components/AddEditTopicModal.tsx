@@ -5,6 +5,7 @@ import Modal from "../../../components/common/Modal";
 import { Link, AlertCircle, Loader2, Check, Upload, X,
 } from "lucide-react";
 import * as topicService from "../../../services/topic.service";
+import RichTextEditor from "../../settings/components/RichTextEditor";
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
@@ -368,15 +369,12 @@ export default function AddEditTopicModal({
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Description (~300 words) *
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+              <RichTextEditor
+                content={formData.description}
+                onChange={(html) =>
+                  setFormData({ ...formData, description: html })
                 }
-                rows={10}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-vertical transition-all leading-relaxed"
-                placeholder="Enter topic description"
-                required
+                editable={true}
               />
               <p className="text-xs text-gray-500 mt-1.5">
                 AI-generated summary. Feel free to edit as needed.
@@ -548,15 +546,12 @@ export default function AddEditTopicModal({
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Article Content / Description *
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+              <RichTextEditor
+                content={formData.description}
+                onChange={(html) =>
+                  setFormData({ ...formData, description: html })
                 }
-                rows={12}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-vertical transition-all leading-relaxed"
-                placeholder="Enter the article content or description..."
-                required
+                editable={true}
               />
             </div>
 

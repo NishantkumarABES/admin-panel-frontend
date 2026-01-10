@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck,
-  ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill
+  ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill, Lightbulb
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Events", path: "/events", icon: Calendar },
   { label: "Advertisements", path: "/advertisements", icon: Megaphone },
   { label: "CIMS", path: "/cims", icon: Pill },
+  { label: "Advisory", path: "/advisory", icon: Lightbulb },
   { label: "Audit Logs", path: "/audit", icon: FileCheck },
   { label: "Settings", path: "/settings", icon: Settings },
 ];

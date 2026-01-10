@@ -1,11 +1,11 @@
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
-import type { PatientForm } from "../patient.types";
+import type { PatientUser } from "../patient.types";
 
 interface PatientDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  patient: PatientForm;
+  patient: PatientUser;
 }
 
 export default function PatientDetailsModal({
@@ -20,11 +20,11 @@ export default function PatientDetailsModal({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-xl font-bold text-gray-900">
-              {patient.firstName} {patient.lastName}
+              {patient.full_name}
             </h3>
             <p className="text-sm text-gray-600 mt-1">Patient ID: {patient.id}</p>
           </div>
-          <StatusBadge status={patient.status} size="sm" />
+          <StatusBadge status={patient.is_active ? "active" : "inactive"} size="sm" />
         </div>
 
         {/* Contact Information */}
@@ -49,19 +49,19 @@ export default function PatientDetailsModal({
         </div>
 
         {/* Personal Information */}
-        {(patient.dateOfBirth || patient.gender) && (
+        {(patient.date_of_birth || patient.gender) && (
           <div className="border-t border-gray-200 pt-4">
             <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
               Personal Information
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {patient.dateOfBirth && (
+              {patient.date_of_birth && (
                 <div>
                   <label className="text-xs text-gray-500 uppercase tracking-wider">
                     Date of Birth
                   </label>
                   <p className="text-sm text-gray-900 mt-1">
-                    {new Date(patient.dateOfBirth).toLocaleDateString("en-US", {
+                    {new Date(patient.date_of_birth).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -82,33 +82,33 @@ export default function PatientDetailsModal({
         )}
 
         {/* Address */}
-        {patient.address && (
+        {/* {patient.address && (
           <div className="border-t border-gray-200 pt-4">
             <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
               Address
             </h4>
             <p className="text-sm text-gray-900">{patient.address}</p>
           </div>
-        )}
+        )} */}
 
         {/* Emergency Contact */}
-        {patient.emergencyContact && (
+        {/* {patient.emergencyContact && (
           <div className="border-t border-gray-200 pt-4">
             <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
               Emergency Contact
             </h4>
             <p className="text-sm text-gray-900">{patient.emergencyContact}</p>
           </div>
-        )}
+        )} */}
 
         {/* Registration Date */}
-        {patient.createdAt && (
+        {patient.created_at && (
           <div className="border-t border-gray-200 pt-4">
             <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
               Registration Date
             </h4>
             <p className="text-sm text-gray-900">
-              {new Date(patient.createdAt).toLocaleDateString("en-US", {
+              {new Date(patient.created_at).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

@@ -1,4 +1,5 @@
-import { X, Calendar, User, Link, Video } from "lucide-react";
+import { useState } from "react";
+import { X, Calendar, User, Link, Video, ChevronDown, ChevronUp } from "lucide-react";
 import type { Topic } from "../topic.types";
 
 interface TopicDetailsModalProps {
@@ -12,6 +13,8 @@ export default function TopicDetailsModal({
   isOpen,
   onClose,
 }: TopicDetailsModalProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!isOpen || !topic) return null;
 
   const getStatusBadge = (publishStatus: boolean) => {
@@ -71,9 +74,30 @@ export default function TopicDetailsModal({
                     {topic.publish_status ? "Published" : "Unpublished"}
                   </span>
                 </div>
-                <p className="text-gray-600 leading-relaxed">
-                  {topic.description}
-                </p>
+                <div>
+                  <div
+                    className={`text-gray-600 leading-relaxed prose prose-sm max-w-none overflow-hidden transition-all ${
+                      isExpanded ? "" : "line-clamp-4"
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: topic.description }}
+                  />
+                  {topic.description.length > 300 && (
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="mt-2 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      {isExpanded ? (
+                        <>
+                          Show Less <ChevronUp className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          Show More <ChevronDown className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Basic Information */}

@@ -3,6 +3,7 @@ export type PatientStatus = "active" | "inactive";
 // API Response User
 export interface PatientUser {
   id: string;
+  image: string;
   full_name: string;
   email: string;
   phone: string;
@@ -53,6 +54,7 @@ export const mockPatients: PatientUser[] = [
   {
     id: "1",
     full_name: "Alice Johnson",
+    image: "https://example.com/alice.jpg",
     email: "alice.johnson@example.com",
     phone: "+1 555-123-4567",
     country_code : "+1",
@@ -68,6 +70,7 @@ export const mockPatients: PatientUser[] = [
   {
     id: "2",
     full_name: "Bob Smith",
+    image: "https://example.com/bob.jpg",
     email: "bob.smith@example.com",
     phone: "+1 555-987-6543",
     country_code : "+1",
@@ -83,6 +86,7 @@ export const mockPatients: PatientUser[] = [
   {
     id: "3",
     full_name: "Charlie Brown",
+    image: "https://example.com/charlie.jpg",
     email: "charlie.brown@example.com",
     phone: "+1 555-111-2222",
     country_code : "+1",

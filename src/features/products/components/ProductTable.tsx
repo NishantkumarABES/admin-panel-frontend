@@ -98,7 +98,7 @@ export default function ProductTable({
                     ₹{parseFloat(product.price).toFixed(2)}
                   </div>
                   <div className="flex items-center gap-1">
-                    {parseFloat(product.discount_percentage) > 0 && (
+                    {(
                       <div className="text-xs text-emerald-600">
                         -{product.discount_percentage}% off
                       </div>

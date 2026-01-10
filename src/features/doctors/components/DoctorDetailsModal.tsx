@@ -41,18 +41,17 @@ export default function DoctorDetailsModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Doctor Details" size="lg">
       <div className="space-y-6">
         {/* Header with Profile */}
-        <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-1">
-              Dr. {doctor.full_name}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">
+              {doctor.full_name}
             </h3>
-            <p className="text-sm text-gray-600 mb-3">{doctor.specialization}</p>
-            <div className="flex items-center gap-2">
-              <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
-            </div>
+            <p className="text-sm text-gray-600 mt-1">{doctor.specialization}</p>
           </div>
+          <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
         </div>
-
+        
+      <div className="border-t border-gray-200 pt-4">
         {/* Contact Information */}
         <div>
           <h4 className="text-sm font-semibold text-gray-900 mb-3">
@@ -63,7 +62,9 @@ export default function DoctorDetailsModal({
             <InfoRow icon={Phone} label="Phone" value={doctor.phone} />
           </div>
         </div>
+      </div>
 
+      <div className="border-t border-gray-200 pt-4">
         {/* Professional Information */}
         <div>
           <h4 className="text-sm font-semibold text-gray-900 mb-3">
@@ -82,6 +83,7 @@ export default function DoctorDetailsModal({
             />
           </div>
         </div>
+      </div>
       </div>
         
 
