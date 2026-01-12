@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 
 interface User {
   id: string;
+  email: string;
+  full_name: string;
   role: string;
   state: string;
   onboarding_complete: boolean;

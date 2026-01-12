@@ -103,16 +103,23 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {/* Admin User Section */}
       <div className="border-t border-gray-800">
         <div className={`p-4 flex items-center transition-all duration-300 ease-in-out ${isCollapsed ? "justify-center" : "gap-3"}`}>
-          <div className="w-9 h-9 rounded-full bg-white text-gray-900 flex items-center justify-center shrink-0">
+          <button
+            onClick={() => navigate("/profile")}
+            className="w-9 h-9 rounded-full bg-white text-gray-900 flex items-center justify-center shrink-0 hover:bg-gray-100 transition-colors cursor-pointer"
+            title={isCollapsed ? "Admin Profile" : ""}
+          >
             <User className="w-5 h-5" />
-          </div>
+          </button>
 
           {!isCollapsed && (
             <>
-              <div className="flex-1 min-w-0 transition-opacity duration-300 ease-in-out">
+              <button
+                onClick={() => navigate("/profile")}
+                className="flex-1 min-w-0 transition-opacity duration-300 ease-in-out text-left hover:opacity-80 cursor-pointer"
+              >
                 <p className="text-sm font-medium text-white truncate">Admin User</p>
                 <p className="text-xs text-gray-400 truncate">Administrator</p>
-              </div>
+              </button>
 
               <button
                 onClick={handleLogout}

@@ -11,7 +11,8 @@ import AuditLogsView from "../features/audit/AuditLogsView";
 import SettingsView from "../features/settings/SettingsView";
 import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
 import CIMSView from "../features/CIMS/CIMSView";
-import AdvisoryView from "../features/Advisory/AdvisoryView"; 
+import AdvisoryView from "../features/Advisory/AdvisoryView";
+import ProfileView from "../features/profile/ProfileView"; 
 
 export default function AppRoutes() {
   return (
@@ -27,6 +28,7 @@ export default function AppRoutes() {
       <Route path="/advisory" element={<AdvisoryView />} />
       <Route path="/audit" element={<AuditLogsView />} />
       <Route path="/settings" element={<SettingsView />} />
+      <Route path="/profile" element={<ProfileView />} />
     </Routes>
   );
 }

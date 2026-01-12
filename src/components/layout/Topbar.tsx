@@ -14,6 +14,7 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/advisory" : {name: "Advisory", description: "Manage advisory panel and settings" },
   "/audit": { name: "Audit Logs", description: "View system audit logs" },
   "/settings": { name: "Settings", description: "Manage application policies and information" },
+  "/profile": { name: "Profile", description: "Admin User Profile" }
 };
 
 export default function Topbar() {
@@ -29,7 +30,7 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
+    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20">
       {/* Left - Current Page/Tab */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>

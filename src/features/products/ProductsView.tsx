@@ -2,11 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
 import type { Product, CreateProductDTO, ProductAnalytics, ProductStatus } from "./product.types.ts";
 import { mockProducts, PRODUCT_CATEGORIES } from "./product.types.ts";
+import { type CreateCouponDTO, type Coupon, type UpdateCouponDTO } from "./coupon.types";
 import ProductTable from "./components/ProductTable";
 import ProductDetailsModal from "./components/ProductDetailsModal";
 import AddEditProductModal from "./components/AddEditProductModal";
-// import ConfirmDialog from "../../components/common/ConfirmDialog";
+import CouponTable from "./components/CouponTable";
+import AddEditCouponModal from "./components/AddEditCouponModal";
+import CouponDetailsModal from "./components/CouponDetailsModal.tsx";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import * as productService from "../../services/product.service";
+import * as couponService from "../../services/coupon.service";
 
 export default function ProductsView() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +39,19 @@ export default function ProductsView() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   // const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Coupon states
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [couponsLoading, setCouponsLoading] = useState(true);
+  const [couponSearchTerm, setCouponSearchTerm] = useState("");
+  const [couponTypeFilter, setCouponTypeFilter] = useState<string>("all");
+  const [couponStatusFilter, setCouponStatusFilter] = useState<string>("all");
+  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  // const [isCreateCouponModalOpen, setIsCreateCouponModalOpen] = useState(false);
+  // const [isEditCouponModalOpen, setIsEditCouponModalOpen] = useState(false);
+  const [isAddEditCouponModalOpen, setIsAddEditCouponModalOpen] = useState(false);
+  const [isDeleteCouponDialogOpen, setIsDeleteCouponDialogOpen] = useState(false);
+  const [isCouponDetailsModalOpen, setIsCouponDetailsModalOpen] = useState(false);
 
   // Fetch products analytics
   const fetchAnalytics = async () => {
@@ -78,7 +96,7 @@ export default function ProductsView() {
 
         // Apply status filter
         if (statusFilter !== "all") {
-          filteredData = filteredData.filter(p => 
+          filteredData = filteredData.filter(p =>
             statusFilter === "instock" ? p.is_active : !p.is_active
           );
         }
@@ -109,9 +127,49 @@ export default function ProductsView() {
       setLoading(false);
     }
   };
+  
+
+  // Fetch coupons from API with filters
+  const fetchCoupons = async () => {
+    try {
+      setCouponsLoading(true);
+      const filters: any = {};
+
+      if (couponSearchTerm) {
+        filters.search = couponSearchTerm;
+      }
+
+      if (couponTypeFilter !== "all") {
+        filters.coupon_type = couponTypeFilter;
+      }
+
+      if (couponStatusFilter !== "all") {
+        filters.is_active = couponStatusFilter === "active";
+      }
+
+      // Call API
+      const response = await couponService.getCoupons(filters);
+      const couponsData = response.data?.results || response.data;
+
+      if (Array.isArray(couponsData)) {
+        setCoupons(couponsData);
+      } else {
+        console.error("Unexpected coupons API response format:", response.data);
+        setCoupons([]);
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch coupons:", error);
+      setCoupons([]);
+    } finally {
+      setCouponsLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchAnalytics();
+    fetchCoupons();
   }, []);
 
   useEffect(() => {
@@ -121,6 +179,14 @@ export default function ProductsView() {
 
     return () => clearTimeout(timer);
   }, [searchTerm, statusFilter, categoryFilter, currentPage, pageSize]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCoupons();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [couponSearchTerm, couponTypeFilter, couponStatusFilter]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -163,7 +229,6 @@ export default function ProductsView() {
   //   setIsDeleteDialogOpen(true);
   // };
 
-  // Submit handlers
   const handleAddEditSubmit = async (data: CreateProductDTO): Promise<{ error?: string }> => {
     try {
       if (selectedProduct) {
@@ -181,6 +246,82 @@ export default function ProductsView() {
         || error?.message
         || (selectedProduct ? "Failed to update product. Please try again." : "Failed to add product. Please try again.");
       return { error: errorMessage };
+    }
+  };
+
+  // const handleCreateCoupon = () => {
+  //   setIsCreateCouponModalOpen(true);
+  // };
+
+  const handleCouponSubmit = async (data: CreateCouponDTO | UpdateCouponDTO): Promise<{ error?: string }> => {
+    try {
+      if ('id' in data && data.id) {
+        // Edit mode
+        await couponService.updateCoupon(data as UpdateCouponDTO);
+      } else {
+        // Create mode
+        await couponService.createCoupon(data as CreateCouponDTO);
+      }
+      fetchCoupons();
+      return {};
+    } catch (error: any) {
+      console.error("Failed to save coupon:", error);
+      const errorMessage = error?.response?.data?.message
+        || error?.response?.data?.error
+        || error?.message
+        || "Failed to save coupon. Please try again.";
+      return { error: errorMessage };
+    }
+  };
+
+  const handleViewCoupon = (coupon: Coupon) => {
+    setSelectedCoupon(coupon);
+    setIsCouponDetailsModalOpen(true);
+  };
+
+  // const handleEditCoupon = (coupon: Coupon) => {
+  //   setSelectedCoupon(coupon);
+  //   setIsEditCouponModalOpen(true);
+  // };
+
+  const handleCreateCoupon = () => {
+    setSelectedCoupon(null);
+    setIsAddEditCouponModalOpen(true);
+  };
+
+  const handleEditCoupon = (coupon: Coupon) => {
+    setSelectedCoupon(coupon);
+    setIsAddEditCouponModalOpen(true);
+  };
+
+  const handleDeleteCoupon = (coupon: Coupon) => {
+    setSelectedCoupon(coupon);
+    setIsDeleteCouponDialogOpen(true);
+  };
+
+  const handleToggleCouponStatus = async (coupon: Coupon) => {
+    try {
+      await couponService.updateCoupon({
+        id: coupon.id,
+        is_active: !coupon.is_active,
+      });
+      fetchCoupons();
+    } catch (error) {
+      console.error("Failed to toggle coupon status:", error);
+    }
+  };
+
+  
+
+  const handleConfirmDeleteCoupon = async () => {
+    if (!selectedCoupon) return;
+    try {
+      await couponService.deleteCoupon(selectedCoupon.id);
+      fetchCoupons();
+      setIsDeleteCouponDialogOpen(false);
+      setSelectedCoupon(null);
+    } catch (error) {
+      console.error("Failed to delete coupon:", error);
     }
   };
 
@@ -372,7 +513,7 @@ export default function ProductsView() {
             </div>
           </div>
 
-          {/* Right side: Add Product Button */}
+          {/* Right side: Action Buttons */}
           <div className="flex justify-end lg:justify-normal shrink-0">
             <button
               onClick={handleAdd}
@@ -461,6 +602,90 @@ export default function ProductsView() {
         )}
       </div>
 
+      {/* Coupons Section */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Coupons Management</h2>
+        </div>
+
+        {/* Coupon Filters */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
+            {/* Left side: Search + Filters */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
+              {/* Search */}
+              <div className="flex-1 min-w-0 w-full sm:min-w-64 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={couponSearchTerm}
+                  onChange={(e) => setCouponSearchTerm(e.target.value)}
+                  placeholder="Search coupons by code..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+
+              {/* Type Filter */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                <select
+                  value={couponTypeFilter}
+                  onChange={(e) => setCouponTypeFilter(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                >
+                  <option value="all">All Types</option>
+                  <option value="product">Product</option>
+                  <option value="category">Category</option>
+                  <option value="all">All Products</option>
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                <select
+                  value={couponStatusFilter}
+                  onChange={(e) => setCouponStatusFilter(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Right side: Create Coupon Button */}
+            <div className="flex justify-end lg:justify-normal shrink-0">
+              <button
+                onClick={handleCreateCoupon}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                Create Coupon
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Coupon Table */}
+        {couponsLoading ? (
+          <div className="p-8 text-center text-gray-600">Loading coupons...</div>
+        ) : coupons.length === 0 ? (
+          <div className="p-8 text-center text-gray-600">
+            No coupons found. Create a coupon to get started.
+          </div>
+        ) : (
+          <CouponTable
+            coupons={coupons}
+            onView={handleViewCoupon}
+            onEdit={handleEditCoupon}
+            onDelete={handleDeleteCoupon}
+            onToggleStatus={handleToggleCouponStatus}
+          />
+        )}
+      </div>
+
       {/* Modals */}
       <ProductDetailsModal
         product={selectedProduct}
@@ -476,6 +701,54 @@ export default function ProductsView() {
           setSelectedProduct(null);
         }}
         onSubmit={handleAddEditSubmit}
+      />
+
+      <CouponDetailsModal
+        coupon={selectedCoupon}
+        isOpen={isCouponDetailsModalOpen}
+        onClose={() => {
+          setIsCouponDetailsModalOpen(false);
+          setSelectedCoupon(null);
+        }}
+      />
+
+      <AddEditCouponModal 
+        coupon={selectedCoupon}
+        isOpen={isAddEditCouponModalOpen}
+        onClose={() => {
+          setIsAddEditCouponModalOpen(false);
+          setSelectedCoupon(null);
+        }}
+        onSubmit={handleCouponSubmit}
+      />
+
+      {/* <CreateCouponModal
+        isOpen={isCreateCouponModalOpen}
+        onClose={() => setIsCreateCouponModalOpen(false)}
+        onSubmit={handleCouponSubmit}
+      />
+
+      <EditCouponModal
+        coupon={selectedCoupon}
+        isOpen={isEditCouponModalOpen}
+        onClose={() => {
+          setIsEditCouponModalOpen(false);
+          setSelectedCoupon(null);
+        }}
+        onSubmit={handleEditCouponSubmit}
+      /> */}
+
+      <ConfirmDialog
+        isOpen={isDeleteCouponDialogOpen}
+        onClose={() => {
+          setIsDeleteCouponDialogOpen(false);
+          setSelectedCoupon(null);
+        }}
+        onConfirm={handleConfirmDeleteCoupon}
+        title="Delete Coupon"
+        message={`Are you sure you want to delete coupon "${selectedCoupon?.code}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
       />
 
       {/* <ConfirmDialog
