@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import type { Event, CreateEventDTO, EventType, EventFormat } from "../event.types";
+import type { Event, CreateEventDTO, EventType, EventFormat, SpeakerFormData } from "../event.types";
 import { EVENT_TYPES, EVENT_FORMATS, SPECIALIZATIONS } from "../event.types";
-import { ChevronDown, Search, AlertCircle, X, Upload, XCircle } from "lucide-react";
+import { ChevronDown, Search, AlertCircle, X, Upload, XCircle, Plus, Trash2 } from "lucide-react";
 
 interface AddEditEventModalProps {
   event: Event | null;
@@ -50,12 +50,20 @@ const initialFormData: CreateEventDTO = {
   format: "live",
   is_free: true,
   registration_fee: "0.00",
-  certificate_available: false,
+  is_certificate_available: false,
   agenda: "",
   venue: "",
   event_link: "",
   is_featured: false,
   images: [],
+  speakers: [],
+};
+
+const initialSpeaker: SpeakerFormData = {
+  name: "",
+  title: "",
+  bio: "",
+  image: null,
 };
 
 export default function AddEditEventModal({
@@ -76,6 +84,9 @@ export default function AddEditEventModal({
   // Image preview
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
+  // Speaker image previews
+  const [speakerImagePreviews, setSpeakerImagePreviews] = useState<(string | null)[]>([]);
+
   useEffect(() => {
     if (event) {
       setFormData({
@@ -90,20 +101,31 @@ export default function AddEditEventModal({
         format: event.format,
         is_free: event.is_free,
         registration_fee: event.registration_fee,
-        certificate_available: event.certificate_available,
+        is_certificate_available: event.is_certificate_available,
         agenda: event.agenda,
         venue: event.venue,
         event_link: event.event_link,
         is_featured: event.is_featured,
         images: [],
+        speakers: event.speakers?.map(speaker => ({
+          name: speaker.name,
+          title: speaker.title,
+          bio: speaker.bio || "",
+          image: null,
+        })) || [],
       });
       // Set existing image previews
       if (event.images && event.images.length > 0) {
         setImagePreviews(event.images.map(img => img.image));
       }
+      // Set existing speaker image previews
+      if (event.speakers && event.speakers.length > 0) {
+        setSpeakerImagePreviews(event.speakers.map(speaker => speaker.image || null));
+      }
     } else {
       setFormData(initialFormData);
       setImagePreviews([]);
+      setSpeakerImagePreviews([]);
     }
     // Reset submission states when modal opens/closes
     setSubmitSuccess(false);
@@ -174,6 +196,7 @@ export default function AddEditEventModal({
     setSubmitSuccess(false);
     setSubmitError(null);
     setImagePreviews([]);
+    setSpeakerImagePreviews([]);
     onClose();
   };
 
@@ -181,6 +204,50 @@ export default function AddEditEventModal({
     setFormData({ ...formData, specialization: spec });
     setSpecializationSearch("");
     setIsSpecializationDropdownOpen(false);
+  };
+
+  const handleAddSpeaker = () => {
+    setFormData({
+      ...formData,
+      speakers: [...(formData.speakers || []), { ...initialSpeaker }],
+    });
+    setSpeakerImagePreviews([...speakerImagePreviews, null]);
+  };
+
+  const handleRemoveSpeaker = (index: number) => {
+    const newSpeakers = formData.speakers?.filter((_, i) => i !== index) || [];
+    const newPreviews = speakerImagePreviews.filter((_, i) => i !== index);
+    setFormData({ ...formData, speakers: newSpeakers });
+    setSpeakerImagePreviews(newPreviews);
+  };
+
+  const handleSpeakerChange = (index: number, field: keyof SpeakerFormData, value: string) => {
+    const newSpeakers = [...(formData.speakers || [])];
+    newSpeakers[index] = { ...newSpeakers[index], [field]: value };
+    setFormData({ ...formData, speakers: newSpeakers });
+  };
+
+  const handleSpeakerImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newSpeakers = [...(formData.speakers || [])];
+      newSpeakers[index] = { ...newSpeakers[index], image: file };
+      setFormData({ ...formData, speakers: newSpeakers });
+
+      const newPreviews = [...speakerImagePreviews];
+      newPreviews[index] = URL.createObjectURL(file);
+      setSpeakerImagePreviews(newPreviews);
+    }
+  };
+
+  const handleRemoveSpeakerImage = (index: number) => {
+    const newSpeakers = [...(formData.speakers || [])];
+    newSpeakers[index] = { ...newSpeakers[index], image: null };
+    setFormData({ ...formData, speakers: newSpeakers });
+
+    const newPreviews = [...speakerImagePreviews];
+    newPreviews[index] = null;
+    setSpeakerImagePreviews(newPreviews);
   };
 
   return (
@@ -464,8 +531,8 @@ export default function AddEditEventModal({
                   <input
                     type="checkbox"
                     id="certificate_available"
-                    checked={formData.certificate_available}
-                    onChange={(e) => setFormData({ ...formData, certificate_available: e.target.checked })}
+                    checked={formData.is_certificate_available}
+                    onChange={(e) => setFormData({ ...formData, is_certificate_available: e.target.checked })}
                     className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
                   />
                   <label htmlFor="certificate_available" className="text-sm font-medium text-gray-700">
@@ -519,6 +586,129 @@ export default function AddEditEventModal({
             />
           </div>
 
+          {/* Speakers */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Speakers
+              </h3>
+              <button
+                type="button"
+                onClick={handleAddSpeaker}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Add Speaker
+              </button>
+            </div>
+
+            {formData.speakers && formData.speakers.length > 0 ? (
+              <div className="space-y-4">
+                {formData.speakers.map((speaker, index) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-700">Speaker {index + 1}</h4>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSpeaker(index)}
+                        className="text-red-600 hover:text-red-700 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={speaker.name}
+                          onChange={(e) => handleSpeakerChange(index, 'name', e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          placeholder="Dr. John Doe"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={speaker.title}
+                          onChange={(e) => handleSpeakerChange(index, 'title', e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          placeholder="Chief Cardiologist, AIIMS"
+                          required
+                        />
+                      </div>
+
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Bio
+                        </label>
+                        <textarea
+                          value={speaker.bio || ""}
+                          onChange={(e) => handleSpeakerChange(index, 'bio', e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          placeholder="Brief biography..."
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Speaker Image
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleSpeakerImageUpload(index, e)}
+                          className="hidden"
+                          id={`speaker-image-${index}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById(`speaker-image-${index}`)?.click()}
+                          className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center justify-center gap-2 text-sm text-gray-600"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload Speaker Image
+                        </button>
+
+                        {speakerImagePreviews[index] && (
+                          <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group">
+                            <img
+                              src={speakerImagePreviews[index]?.startsWith('http') || speakerImagePreviews[index]?.startsWith('blob:')
+                                ? speakerImagePreviews[index]!
+                                : BackendBaseURL + speakerImagePreviews[index]}
+                              alt={`${speaker.name}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSpeakerImage(index)}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No speakers added yet. Click "Add Speaker" to add speakers.
+              </p>
+            )}
+          </div>
+
           {/* Event Images */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
@@ -541,14 +731,14 @@ export default function AddEditEventModal({
                 <Upload className="w-5 h-5" />
                 Upload Images
               </button>
-              
+
               {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-4 gap-3">
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                      <img 
-                        src={BackendBaseURL + preview} 
+                      <img
+                        src={BackendBaseURL + preview}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-full object-cover"
                       />

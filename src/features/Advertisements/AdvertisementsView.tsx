@@ -212,6 +212,9 @@ export default function AdvertisementsView() {
                           URL
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Specialties
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Image
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -236,6 +239,27 @@ export default function AdvertisementsView() {
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-600  truncate">
                               {ad.url}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {ad.specializations && ad.specializations.length > 0 ? (
+                                ad.specializations.slice(0, 3).map((specialty) => (
+                                  <span
+                                    key={specialty}
+                                    className="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-md border border-blue-200"
+                                  >
+                                    {specialty}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-gray-400">No specialties</span>
+                              )}
+                              {ad.specializations && ad.specializations.length > 3 && (
+                                <span className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md border border-gray-200">
+                                  +{ad.specializations.length - 3} more
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

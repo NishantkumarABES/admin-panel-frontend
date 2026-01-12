@@ -184,7 +184,7 @@ export default function EventDetailsModal({
             {event.event_link && (
               <InfoRow 
                 icon={Video} 
-                label="Meeting Link" 
+                label="Event Link" 
                 value={
                   <a 
                     href={event.event_link} 
@@ -213,9 +213,9 @@ export default function EventDetailsModal({
             />
             
             <InfoRow 
-              icon={event.certificate_available ? CheckCircle : XCircle} 
+              icon={event.is_certificate_available ? CheckCircle : XCircle} 
               label="Certificate" 
-              value={event.certificate_available ? "Available" : "Not Available"}
+              value={event.is_certificate_available ? "Available" : "Not Available"}
             />
           </div>
         </div>

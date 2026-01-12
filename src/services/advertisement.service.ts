@@ -67,6 +67,7 @@ export const advertisementService = {
     if (data.image) {
       formData.append("image", data.image);
     }
+    formData.append("specializations", JSON.stringify(data.specializations));
     formData.append("status", data.status);
 
     return api.patch<GeneralAdvertisement>(

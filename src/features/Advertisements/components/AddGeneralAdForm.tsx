@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ChevronDown } from "lucide-react";
 import Modal from "../../../components/common/Modal";
 import type { CreateGeneralAdDTO } from "../advertisement.types";
+import { SPECIALTIES } from "../advertisement.types";
 import { advertisementService } from "../../../services/advertisement.service";
 
 interface AddGeneralAdFormProps {
@@ -20,6 +21,8 @@ export default function AddGeneralAdForm({
     url: "",
     status: "enabled" as "enabled" | "disabled",
   });
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,8 +51,21 @@ export default function AddGeneralAdForm({
       newErrors.image = "Image is required";
     }
 
+    if (selectedSpecialties.length === 0) {
+      newErrors.specialties = "At least one specialty is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSpecialtyToggle = (specialty: string) => {
+    setSelectedSpecialties(prev =>
+      prev.includes(specialty)
+        ? prev.filter(s => s !== specialty)
+        : [...prev, specialty]
+    );
+    setErrors(prev => ({ ...prev, specialties: "" }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +109,7 @@ export default function AddGeneralAdForm({
         title: formData.title,
         url: formData.url,
         image: image!,
+        specializations: selectedSpecialties,
         status: formData.status,
       };
 
@@ -100,6 +117,7 @@ export default function AddGeneralAdForm({
 
       // Reset form
       setFormData({ title: "", url: "", status: "enabled" });
+      setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
       setErrors({});
@@ -118,6 +136,7 @@ export default function AddGeneralAdForm({
   const handleClose = () => {
     if (!isSubmitting) {
       setFormData({ title: "", url: "", status: "enabled" });
+      setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
       setErrors({});
@@ -165,6 +184,75 @@ export default function AddGeneralAdForm({
           />
           {errors.url && (
             <p className="text-red-500 text-xs mt-1">{errors.url}</p>
+          )}
+        </div>
+
+        {/* Specialties Multi-Select */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Specialties <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${
+                errors.specialties ? "border-red-500" : "border-gray-300"
+              }`}
+              disabled={isSubmitting}
+            >
+              <span className="text-sm text-gray-700">
+                {selectedSpecialties.length === 0
+                  ? "Select specialties"
+                  : `${selectedSpecialties.length} selected`}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isSpecialtyDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isSpecialtyDropdownOpen && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {SPECIALTIES.map((specialty) => (
+                  <label
+                    key={specialty}
+                    className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSpecialties.includes(specialty)}
+                      onChange={() => handleSpecialtyToggle(specialty)}
+                      className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                      disabled={isSubmitting}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">{specialty}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {selectedSpecialties.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {selectedSpecialties.map((specialty) => (
+                <span
+                  key={specialty}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                >
+                  {specialty}
+                  <button
+                    type="button"
+                    onClick={() => handleSpecialtyToggle(specialty)}
+                    className="hover:text-red-600"
+                    disabled={isSubmitting}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {errors.specialties && (
+            <p className="text-red-500 text-xs mt-1">{errors.specialties}</p>
           )}
         </div>
 

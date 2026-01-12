@@ -47,7 +47,7 @@ export const getEvents = async (filters: EventFilters = {}): Promise<{ data: Pag
 
     const queryString = params.toString();
     const response = await api.get<PaginatedResponse<Event>>(
-        `/events/admin/events/${queryString ? `?${queryString}` : ""}`
+        `/events/${queryString ? `?${queryString}` : ""}`
     );
 
     return { data: response.data };
@@ -58,22 +58,42 @@ export const createEvent = async (eventData: CreateEventDTO): Promise<{ data: Ev
     Object.entries(eventData).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
             value.forEach(file => formData.append("images", file));
+        } else if (key === "speakers" && Array.isArray(value)) {
+            formData.append("speakers", JSON.stringify(value));
         } else if (value !== undefined && value !== null) {
             formData.append(key, String(value));
         }
     });
-    const response = await api.post<Event>("/events/admin/events/", formData);
+    const response = await api.post<Event>("/events/", formData);
     return { data: response.data };
 };
 
 export const updateEvent = async (eventData: UpdateEventDTO): Promise<{ data: Event }> => {
-    const payload = {
-        ...eventData,
-    };
-    const response = await api.patch<Event>(`/events/admin/events/${eventData.id}/`, payload);
+    const formData = new FormData();
+    Object.entries(eventData).forEach(([key, value]) => {
+
+        if (key === "images" && Array.isArray(value)) {
+            value.forEach(file => {
+                if (file instanceof File) {
+                    formData.append("images", file);
+                }
+            });
+        } 
+        
+        else if (key === "speakers" && Array.isArray(value)) {
+            formData.append("speakers", JSON.stringify(value));
+        } 
+        
+        else if (value !== undefined && value !== null && key !== "id") {
+            formData.append(key, String(value));
+        }
+    });
+
+    const response = await api.patch<Event>(`/events/${eventData.id}/`, formData);
     return { data: response.data };
 };
 
+
 export const deleteEvent = async (eventId: string): Promise<void> => {
-    await api.delete(`/events/admin/events/${eventId}/`);
+    await api.delete(`/events/${eventId}/`);
 };
