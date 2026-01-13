@@ -7,12 +7,12 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/doctors": { name: "Doctors", description: "Manage doctor profiles and information" },
   "/patients": { name: "Patients", description: "Manage patient records and appointments" },
   "/products": { name: "Products", description: "Manage product listings and inventory" },
+  "/orders": { name: "Orders", description: "Manage product orders" },
   "/topics": { name: "Topics", description: "Manage educational topics and content" },
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
   "/advertisements": { name: "Advertisements", description: "Manage promotional advertisements" },
   "/cims": {name: "CIMS", description: "Manage CIMS: Clinical Information Management"},
   "/advisory" : {name: "Advisory", description: "Manage advisory panel and settings" },
-  "/audit": { name: "Audit Logs", description: "View system audit logs" },
   "/settings": { name: "Settings", description: "Manage application policies and information" },
   "/profile": { name: "Profile", description: "Admin User Profile" }
 };

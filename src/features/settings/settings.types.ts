@@ -12,8 +12,11 @@ export interface Setting {
   content: string;
   updatedAt: string;
   updatedBy?: string;
+  version?: number;
 }
 
 export interface UpdateSettingDTO {
   content: string;
+  title?: string;
 }
+

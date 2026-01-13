@@ -11,12 +11,12 @@ const navItems = [
   { label: "Doctors", path: "/doctors", icon: Stethoscope },
   { label: "Patients", path: "/patients", icon: Users },
   { label: "Products", path: "/products", icon: Package },
+  { label: "Orders", path: "/orders", icon: FileCheck },
   { label: "Topics", path: "/topics", icon: BookOpen },
   { label: "Events", path: "/events", icon: Calendar },
   { label: "Advertisements", path: "/advertisements", icon: Megaphone },
   { label: "CIMS", path: "/cims", icon: Pill },
   { label: "Advisory", path: "/advisory", icon: Lightbulb },
-  { label: "Audit Logs", path: "/audit", icon: FileCheck },
   { label: "Settings", path: "/settings", icon: Settings },
 ];
 

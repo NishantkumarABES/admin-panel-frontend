@@ -684,8 +684,62 @@ export default function ProductsView() {
             onToggleStatus={handleToggleCouponStatus}
           />
         )}
+  
+        {!loading && products.length > 0 && (
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} products
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="pageSize" className="text-sm text-gray-600">
+                      Per page:
+                    </label>
+                    <select
+                      id="pageSize"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={!hasPrevious}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  <div className="px-3 py-1.5 text-sm text-gray-600">
+                    Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    disabled={!hasNext}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
       {/* Modals */}
       <ProductDetailsModal
         product={selectedProduct}

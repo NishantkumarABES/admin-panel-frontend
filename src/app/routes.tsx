@@ -7,7 +7,7 @@ import PatientsView from "../features/patients/PatientsView";
 import ProductsView from "../features/products/ProductsView";
 import TopicsView from "../features/topics/TopicsView";
 import EventsView from "../features/events/EventsView";
-import AuditLogsView from "../features/audit/AuditLogsView";
+import OrdersView from "../features/orders/OrdersView";
 import SettingsView from "../features/settings/SettingsView";
 import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
 import CIMSView from "../features/CIMS/CIMSView";
@@ -21,12 +21,12 @@ export default function AppRoutes() {
       <Route path="/doctors" element={<DoctorsView />} />
       <Route path="/patients" element={<PatientsView />} />
       <Route path="/products" element={<ProductsView />} />
+      <Route path="/orders" element={<OrdersView />} />
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/advertisements" element={<AdvertisementsView />} />
       <Route path="/cims" element={<CIMSView />} />
       <Route path="/advisory" element={<AdvisoryView />} />
-      <Route path="/audit" element={<AuditLogsView />} />
       <Route path="/settings" element={<SettingsView />} />
       <Route path="/profile" element={<ProfileView />} />
     </Routes>
