@@ -1,4 +1,4 @@
-import { Eye, MoreVertical } from "lucide-react";
+import { Eye, RefreshCw } from "lucide-react";
 import type { Order } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "../order.types";
@@ -6,10 +6,10 @@ import { PAYMENT_METHOD_LABELS } from "../order.types";
 interface OrdersTableProps {
   orders: Order[];
   onView: (order: Order) => void;
-  // onUpdateStatus: (order: Order) => void;
+  onUpdateStatus: (order: Order) => void;
 }
 
-export default function OrdersTable({ orders, onView }: OrdersTableProps) { //onUpdateStatus
+export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTableProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-IN', {
@@ -49,7 +49,7 @@ export default function OrdersTable({ orders, onView }: OrdersTableProps) { //on
               Items
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Adress
+              Address
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Actions
@@ -88,19 +88,30 @@ export default function OrdersTable({ orders, onView }: OrdersTableProps) { //on
                   {order.address.address_line}, {order.address.city}
                 </div>
               </td>
-              
-              <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
-                <button
-                  onClick={() => onView(order)}
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
+
+              <td className="px-6 py-4 text-sm whitespace-nowrap">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onView(order)}
+                    className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                    title="View details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onUpdateStatus(order)}
+                    className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-colors"
+                    title="Update status"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
               </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
+

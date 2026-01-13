@@ -8,6 +8,15 @@ import type {
   AddOrderNoteDTO
 } from "../features/orders/order.types";
 
+export interface CreateOrderDTO {
+  user_id: string;
+  address_id: string;
+  items: Array<{ product_id: string; quantity: number }>;
+  payment_method: string;
+  payment_reference?: string;
+  status?: string;
+}
+
 // Get orders with filters
 export const getOrders = (filters?: OrderFilters) => {
   const params = new URLSearchParams();
@@ -48,6 +57,11 @@ export const getOrderById = (id: string) => {
 // Get order analytics
 export const getOrderAnalytics = () => {
   return api.get<OrderAnalytics>("/commerce/admin/orders/analytics/");
+};
+
+// Create a new order (admin manual creation)
+export const createOrder = (data: CreateOrderDTO) => {
+  return api.post<{ success: boolean; message: string; data: Order }>("/commerce/admin/orders/", data);
 };
 
 // Update order status
@@ -91,3 +105,4 @@ export const exportOrders = (filters?: OrderFilters) => {
     responseType: "blob"
   });
 };
+

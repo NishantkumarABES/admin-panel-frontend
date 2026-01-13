@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, Calendar, Plus } from "lucide-react";
 import type { Order, OrderAnalytics, OrderStatus } from "./order.types";
 import { mockOrders } from "./order.types";
 import OrderSummaryCards from "./components/OrderSummaryCards";
 import OrdersTable from "./components/OrdersTable";
 import OrderDetailsModal from "./components/OrderDetailsModal";
-// import UpdateStatusModal from "./components/UpdateStatusModal";
+import UpdateStatusModal from "./components/UpdateStatusModal";
+import AddOrderModal from "./components/AddOrderModal";
 import * as orderService from "../../services/order.service";
 
 export default function OrdersView() {
@@ -42,7 +43,8 @@ export default function OrdersView() {
   // Modal states
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  // const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState(false);
+  const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState(false);
+  const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
 
   // Fetch analytics
   const fetchAnalytics = async () => {
@@ -148,27 +150,26 @@ export default function OrdersView() {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, dateFrom, dateTo]);
 
-  // Handlers
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
     setIsDetailsModalOpen(true);
   };
 
-  // const handleUpdateStatus = (order: Order) => {
-  //   setSelectedOrder(order);
-  //   setIsUpdateStatusModalOpen(true);
-  // };
+  const handleUpdateStatus = (order: Order) => {
+    setSelectedOrder(order);
+    setIsUpdateStatusModalOpen(true);
+  };
 
-  // const handleStatusUpdate = async (orderId: string, status: OrderStatus, note?: string) => {
-  //   try {
-  //     await orderService.updateOrderStatus({ id: orderId, status, note });
-  //     fetchOrders();
-  //     fetchAnalytics();
-  //   } catch (error) {
-  //     console.error("Failed to update order status:", error);
-  //     throw error;
-  //   }
-  // };
+  const handleStatusUpdate = async (orderId: string, status: OrderStatus, note?: string) => {
+    try {
+      await orderService.updateOrderStatus({ id: orderId, status, note });
+      fetchOrders();
+      fetchAnalytics();
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      throw error;
+    }
+  };
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -177,77 +178,112 @@ export default function OrdersView() {
     setDateTo("");
   };
 
+  const handleCreateOrder = async (data: {
+    user_id: string;
+    address_id: string;
+    items: Array<{ product_id: string; quantity: number }>;
+    payment_method: string;
+    payment_reference?: string;
+    status?: string;
+  }) => {
+    try {
+      await orderService.createOrder(data);
+      fetchOrders();
+      fetchAnalytics();
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      throw error;
+    }
+  };
+
   const hasActiveFilters = searchTerm || statusFilter !== "all" || dateFrom || dateTo;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
-      <div className="space-y-6 p-6 min-w-0 max-w-full">
+    <div className="space-y-6 min-w-0 max-w-full">
+      <div className="space-y-6 min-w-0 max-w-full">
         {/* Summary Cards */}
         <OrderSummaryCards analytics={analytics} loading={analyticsLoading} />
 
-        {/* Filters */}
+        {/* Filters and Actions */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:flex-wrap">
-            {/* Search */}
-            <div className="flex-1 min-w-0 w-full sm:min-w-75 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by Order ID or customer name..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
+            {/* Left side: Search + Filters */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
+              {/* Search */}
+              <div className="flex-1 min-w-0 w-full sm:min-w-75 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by Order ID or customer name..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+
+              {/* Filters group */}
+              <div className="flex flex-wrap items-center gap-4 min-w-0">
+                {/* Status Filter */}
+                <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                  <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as OrderStatus | "all")}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending_payment">Pending Payment</option>
+                    <option value="paid">Paid</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                </div>
+
+                {/* Date Filters */}
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-gray-400 shrink-0" />
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="From date"
+                  />
+                  <span className="text-gray-500 text-sm">to</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="To date"
+                  />
+                </div>
+
+                {/* Clear Filters */}
+                {hasActiveFilters && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Status Filter */}
-            <div className="flex items-center gap-2 min-w-0 lg:w-48">
-              <Filter className="w-5 h-5 text-gray-400 shrink-0" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as OrderStatus | "all")}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="pending_payment">Pending Payment</option>
-                <option value="paid">Paid</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="refunded">Refunded</option>
-              </select>
-            </div>
-
-            {/* Date Filters */}
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-400 shrink-0" />
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="From date"
-              />
-              <span className="text-gray-500 text-sm">to</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="To date"
-              />
-            </div>
-
-            {/* Clear Filters */}
-            {hasActiveFilters && (
+            {/* Right side: Action Button */}
+            <div className="flex justify-end lg:justify-normal shrink-0">
               <button
-                onClick={handleClearFilters}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                onClick={() => setIsAddOrderModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
               >
-                Clear Filters
+                <Plus className="w-4 h-4" />
+                Add Order
               </button>
-            )}
+            </div>
           </div>
         </div>
 
@@ -264,7 +300,7 @@ export default function OrdersView() {
               <OrdersTable
                 orders={orders}
                 onView={handleViewDetails}
-                // onUpdateStatus={handleUpdateStatus}
+                onUpdateStatus={handleUpdateStatus}
               />
 
               {/* Pagination */}
@@ -327,7 +363,6 @@ export default function OrdersView() {
           )}
         </div>
 
-        {/* Modals */}
         <OrderDetailsModal
           order={selectedOrder}
           isOpen={isDetailsModalOpen}
@@ -337,7 +372,7 @@ export default function OrdersView() {
           }}
         />
 
-        {/* <UpdateStatusModal
+        <UpdateStatusModal
           order={selectedOrder}
           isOpen={isUpdateStatusModalOpen}
           onClose={() => {
@@ -345,7 +380,13 @@ export default function OrdersView() {
             setSelectedOrder(null);
           }}
           onSubmit={handleStatusUpdate}
-        /> */}
+        />
+
+        <AddOrderModal
+          isOpen={isAddOrderModalOpen}
+          onClose={() => setIsAddOrderModalOpen(false)}
+          onSubmit={handleCreateOrder}
+        />
       </div>
     </div>
   );
