@@ -4,6 +4,7 @@ import type { DoctorUser } from "../../doctors/doctor.types";
 import Modal from "../../../components/common/Modal";
 import { Search, Upload, X, AlertCircle } from "lucide-react";
 import { getDoctors } from "../../../services/doctor.service";
+import { SPECIALTIES } from "../../Advertisements/advertisement.types";
 
 interface AddEditAdvisoryModalProps {
   member: AdvisoryMember | null;
@@ -17,6 +18,8 @@ interface AddEditAdvisoryModalProps {
 
 const initialFormData: CreateAdvisoryDTO = {
   full_name: "",
+  gender: "",
+  date_of_birth: "",
   email: "",
   phone: "",
   specialization: "",
@@ -51,6 +54,8 @@ export default function AddEditAdvisoryModal({
     if (member) {
       setFormData({
         full_name: member.full_name,
+        gender: member.gender || "",
+        date_of_birth: member.date_of_birth || "",
         email: member.email,
         phone: member.phone,
         specialization: member.specialization,
@@ -209,22 +214,20 @@ export default function AddEditAdvisoryModal({
               <button
                 type="button"
                 onClick={() => setMode("manual")}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  mode === "manual"
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${mode === "manual"
                     ? "bg-white text-gray-900 shadow"
                     : "text-gray-600 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 Add Manually
               </button>
               <button
                 type="button"
                 onClick={() => setMode("select-doctor")}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  mode === "select-doctor"
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${mode === "select-doctor"
                     ? "bg-white text-gray-900 shadow"
                     : "text-gray-600 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 Select Doctor
               </button>
@@ -264,11 +267,10 @@ export default function AddEditAdvisoryModal({
                       <div
                         key={doctor.id}
                         onClick={() => setSelectedDoctor(doctor)}
-                        className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedDoctor?.id === doctor.id
+                        className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${selectedDoctor?.id === doctor.id
                             ? "bg-gray-100"
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -383,21 +385,60 @@ export default function AddEditAdvisoryModal({
                 </div>
               </div>
 
+              {/* Gender Field */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) =>
+                      setFormData({ ...formData, gender: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.date_of_birth}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date_of_birth: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Specialization *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.specialization}
                     onChange={(e) =>
                       setFormData({ ...formData, specialization: e.target.value })
                     }
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Enter specialization"
                     required
-                  />
+                  >
+                    <option value="">Select Specialization</option>
+                    {SPECIALTIES.map((specialty) => (
+                      <option key={specialty} value={specialty}>
+                        {specialty}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

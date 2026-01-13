@@ -151,6 +151,12 @@ export const getCIMS = async (filters?: {
   if (filters?.search) {
     params.append("search", filters.search);
   }
+  if (filters?.therapeuticCategory) {
+    params.append("therapeutic_category", filters.therapeuticCategory);
+  }
+  if (filters?.drugClass) {
+    params.append("drug_class", filters.drugClass);
+  }
 
   const queryString = params.toString();
   const response = await api.get<BackendPaginatedResponse>(

@@ -306,9 +306,8 @@ export default function CIMSView() {
                             setIsDrugClassDropdownOpen(false);
                             setDrugClassSearchTerm("");
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                            drugClassFilter === "all" ? "bg-gray-100 font-medium" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${drugClassFilter === "all" ? "bg-gray-100 font-medium" : ""
+                            }`}
                         >
                           All Drug Classes
                         </button>
@@ -321,9 +320,8 @@ export default function CIMSView() {
                                 setIsDrugClassDropdownOpen(false);
                                 setDrugClassSearchTerm("");
                               }}
-                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                                drugClassFilter === cls ? "bg-gray-100 font-medium" : ""
-                              }`}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${drugClassFilter === cls ? "bg-gray-100 font-medium" : ""
+                                }`}
                             >
                               {cls}
                             </button>
@@ -383,9 +381,8 @@ export default function CIMSView() {
                             setIsTherapeuticCategoryDropdownOpen(false);
                             setTherapeuticCategorySearchTerm("");
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                            therapeuticCategoryFilter === "all" ? "bg-gray-100 font-medium" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${therapeuticCategoryFilter === "all" ? "bg-gray-100 font-medium" : ""
+                            }`}
                         >
                           All Categories
                         </button>
@@ -398,9 +395,8 @@ export default function CIMSView() {
                                 setIsTherapeuticCategoryDropdownOpen(false);
                                 setTherapeuticCategorySearchTerm("");
                               }}
-                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                                therapeuticCategoryFilter === cat ? "bg-gray-100 font-medium" : ""
-                              }`}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${therapeuticCategoryFilter === cat ? "bg-gray-100 font-medium" : ""
+                                }`}
                             >
                               {cat}
                             </button>
@@ -427,7 +423,6 @@ export default function CIMSView() {
                   <option value="all">All Status</option>
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
-                  <option value="archived">Archived</option>
                 </select>
               </div>
             </div>

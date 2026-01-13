@@ -1,4 +1,4 @@
-import { Mail, Phone, Briefcase, FileText, Calendar } from "lucide-react";
+import { Mail, Phone, Briefcase, FileText, Calendar, User } from "lucide-react";
 import type { AdvisoryMember } from "../advisory.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -45,6 +45,11 @@ export default function AdvisoryDetailsModal({
     });
   };
 
+  const formatGender = (gender: string | undefined) => {
+    if (!gender) return undefined;
+    return gender.charAt(0).toUpperCase() + gender.slice(1);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Advisory Member Details" size="lg">
       <div className="space-y-6">
@@ -76,6 +81,21 @@ export default function AdvisoryDetailsModal({
               </div>
               <StatusBadge status={member.status} size="sm" />
             </div>
+          </div>
+        </div>
+
+        {/* Personal Information */}
+        <div className="border-t border-gray-200 pt-4">
+          <h4 className="text-sm font-semibold text-gray-900 mb-3">
+            Personal Information
+          </h4>
+          <div className="space-y-2">
+            <InfoRow icon={User} label="Gender" value={formatGender(member.gender)} />
+            <InfoRow
+              icon={Calendar}
+              label="Date of Birth"
+              value={member.date_of_birth ? formatDate(member.date_of_birth) : undefined}
+            />
           </div>
         </div>
 

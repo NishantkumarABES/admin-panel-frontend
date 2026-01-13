@@ -3,7 +3,6 @@ import type {
   AdvisoryMember,
   CreateAdvisoryDTO,
   UpdateAdvisoryDTO,
-  AdvisoryStatus,
   AdvisoryAnalytics,
   PaginatedAdvisory,
   AdvisoryFilters,
@@ -67,6 +66,14 @@ export const createAdvisoryMember = async (data: CreateAdvisoryDTO) => {
   formData.append("phone", data.phone);
   formData.append("specialization", data.specialization);
   formData.append("years_of_experience", data.years_of_experience.toString());
+
+  if (data.gender) {
+    formData.append("gender", data.gender);
+  }
+
+  if (data.date_of_birth) {
+    formData.append("date_of_birth", data.date_of_birth);
+  }
 
   if (data.bio) {
     formData.append("bio", data.bio);
