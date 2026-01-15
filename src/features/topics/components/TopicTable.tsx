@@ -2,6 +2,7 @@ import { Eye, Pencil, CircleCheckBig, CircleX} from "lucide-react"; // Trash2
 import type { Topic } from "../topic.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 import { stripHtml } from "../../../utils/stripHtml";
+import videoPlaceholder from "../../../assets/placeholders/video_placeholder.png";
 
 interface TopicTableProps {
   topics: Topic[];
@@ -60,13 +61,11 @@ export default function TopicTable({
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
                   <div className="flex items-center gap-3">
-                    {topic.image && (
-                      <img
-                        src={topic.image}
-                        alt={topic.title}
-                        className="w-10 h-10 rounded object-cover"
-                      />
-                    )}
+                    <img
+                      src={topic.image || videoPlaceholder}
+                      alt={topic.title}
+                      className="w-10 h-10 rounded object-cover"
+                    />
                     <div className="max-w-xs">
                       <div className="font-medium truncate">{topic.title}</div>
                       <div className="text-xs text-gray-500 truncate">
