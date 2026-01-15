@@ -1,7 +1,7 @@
 import { api } from "../../services/api";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.svg";
 
@@ -12,6 +12,7 @@ export default function LoginView() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -56,7 +57,7 @@ export default function LoginView() {
         {/* Header */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-800 rounded-lg mb-4">
-            <img src={logo} alt="Clinic Topics Logo" className="w-12 h-12 flex-shrink-0"/>
+            <img src={logo} alt="Clinic Topics Logo" className="w-12 h-12 shrink-0"/>
             {/* <LogIn className="w-8 h-8 text-white" /> */}
           </div>
           <h1 className="text-3xl font-semibold text-gray-900">Clinic Topics Admin Panel</h1>
@@ -104,17 +105,33 @@ export default function LoginView() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-colors"
-                placeholder="Enter your password"
-              />
+
+              <div className="relative"> {/* ← wrapper for positioning */}
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'} // ← toggle type
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-colors"
+                  placeholder="Enter your password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
