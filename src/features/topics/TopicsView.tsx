@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Topic, CreateTopicDTO, TopicsAnalytics } from "./topic.types";
 import TopicTable from "./components/TopicTable";
 import TopicDetailsModal from "./components/TopicDetailsModal";
@@ -14,9 +14,8 @@ export default function TopicsView() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 5;
 
   // Analytics state
   const [analytics, setAnalytics] = useState<TopicsAnalytics | null>(null);
@@ -27,6 +26,9 @@ export default function TopicsView() {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [pageSize, setPageSize] = useState(5);
   const [statusFilter, setStatusFilter] = useState("all");
 
   // Fetch analytics
@@ -52,7 +54,9 @@ export default function TopicsView() {
 
       setTopics(response.results || []);
       setTotalCount(response.count || 0);
-      setTotalPages(Math.ceil((response.count || 0) / pageSize));
+      setHasNext(response.next !== null);
+      setHasPrevious(response.previous !== null);
+      // setTotalPages(Math.ceil((response.count || 0) / pageSize));
     } catch (error) {
       console.error("Failed to fetch topics:", error);
       setTopics([]);
@@ -65,7 +69,7 @@ export default function TopicsView() {
   useEffect(() => {
     fetchAnalytics();
     fetchTopics();
-  }, [currentPage]);
+  }, [currentPage, pageSize, statusFilter]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -215,48 +219,82 @@ export default function TopicsView() {
 
 
       {/* Table */}
-      {loading ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading topics...</p>
-        </div>
-      ) : (
-        <>
-          <TopicTable
-            topics={topics}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onPublish={handlePublish}
-          />
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <p className="text-gray-500">Loading topics...</p>
+          </div>
+        ) : (
+          <>
+            <TopicTable
+              topics={topics}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPublish={handlePublish}
+            />
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  Showing page {currentPage} of {totalPages} ({totalCount} total topics)
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
+            {/* Pagination */}
+            {!loading && topics.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} doctors
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="pageSize" className="text-sm text-gray-600">
+                          Per page:
+                        </label>
+                        <select
+                          id="pageSize"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+
+
+
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!hasPrevious}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <div className="px-3 py-1.5 text-sm text-gray-600">
+                        Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!hasNext}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
 
       {/* Modals */}
       <TopicDetailsModal

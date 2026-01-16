@@ -17,7 +17,11 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/profile": { name: "Profile", description: "Admin User Profile" }
 };
 
-export default function Topbar() {
+interface TopbarProps {
+  isSidebarCollapsed: boolean;
+}
+
+export default function Topbar({ isSidebarCollapsed }: TopbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -30,7 +34,9 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20">
+    <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${
+      isSidebarCollapsed ? "left-20" : "left-64"
+    }`}>
       {/* Left - Current Page/Tab */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>

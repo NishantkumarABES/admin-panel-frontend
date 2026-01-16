@@ -59,6 +59,16 @@ export interface DashboardAnalytics {
 export const getDashboardMetrics = () =>
   api.get<DashboardMetrics>("/analytics/admin/dashboard/metrics/");
 
+export interface PendingActions {
+  out_of_stock_products: number;
+  unpublished_topics: number;
+  unpublished_advt: number;
+}
+
+// Get dashboard metrics
+export const getPendingActions = () =>
+  api.get<PendingActions>("/analytics/admin/dashboard/pending-actions/");
+
 // Get comprehensive dashboard analytics
 export const getDashboardAnalytics = () =>
   api.get<DashboardAnalytics>("/analytics/admin/dashboard/comprehensive/");

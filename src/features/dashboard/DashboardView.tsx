@@ -1,7 +1,7 @@
 import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getDashboardMetrics, getDashboardAnalytics, type DashboardMetrics, type DashboardAnalytics } from "../../services/dashboard.service";
+import { getDashboardMetrics, getDashboardAnalytics, getPendingActions, type DashboardMetrics, type DashboardAnalytics, type PendingActions } from "../../services/dashboard.service";
 import GrowthTrendChart from "../../components/charts/GrowthTrendChart";
 import SpecializationChart from "../../components/charts/SpecializationChart";
 import CategoryDistributionChart from "../../components/charts/CategoryDistributionChart";
@@ -13,6 +13,8 @@ import { generateMockAnalytics } from "../../utils/mockAnalyticsData";
 export default function DashboardView() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [pendingActions, setPendingActions] = useState<PendingActions | null>(null);
+  const [pendingActionsLoading, setPendingActionsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -33,6 +35,28 @@ export default function DashboardView() {
     };
 
     fetchMetrics();
+  }, []);
+
+  // Separate effect for pending actions - loads after metrics
+  useEffect(() => {
+    const fetchPendingActions = async () => {
+      try {
+        setPendingActionsLoading(true);
+        const response = await getPendingActions();
+        setPendingActions(response.data);
+      } catch (err) {
+        console.error("Error fetching pending actions:", err);
+      } finally {
+        setPendingActionsLoading(false);
+      }
+    };
+
+    // Delay fetch slightly to ensure progressive loading from top to bottom
+    const timer = setTimeout(() => {
+      fetchPendingActions();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -85,7 +109,7 @@ export default function DashboardView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-6">
       {/* Header with Analytics Toggle */}
       <div className="flex items-center justify-between">
         {/* <div>
@@ -180,41 +204,90 @@ export default function DashboardView() {
           <AlertCircle className="w-5 h-5 text-amber-600" />
           <h2 className="text-lg font-semibold text-gray-900">Pending Actions</h2>
         </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-100">
-            <div>
-              <div className="text-sm font-medium text-gray-900">
-                12 Doctors Pending Verification
+        {pendingActionsLoading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 animate-pulse">
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded w-48 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-64"></div>
+                </div>
+                <div className="h-9 w-20 bg-gray-200 rounded-lg"></div>
               </div>
-              <div className="text-xs text-gray-600 mt-1">
-                Review and verify new doctor registrations
-              </div>
-            </div>
-            <Link
-              to="/doctors"
-              className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Review
-            </Link>
+            ))}
           </div>
+        ) : pendingActions ? (
+          <div className="space-y-3">
+            {pendingActions.out_of_stock_products > 0 && (
+              <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {pendingActions.out_of_stock_products} Products Out of Stock
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Review and restock products to avoid order issues
+                  </div>
+                </div>
+                <Link
+                  to="/products"
+                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Review
+                </Link>
+              </div>
+            )}
 
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <div>
-              <div className="text-sm font-medium text-gray-900">
-                5 Products Awaiting Approval
+            {pendingActions.unpublished_topics > 0 && (
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-100">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {pendingActions.unpublished_topics} Unpublished Topics
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Review and publish pending topics
+                  </div>
+                </div>
+                <Link
+                  to="/topics"
+                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Review
+                </Link>
               </div>
-              <div className="text-xs text-gray-600 mt-1">
-                Review product submissions for marketplace
+            )}
+
+            {pendingActions.unpublished_advt > 0 && (
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {pendingActions.unpublished_advt} Unpublished Advertisements
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Review and publish pending advertisements
+                  </div>
+                </div>
+                <Link
+                  to="/advertisements"
+                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Review
+                </Link>
               </div>
-            </div>
-            <Link
-              to="/products"
-              className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Review
-            </Link>
+            )}
+
+            {pendingActions.out_of_stock_products === 0 &&
+              pendingActions.unpublished_topics === 0 &&
+              pendingActions.unpublished_advt === 0 && (
+                <div className="text-sm text-gray-500 text-center py-4">
+                  No pending actions at this time
+                </div>
+              )}
           </div>
-        </div>
+        ) : (
+          <div className="text-sm text-gray-500 text-center py-4">
+            Failed to load pending actions
+          </div>
+        )}
       </div>
 
       {/* Recent Activity */}

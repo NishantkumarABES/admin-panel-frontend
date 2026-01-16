@@ -36,9 +36,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   };
   return (
     <aside
-      className={`${
-        isCollapsed ? "w-20" : "w-64"
-      } bg-gray-900 text-white h-full flex flex-col transition-all duration-500 ease-in-out fixed left-0 top-0 z-30`}
+      className={`${isCollapsed ? "w-20" : "w-64"
+        } bg-gray-900 text-white h-full flex flex-col transition-all duration-500 ease-in-out fixed left-0 top-0 z-30`}
     >
       {/* Collapse Toggle Button */}
       <button
@@ -84,13 +83,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             end
             title={isCollapsed ? label : ""}
             className={({ isActive }) =>
-              `flex items-center ${
-                isCollapsed ? "justify-center" : "gap-3"
+              `flex items-center ${isCollapsed ? "justify-center" : "gap-3"
               } px-4 py-2.5 rounded-lg text-base font-medium transition-all duration-300 ease-in-out
-              ${
-                isActive
-                  ? "bg-gray-800 text-white!"
-                  : "text-white! hover:bg-gray-800 "
+              ${isActive
+                ? "bg-gray-800 text-white!"
+                : "text-white! hover:bg-gray-800 "
               }`
             }
           >
