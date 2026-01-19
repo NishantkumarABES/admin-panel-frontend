@@ -119,13 +119,17 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                   <Package className="w-5 h-5 text-gray-400" />
                   <h3 className="font-semibold text-gray-900">Order Items</h3>
                 </div>
+                {/* Price note */}
+                <p className="text-xs text-gray-500 mb-3">
+                  Note: The item prices below are shown after applying discounts and taxes.
+                </p>
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                       </tr>
                     </thead>
@@ -152,11 +156,11 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                           <td className="px-4 py-3 text-center text-sm text-gray-900">{item.quantity}</td>
                           <td className="px-4 py-3 text-right text-sm text-gray-900">
                             {formatCurrency(
-                              item.quantity ? item.final_price / item.quantity : 0
+                              item.quantity ? item.unit_price : 0
                             )}
                           </td>
                           <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                            {formatCurrency(item.final_price)}
+                            {formatCurrency(item.final_total)}
                           </td>
                         </tr>
                       ))}
@@ -173,24 +177,30 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="text-gray-900">{formatCurrency(order.subtotal || 0)}</span>
                   </div>
-                  {order.discount && order.discount > 0 && (
+                  {/* {order.discount && order.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
                       <span className="text-green-600">-{formatCurrency(order.discount)}</span>
                     </div>
-                  )}
+                  )} */}
                   {order.shipping_charge && order.shipping_charge > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Shipping:</span>
                       <span className="text-gray-900">{formatCurrency(order.shipping_charge)}</span>
                     </div>
                   )}
-                  {order.tax && order.tax > 0 && (
+                  {order.coupon_code && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Coupon Code:</span>
+                      <span className="text-gray-900">{order.coupon_code}</span>
+                    </div>
+                  )}
+                  {/* {order.tax && order.tax > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tax (GST):</span>
                       <span className="text-gray-900">{formatCurrency(order.tax)}</span>
                     </div>
-                  )}
+                  )} */}
                   <div className="border-t border-gray-300 pt-2 mt-2">
                     <div className="flex justify-between">
                       <span className="font-semibold text-gray-900">Total:</span>

@@ -30,7 +30,8 @@ export interface OrderItem {
     sku?: string;
   };
   quantity: number;
-  final_price: number;
+  unit_price: number;
+  final_total: number;
 }
 
 export interface Order {
@@ -48,8 +49,7 @@ export interface Order {
   payment_reference?: string;
   items: OrderItem[];
   subtotal?: number;
-  tax?: number;
-  discount?: number;
+  coupon_code?: string;
   shipping_charge?: number;
   notes?: string;
   timeline?: OrderTimelineEvent[];
@@ -190,12 +190,13 @@ export const mockOrders: Order[] = [
           sku: "MED-STET-001"
         },
         quantity: 1,
-        final_price: 2499.00
+        unit_price: 2499.00,
+        final_total: 2499.00
       }
     ],
     subtotal: 2499.00,
-    tax: 449.82,
-    discount: 0,
+    // tax: 449.82,
+    // discount: 0,
     shipping_charge: 0,
     created_at: "2024-01-13T10:30:00Z",
     updated_at: "2024-01-14T15:45:00Z"
@@ -231,12 +232,13 @@ export const mockOrders: Order[] = [
           sku: "MED-BP-002"
         },
         quantity: 2,
-        final_price: 5999.00
+        unit_price: 2999.50,
+        final_total: 5999.00
       }
     ],
     subtotal: 5999.00,
-    tax: 1079.82,
-    discount: 200,
+    // tax: 1079.82,
+    // discount: 200,
     shipping_charge: 50,
     created_at: "2024-01-13T14:20:00Z"
   },
@@ -268,12 +270,13 @@ export const mockOrders: Order[] = [
           sku: "MED-GLOVE-003"
         },
         quantity: 1,
-        final_price: 1299.00
+        unit_price: 1299.00,
+        final_total: 1299.00
       }
     ],
     subtotal: 1299.00,
-    tax: 233.82,
-    discount: 0,
+    // tax: 233.82,
+    // discount: 0,
     shipping_charge: 40,
     created_at: "2024-01-13T16:10:00Z"
   },
@@ -308,12 +311,13 @@ export const mockOrders: Order[] = [
           sku: "MED-ECG-004"
         },
         quantity: 1,
-        final_price: 8999.00
+        unit_price: 8999.00,
+        final_total: 8999.00
       }
     ],
     subtotal: 8999.00,
-    tax: 1619.82,
-    discount: 500,
+    // tax: 1619.82,
+    // discount: 500,
     shipping_charge: 0,
     created_at: "2024-01-12T09:15:00Z",
     updated_at: "2024-01-13T11:30:00Z"
