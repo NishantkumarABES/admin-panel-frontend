@@ -163,6 +163,7 @@ export default function AddEditDoctorModal({
           <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
             <p className="text-sm text-emerald-800">
               Doctor account has been successfully created for <span className="font-semibold">{formData.fullName}</span>.
+              The account is currently <span className="font-semibold">inactive</span> and will be activated when the doctor logs in for the first time.
             </p>
           </div>
 
@@ -222,8 +223,9 @@ export default function AddEditDoctorModal({
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm text-amber-800">
-              <span className="font-semibold">Important:</span> Please share this password securely with the doctor.
-              They should change it after their first login. This password will not be shown again.
+              <span className="font-semibold">Important:</span> Please share these credentials securely with the doctor.
+              An invitation email will be sent automatically. The doctor's account will become active upon first login.
+              This password will not be shown again.
             </p>
           </div>
 
@@ -259,210 +261,209 @@ export default function AddEditDoctorModal({
       ) : (
         /* Form State */
         <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Error Message */}
-        {submitError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-red-800">{submitError}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Personal Details */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Personal Details
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name *
-              </label>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
-                }
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter full name"
-                required
-              />
-            </div>
-            <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number *
-            </label>
-            <div className="flex gap-2">
-              <PhoneInput
-                international
-                defaultCountry="IN"
-                value={formData.countryCode + formData.phone}
-                onChange={(value) => {
-                  if (value) {
-                    // Parse country code and phone number
-                    const parsed = parsePhoneNumber(value);
-                    if (parsed) {
-                      setFormData({
-                        ...formData,
-                        countryCode: '+' + parsed.countryCallingCode,
-                        phone: parsed.nationalNumber,
-                      });
-                    }
-                  } else {
-                    setFormData({ ...formData, countryCode: '', phone: '' });
-                  }
-                }}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter phone number"
-                
-                required
-              />
-            </div>
-          </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter email address"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Professional Details */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Professional Details
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Specialty *
-              </label>
-              <div className="relative" ref={dropdownRef}>
-                <div
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
-                  onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={formData.specialty ? "text-gray-900" : "text-gray-500"}>
-                      {formData.specialty || "Select Specialty"}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isSpecialtyDropdownOpen ? "rotate-180" : ""}`} />
-                  </div>
-                </div>
-
-                {isSpecialtyDropdownOpen && (
-                  <div className="relative z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-43 overflow-hidden">
-                    <div className="p-2 border-b border-gray-200">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="text"
-                          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                          placeholder="Search specialties..."
-                          value={specialtySearch}
-                          onChange={(e) => setSpecialtySearch(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                      {filteredSpecialties.length > 0 ? (
-                        filteredSpecialties.map((specialty) => (
-                          <div
-                            key={specialty}
-                            className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                              formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
-                            }`}
-                            onClick={() => handleSpecialtySelect(specialty)}
-                          >
-                            {specialty}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                          No specialties found
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+          {/* Error Message */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-red-800">{submitError}</p>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Years of Experience *
-              </label>
-              <input
-                type="number"
-                value={formData.yearsOfExperience}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    yearsOfExperience: parseInt(e.target.value) || 0,
-                  })
-                }
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter years"
-                min="0"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                License Number *
-              </label>
-              <input
-                type="text"
-                value={formData.licenseNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, licenseNumber: e.target.value })
-                }
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                placeholder="Enter license number"
-                required
-              />
+          )}
+
+          {/* Personal Details */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Personal Details
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number *
+                </label>
+                <div className="flex gap-2">
+                  <PhoneInput
+                    international
+                    defaultCountry="IN"
+                    value={formData.countryCode + formData.phone}
+                    onChange={(value) => {
+                      if (value) {
+                        // Parse country code and phone number
+                        const parsed = parsePhoneNumber(value);
+                        if (parsed) {
+                          setFormData({
+                            ...formData,
+                            countryCode: '+' + parsed.countryCallingCode,
+                            phone: parsed.nationalNumber,
+                          });
+                        }
+                      } else {
+                        setFormData({ ...formData, countryCode: '', phone: '' });
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="Enter phone number"
+
+                    required
+                  />
+                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter email address"
+                  required
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{doctor ? "Updating..." : "Adding..."}</span>
-              </>
-            ) : (
-              <span>{doctor ? "Update Doctor" : "Add Doctor"}</span>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Professional Details */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Professional Details
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Specialty *
+                </label>
+                <div className="relative" ref={dropdownRef}>
+                  <div
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
+                    onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={formData.specialty ? "text-gray-900" : "text-gray-500"}>
+                        {formData.specialty || "Select Specialty"}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isSpecialtyDropdownOpen ? "rotate-180" : ""}`} />
+                    </div>
+                  </div>
+
+                  {isSpecialtyDropdownOpen && (
+                    <div className="relative z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-43 overflow-hidden">
+                      <div className="p-2 border-b border-gray-200">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type="text"
+                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            placeholder="Search specialties..."
+                            value={specialtySearch}
+                            onChange={(e) => setSpecialtySearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {filteredSpecialties.length > 0 ? (
+                          filteredSpecialties.map((specialty) => (
+                            <div
+                              key={specialty}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
+                                }`}
+                              onClick={() => handleSpecialtySelect(specialty)}
+                            >
+                              {specialty}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                            No specialties found
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Years of Experience *
+                </label>
+                <input
+                  type="number"
+                  value={formData.yearsOfExperience}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      yearsOfExperience: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter years"
+                  min="0"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  License Number *
+                </label>
+                <input
+                  type="text"
+                  value={formData.licenseNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, licenseNumber: e.target.value })
+                  }
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Enter license number"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>{doctor ? "Updating..." : "Adding..."}</span>
+                </>
+              ) : (
+                <span>{doctor ? "Update Doctor" : "Add Doctor"}</span>
+              )}
+            </button>
+          </div>
+        </form>
       )}
     </Modal>
   );

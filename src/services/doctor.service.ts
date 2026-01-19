@@ -84,28 +84,34 @@ export const createDoctor = async (data: CreateDoctorDTO) => {
   // Generate system password for the doctor account
   const systemPassword = generateSystemPassword();
 
-  // Transform DTO to match API payload structure
-  const payload = {
-    full_name: data.fullName,
-    email: data.email,
-    phone: data.phone,
-    country_code: data.countryCode,
-    password: systemPassword,
-    terms_accepted: true,
-    is_phone_verified: true,
-    is_email_verified: true,
-    specialization: data.specialty,
-    license_number: data.licenseNumber,
-    years_of_experience: data.yearsOfExperience,
-    by_admin: true,
-  };
+  // Build FormData because backend expects multipart/form-data
+  const formData = new FormData();
 
-  const response = await api.post("/auth/register/doctor/", payload);
+  formData.append("full_name", data.fullName);
+  formData.append("email", data.email);
+  formData.append("phone", data.phone);
+  formData.append("country_code", data.countryCode);
+  formData.append("password", systemPassword);
+  formData.append("terms_accepted", "true");
+  formData.append("is_phone_verified", "true");
+  formData.append("is_email_verified", "true");
+  formData.append("specialization", data.specialty);
+  formData.append("license_number", data.licenseNumber);
+  formData.append("years_of_experience", String(data.yearsOfExperience));
+  formData.append("by_admin", "true");
+
+  const response = await api.post("/auth/register/doctor/", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return {
     data: response.data,
     password: systemPassword,
   };
 };
+
 
 // Update an existing doctor
 export const updateDoctor = async (data: UpdateDoctorDTO) => {

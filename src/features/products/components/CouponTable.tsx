@@ -33,7 +33,7 @@ export default function CouponTable({ coupons, onView, onEdit, onDelete, onToggl
     }
     return `${coupon.current_uses} / ${coupon.max_uses}`;
   };
-  console.log(coupons);
+  // console.log(coupons);
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -63,15 +63,15 @@ export default function CouponTable({ coupons, onView, onEdit, onDelete, onToggl
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          
+
           {coupons.map((coupon) => (
             <tr key={coupon.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4 text-gray-400" />
-                 <div>
-                  <span className="text-sm font-medium text-gray-900">{coupon.code}</span>
-                </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900">{coupon.code}</span>
+                  </div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
@@ -91,11 +91,10 @@ export default function CouponTable({ coupons, onView, onEdit, onDelete, onToggl
               <td className="px-6 py-4 whitespace-nowrap">
                 <button
                   onClick={() => onToggleStatus(coupon)}
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                    coupon.is_active
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${coupon.is_active
                       ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
                       : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                  }`}
+                    }`}
                   title={`Click to ${coupon.is_active ? "deactivate" : "activate"}`}
                 >
                   {coupon.is_active ? "Active" : "Inactive"}

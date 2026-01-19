@@ -23,9 +23,14 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatCurrency = (amount?: number | null) => {
+    const safeAmount = Number(amount) || 0;
+    return `₹${safeAmount.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   };
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -146,7 +151,9 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                           </td>
                           <td className="px-4 py-3 text-center text-sm text-gray-900">{item.quantity}</td>
                           <td className="px-4 py-3 text-right text-sm text-gray-900">
-                            {formatCurrency(item.final_price / item.quantity)}
+                            {formatCurrency(
+                              item.quantity ? item.final_price / item.quantity : 0
+                            )}
                           </td>
                           <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
                             {formatCurrency(item.final_price)}
