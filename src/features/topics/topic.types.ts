@@ -1,5 +1,27 @@
 export type TopicStatus = "unpublished" | "published"; // "scheduled" removed for simplicity
 
+// Transcription Status Types
+export type TranscriptionStatus =
+  | "pending"
+  | "preparing"
+  | "transcribing"
+  | "completed"
+  | "failed"
+  | "blocked";
+
+// Transcription Data Interface
+export interface TopicTranscription {
+  id: string;
+  sonix_media_id: string;
+  status: TranscriptionStatus;
+  transcript_text: string | null;
+  transcript_srt: string | null;
+  summary_text: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Backend API Topic Response Interface (from AdminTopicReadSerializer)
 export interface Topic {
   id: string;
@@ -14,7 +36,9 @@ export interface Topic {
   author_email: string | null;
   created_at: string;
   updated_at: string;
+  transcription?: TopicTranscription | null;
 }
+
 
 // Paginated API Response
 export interface PaginatedResponse<T> {

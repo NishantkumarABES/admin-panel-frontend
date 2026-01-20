@@ -301,6 +301,7 @@ export default function TopicsView() {
         topic={selectedTopic}
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
+        onRefresh={fetchTopics}
       />
 
       <AddEditTopicModal

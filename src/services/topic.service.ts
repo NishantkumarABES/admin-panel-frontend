@@ -140,3 +140,55 @@ export const cleanupUnwantedImages = async (imageUrls: string[]) => {
     console.error("Failed to cleanup unwanted images:", error);
   }
 };
+
+// Transcription service functions
+export const startTranscription = async (topicId: string) => {
+  const response = await api.post<{
+    success: boolean;
+    message: string;
+    data: {
+      transcription_id: string;
+      sonix_media_id: string;
+      status: string;
+    };
+  }>(`topics/admin/topics/${topicId}/start-transcription/`);
+  return response.data;
+};
+
+export const getTranscriptionStatus = async (topicId: string) => {
+  const response = await api.get<{
+    success: boolean;
+    data: {
+      status: string;
+      transcription_id: string;
+    };
+  }>(`topics/admin/topics/${topicId}/transcription-status/`);
+  return response.data;
+};
+
+export const downloadTranscript = async (
+  topicId: string,
+  format: "text" | "srt" = "text"
+) => {
+  const endpoint =
+    format === "srt"
+      ? `topics/admin/topics/${topicId}/transcript/srt/`
+      : `topics/admin/topics/${topicId}/transcript/`;
+
+  const response = await api.get(endpoint, {
+    responseType: "blob",
+  });
+
+  // Create download link
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute(
+    "download",
+    `transcript_${topicId}.${format === "srt" ? "srt" : "txt"}`
+  );
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
