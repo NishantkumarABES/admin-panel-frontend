@@ -17,6 +17,7 @@ export interface DoctorFilters {
   page?: number;
   page_size?: number;
   by_admin?: boolean;
+  ordering?: string;
 }
 
 export interface PaginatedDoctors {
@@ -52,6 +53,10 @@ export const getDoctors = async (filters?: DoctorFilters): Promise<{ data: Pagin
 
   if (filters?.by_admin !== undefined) {
     params.append("by_admin", filters.by_admin.toString());
+  }
+
+  if (filters?.ordering) {
+    params.append("ordering", filters.ordering);
   }
 
   const queryString = params.toString();

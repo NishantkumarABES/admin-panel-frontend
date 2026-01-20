@@ -36,6 +36,29 @@ export default function DoctorsView() {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Sorting state
+  type SortDirection = "asc" | "desc" | null;
+  type DoctorSortField = "full_name" | "specialization" | "license_number" | "years_of_experience" | "phone" | "is_active";
+  const [sortField, setSortField] = useState<DoctorSortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  // Handle sort toggle
+  const handleSort = (field: DoctorSortField) => {
+    if (sortField === field) {
+      // Cycle: asc -> desc -> null
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
+        setSortField(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
+  };
+
   // Fetch doctors analytics
   const fetchAnalytics = async () => {
     try {
@@ -54,6 +77,13 @@ export default function DoctorsView() {
   const fetchDoctors = async () => {
     try {
       setLoading(true);
+
+      // Build ordering string
+      let ordering: string | undefined;
+      if (sortField && sortDirection) {
+        ordering = sortDirection === "desc" ? `-${sortField}` : sortField;
+      }
+
       const filters = {
         status: statusFilter !== "all" ? statusFilter : undefined,
         speciality: specialityFilter !== "all" ? specialityFilter : undefined,
@@ -61,6 +91,7 @@ export default function DoctorsView() {
         page: currentPage,
         page_size: pageSize,
         by_admin: showAdminCreatedOnly ? true : undefined,
+        ordering,
       };
 
       // Try to fetch from API, fallback to mock data on error
@@ -111,7 +142,7 @@ export default function DoctorsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, specialityFilter, showAdminCreatedOnly, currentPage, pageSize]);
+  }, [searchTerm, statusFilter, specialityFilter, showAdminCreatedOnly, currentPage, pageSize, sortField, sortDirection]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -202,15 +233,15 @@ export default function DoctorsView() {
   // Use API analytics data if available, or totalCount from pagination, or calculate from current doctors
   const stats = analytics
     ? {
-        total: analytics.total_doctors,
-        active: analytics.active_doctors,
-        inactive: analytics.inactive_doctors,
-      }
+      total: analytics.total_doctors,
+      active: analytics.active_doctors,
+      inactive: analytics.inactive_doctors,
+    }
     : {
-        total: totalCount || doctors.length,
-        active: doctors.filter(d => d.is_active).length,
-        inactive: doctors.filter(d => !d.is_active).length,
-      };
+      total: totalCount || doctors.length,
+      active: doctors.filter(d => d.is_active).length,
+      inactive: doctors.filter(d => !d.is_active).length,
+    };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
@@ -250,7 +281,7 @@ export default function DoctorsView() {
           )}
         </div>
       </div>
-      
+
       {/* Filters and Actions - All in one row */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
@@ -317,9 +348,8 @@ export default function DoctorsView() {
                             setIsspecialityDropdownOpen(false);
                             setspecialitySearchTerm("");
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                            specialityFilter === "all" ? "bg-gray-100 font-medium" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${specialityFilter === "all" ? "bg-gray-100 font-medium" : ""
+                            }`}
                         >
                           All specialities
                         </button>
@@ -332,9 +362,8 @@ export default function DoctorsView() {
                                 setIsspecialityDropdownOpen(false);
                                 setspecialitySearchTerm("");
                               }}
-                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                                specialityFilter === speciality ? "bg-gray-100 font-medium" : ""
-                              }`}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${specialityFilter === speciality ? "bg-gray-100 font-medium" : ""
+                                }`}
                             >
                               {speciality}
                             </button>
@@ -378,7 +407,7 @@ export default function DoctorsView() {
           </div>
         </div>
       </div>
-      
+
       {/* Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
@@ -394,6 +423,9 @@ export default function DoctorsView() {
               onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
 
             {/* Pagination */}
@@ -425,7 +457,7 @@ export default function DoctorsView() {
                           <option value={100}>100</option>
                         </select>
                       </div>
-                    
+
 
                       <div className="flex items-start">
                         <label className="flex items-center gap-2 cursor-pointer select-none">

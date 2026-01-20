@@ -47,6 +47,7 @@ export interface PatientFilters {
   search?: string;
   page?: number;
   page_size?: number;
+  ordering?: string;
 }
 
 // Mock data for development
@@ -57,7 +58,7 @@ export const mockPatients: PatientUser[] = [
     image: "https://example.com/alice.jpg",
     email: "alice.johnson@example.com",
     phone: "+1 555-123-4567",
-    country_code : "+1",
+    country_code: "+1",
     date_of_birth: "1980-05-15",
     gender: "female",
     state: "active",
@@ -73,7 +74,7 @@ export const mockPatients: PatientUser[] = [
     image: "https://example.com/bob.jpg",
     email: "bob.smith@example.com",
     phone: "+1 555-987-6543",
-    country_code : "+1",
+    country_code: "+1",
     date_of_birth: "1975-09-20",
     gender: "male",
     state: "inactive",
@@ -89,7 +90,7 @@ export const mockPatients: PatientUser[] = [
     image: "https://example.com/charlie.jpg",
     email: "charlie.brown@example.com",
     phone: "+1 555-111-2222",
-    country_code : "+1",
+    country_code: "+1",
     date_of_birth: "1992-11-01",
     gender: "male",
     state: "active",

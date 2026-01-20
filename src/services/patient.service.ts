@@ -42,6 +42,10 @@ export const patientService = {
       params.append("status", filters.status);
     }
 
+    if (filters?.ordering) {
+      params.append("ordering", filters.ordering);
+    }
+
     const queryString = params.toString();
     const response = await api.get<PaginatedResponse<PatientUser>>(
       `/auth/admin/users/patient${queryString ? `?${queryString}` : ""}`

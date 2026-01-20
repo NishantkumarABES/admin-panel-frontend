@@ -155,7 +155,6 @@ export default function AddEditDoctorModal({
       onClose={handleClose}
       title={doctor ? "Edit Doctor" : "Add Doctor"}
       size="lg"
-      className={isSpecialtyDropdownOpen ? "min-h-172" : ""}
     >
       {/* Success State - Show password for new doctors */}
       {submitSuccess && !doctor && generatedPassword ? (
@@ -365,7 +364,7 @@ export default function AddEditDoctorModal({
                   </div>
 
                   {isSpecialtyDropdownOpen && (
-                    <div className="relative z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-43 overflow-hidden">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
                       <div className="p-2 border-b border-gray-200">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />

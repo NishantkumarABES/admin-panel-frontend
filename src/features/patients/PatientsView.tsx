@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Eye, Filter, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { PatientUser } from "./patient.types";
 import { mockPatients } from "./patient.types";
 import { patientService, type PatientAnalytics } from "../../services/patient.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import PatientDetailsModal from "./components/PatientDetailsModal";
 import StatusBadge from "../../components/common/StatusBadge";
+
+type SortDirection = "asc" | "desc" | null;
+type PatientSortField = "full_name" | "email" | "phone" | "is_active";
 
 export default function PatientsView() {
   const [patients, setPatients] = useState<PatientUser[]>([]);
@@ -14,6 +17,10 @@ export default function PatientsView() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Sorting state
+  const [sortField, setSortField] = useState<PatientSortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,14 +35,50 @@ export default function PatientsView() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Handle sort toggle
+  const handleSort = (field: PatientSortField) => {
+    if (sortField === field) {
+      // Cycle: asc -> desc -> null
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
+        setSortField(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
+  };
+
+  // Get sort icon for a field
+  const getSortIcon = (field: PatientSortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+    }
+    if (sortDirection === "asc") {
+      return <ArrowUp className="w-4 h-4 text-gray-900" />;
+    }
+    return <ArrowDown className="w-4 h-4 text-gray-900" />;
+  };
+
   const fetchPatients = async () => {
     try {
       setLoading(true);
+
+      // Build ordering string
+      let ordering: string | undefined;
+      if (sortField && sortDirection) {
+        ordering = sortDirection === "desc" ? `-${sortField}` : sortField;
+      }
+
       const filters = {
         status: statusFilter !== "all" ? statusFilter : undefined,
         search: searchTerm || undefined,
         page: currentPage,
         page_size: pageSize,
+        ordering,
       };
 
       // Try to fetch from API, fallback to mock data on error
@@ -65,6 +108,23 @@ export default function PatientsView() {
               p.email.toLowerCase().includes(search) ||
               p.phone.toLowerCase().includes(search)
           );
+        }
+
+        // Apply client-side sorting for mock data
+        if (sortField && sortDirection) {
+          filteredData.sort((a, b) => {
+            let aVal = a[sortField];
+            let bVal = b[sortField];
+
+            if (typeof aVal === "string") {
+              aVal = aVal.toLowerCase();
+              bVal = (bVal as string).toLowerCase();
+            }
+
+            if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+            if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+            return 0;
+          });
         }
 
         setPatients(filteredData);
@@ -101,7 +161,7 @@ export default function PatientsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, currentPage, pageSize]);
+  }, [searchTerm, statusFilter, currentPage, pageSize, sortField, sortDirection]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -134,15 +194,15 @@ export default function PatientsView() {
   // Use API analytics data if available, or totalCount from pagination, or calculate from current patients
   const stats = analytics
     ? {
-        total: analytics.total_patients,
-        active: analytics.active_patients,
-        inactive: analytics.inactive_patients,
-      }
+      total: analytics.total_patients,
+      active: analytics.active_patients,
+      inactive: analytics.inactive_patients,
+    }
     : {
-        total: totalCount || patients.length,
-        active: patients.filter(p => p.is_active).length,
-        inactive: patients.filter(p => !p.is_active).length,
-      };
+      total: totalCount || patients.length,
+      active: patients.filter(p => p.is_active).length,
+      inactive: patients.filter(p => !p.is_active).length,
+    };
 
   return (
     <div className="space-y-6">
@@ -217,17 +277,41 @@ export default function PatientsView() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Full Name
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => handleSort("full_name")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Full Name
+                      {getSortIcon("full_name")}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => handleSort("email")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Email
+                      {getSortIcon("email")}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => handleSort("phone")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Phone
+                      {getSortIcon("phone")}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => handleSort("is_active")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Status
+                      {getSortIcon("is_active")}
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions

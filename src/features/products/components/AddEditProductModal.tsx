@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import type { Product, CreateProductDTO } from "../product.types";
 import Modal from "../../../components/common/Modal";
 import { PRODUCT_CATEGORIES } from "../product.types";
-import { ChevronDown, Search, AlertCircle, X, Upload, Image as ImageIcon } from "lucide-react";
+import { ChevronDown, Search, AlertCircle, X, Upload } from "lucide-react";
 
 interface AddEditProductModalProps {
   product: Product | null;
@@ -38,6 +38,9 @@ export default function AddEditProductModal({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   // Image preview
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -68,6 +71,7 @@ export default function AddEditProductModal({
     // Reset submission states when modal opens/closes
     setSubmitSuccess(false);
     setSubmitError(null);
+    setErrors({});
   }, [product, isOpen]);
 
   // Close dropdown when clicking outside
@@ -91,7 +95,7 @@ export default function AddEditProductModal({
   //   const files = Array.from(e.target.files || []);
   //   if (files.length > 0) {
   //     setFormData({ ...formData, images: files });
-      
+
   //     // Create previews
   //     const previews = files.map(file => URL.createObjectURL(file));
   //     setImagePreviews(previews);
@@ -132,8 +136,42 @@ export default function AddEditProductModal({
   };
 
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Required field validations
+    if (!formData.name.trim()) {
+      newErrors.name = "Product name is required";
+    }
+
+    if (!formData.brand?.trim()) {
+      newErrors.brand = "Brand is required";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "Category is required";
+    }
+
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      newErrors.price = "Price must be greater than 0";
+    }
+
+    if (formData.stock_quantity === undefined || formData.stock_quantity < 0) {
+      newErrors.stock_quantity = "Stock quantity must be 0 or greater";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -230,13 +268,14 @@ export default function AddEditProductModal({
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (errors.name) setErrors({ ...errors, name: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.name ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter product name"
-                  required
                 />
+                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -245,13 +284,14 @@ export default function AddEditProductModal({
                 <input
                   type="text"
                   value={formData.brand}
-                  onChange={(e) =>
-                    setFormData({ ...formData, brand: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, brand: e.target.value });
+                    if (errors.brand) setErrors({ ...errors, brand: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.brand ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter brand"
-                  required
                 />
+                {errors.brand && <p className="text-xs text-red-500 mt-1">{errors.brand}</p>}
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -259,7 +299,7 @@ export default function AddEditProductModal({
                 </label>
                 <div className="relative" ref={dropdownRef}>
                   <div
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
+                    className={`w-full px-3 py-2 text-sm border rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer ${errors.category ? "border-red-500" : "border-gray-300"}`}
                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                   >
                     <div className="flex items-center justify-between">
@@ -290,9 +330,8 @@ export default function AddEditProductModal({
                           filteredCategories.map((category) => (
                             <div
                               key={category}
-                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                                formData.category === category ? "bg-gray-50 font-medium" : ""
-                              }`}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${formData.category === category ? "bg-gray-50 font-medium" : ""
+                                }`}
                               onClick={() => handleCategorySelect(category)}
                             >
                               {category}
@@ -307,6 +346,7 @@ export default function AddEditProductModal({
                     </div>
                   )}
                 </div>
+                {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -339,14 +379,15 @@ export default function AddEditProductModal({
                   type="number"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, price: e.target.value });
+                    if (errors.price) setErrors({ ...errors, price: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.price ? "border-red-500" : "border-gray-300"}`}
                   placeholder="0.00"
                   min="0"
-                  required
                 />
+                {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -390,26 +431,26 @@ export default function AddEditProductModal({
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Stock & Requirements
             </h3>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock Quantity *
-                </label>
-                <input
-                  type="number"
-                  value={formData.stock_quantity}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      stock_quantity: parseInt(e.target.value, 10) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg
-                            focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-              </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Stock Quantity *
+              </label>
+              <input
+                type="number"
+                value={formData.stock_quantity}
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    stock_quantity: parseInt(e.target.value, 10) || 0,
+                  });
+                  if (errors.stock_quantity) setErrors({ ...errors, stock_quantity: "" });
+                }}
+                className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.stock_quantity ? "border-red-500" : "border-gray-300"}`}
+                placeholder="0"
+                min="0"
+              />
+              {errors.stock_quantity && <p className="text-xs text-red-500 mt-1">{errors.stock_quantity}</p>}
+            </div>
           </div>
 
 
@@ -435,7 +476,7 @@ export default function AddEditProductModal({
                 <Upload className="w-5 h-5" />
                 Upload Images
               </button>
-              
+
               {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-4 gap-3">

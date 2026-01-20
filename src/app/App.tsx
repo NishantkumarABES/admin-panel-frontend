@@ -5,7 +5,12 @@ import LoginView from "../features/auth/LoginView";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 
 function ProtectedRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth initialization to complete
+  if (isLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -19,7 +24,12 @@ function ProtectedRoutes() {
 }
 
 function LoginRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth initialization to complete
+  if (isLoading) {
+    return null;
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;

@@ -1,17 +1,35 @@
-import { Eye, Edit } from "lucide-react"; // Trash2
+import { Eye, Edit, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { DoctorUser } from "../doctor.types";
 import StatusBadge from "../../../components/common/StatusBadge";
+
+type SortDirection = "asc" | "desc" | null;
+type DoctorSortField = "full_name" | "specialization" | "license_number" | "years_of_experience" | "phone" | "is_active";
 
 interface DoctorTableProps {
   doctors: DoctorUser[];
   onView: (doctor: DoctorUser) => void;
   onEdit: (doctor: DoctorUser) => void;
   onDelete: (doctor: DoctorUser) => void;
+  sortField?: DoctorSortField | null;
+  sortDirection?: SortDirection;
+  onSort?: (field: DoctorSortField) => void;
 }
 
 export default function DoctorTable({
-  doctors, onView, onEdit, // onDelete is currently unused
+  doctors, onView, onEdit, sortField, sortDirection, onSort,
 }: DoctorTableProps) {
+
+  // Get sort icon for a field
+  const getSortIcon = (field: DoctorSortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+    }
+    if (sortDirection === "asc") {
+      return <ArrowUp className="w-4 h-4 text-gray-900" />;
+    }
+    return <ArrowDown className="w-4 h-4 text-gray-900" />;
+  };
+
   if (doctors.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -26,26 +44,59 @@ export default function DoctorTable({
         <table className="w-full table-auto divide-y divide-gray-200 min-w-max">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Doctor's Name
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("full_name")}
+              >
+                <div className="flex items-center gap-1">
+                  Doctor's Name
+                  {getSortIcon("full_name")}
+                </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                speciality
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("specialization")}
+              >
+                <div className="flex items-center gap-1">
+                  Speciality
+                  {getSortIcon("specialization")}
+                </div>
               </th>
-              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Location
-              </th> */}
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                License Number
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("license_number")}
+              >
+                <div className="flex items-center gap-1">
+                  License Number
+                  {getSortIcon("license_number")}
+                </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                yr of Experience
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("years_of_experience")}
+              >
+                <div className="flex items-center gap-1">
+                  Yr of Experience
+                  {getSortIcon("years_of_experience")}
+                </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Contact Details
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("phone")}
+              >
+                <div className="flex items-center gap-1">
+                  Contact Details
+                  {getSortIcon("phone")}
+                </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Status
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => onSort?.("is_active")}
+              >
+                <div className="flex items-center gap-1">
+                  Status
+                  {getSortIcon("is_active")}
+                </div>
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Actions
@@ -76,7 +127,7 @@ export default function DoctorTable({
                     <div className="text-sm font-medium text-gray-900">
                       Dr. {doctor.full_name}
                     </div>
-                    
+
                   </div>
                 </td>
                 <td className="px-4 py-4  wrap-break-words">
