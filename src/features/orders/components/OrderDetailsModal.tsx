@@ -35,7 +35,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 transition-opacity" />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">

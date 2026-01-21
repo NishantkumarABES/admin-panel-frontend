@@ -111,6 +111,14 @@ export const createDoctor = async (data: CreateDoctorDTO) => {
     },
   });
 
+  // Check if the response indicates failure
+  if (response.data?.success === false) {
+    const error = new Error(response.data.detail || "Failed to create doctor") as any;
+    error.isWarning = response.data.warning || false;
+    error.response = { data: response.data };
+    throw error;
+  }
+
   return {
     data: response.data,
     password: systemPassword,

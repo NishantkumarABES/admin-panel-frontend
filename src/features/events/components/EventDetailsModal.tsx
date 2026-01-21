@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Video, Users, Award, DollarSign, FileText, User, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Video, DollarSign, FileText, User, CheckCircle, XCircle } from "lucide-react";
 import type { Event } from "../event.types";
 
 interface EventDetailsModalProps {
@@ -14,8 +14,8 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-black/50" onClick={onClose}></div>
-        
+        <div className="fixed inset-0 transition-opacity bg-black/50"></div>
+
         <div className="relative inline-block w-full max-w-3xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
             <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
@@ -42,7 +42,7 @@ const getStatusBadge = (status: string) => {
     completed: "bg-gray-100 text-gray-800",
     cancelled: "bg-red-100 text-red-800",
   };
-  
+
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}`}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -58,9 +58,9 @@ const getTypeBadge = (type: string) => {
     patient_education: "bg-pink-100 text-pink-800",
     workshop: "bg-cyan-100 text-cyan-800",
   };
-  
+
   const displayName = type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-  
+
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[type as keyof typeof typeColors] || "bg-gray-100 text-gray-800"}`}>
       {displayName}
@@ -70,11 +70,11 @@ const getTypeBadge = (type: string) => {
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', { 
+  return date.toLocaleDateString('en-IN', {
     weekday: 'long',
     day: '2-digit',
-    month: 'long', 
-    year: 'numeric' 
+    month: 'long',
+    year: 'numeric'
   });
 };
 
@@ -90,7 +90,7 @@ export default function EventDetailsModal({
   event, isOpen, onClose,
 }: EventDetailsModalProps) {
   if (!event) return null;
-  
+
   const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
 
   const InfoRow = ({
@@ -145,14 +145,14 @@ export default function EventDetailsModal({
             Date & Time
           </h4>
           <div className="space-y-2">
-            <InfoRow 
-              icon={Calendar} 
-              label="Date" 
+            <InfoRow
+              icon={Calendar}
+              label="Date"
               value={`${formatDate(event.start_date)}${event.start_date !== event.end_date ? ` to ${formatDate(event.end_date)}` : ''}`}
             />
-            <InfoRow 
-              icon={Clock} 
-              label="Time" 
+            <InfoRow
+              icon={Clock}
+              label="Time"
               value={`${formatTime(event.start_time)} - ${formatTime(event.end_time)} (${event.duration_minutes} minutes)`}
             />
           </div>
@@ -164,31 +164,31 @@ export default function EventDetailsModal({
             Event Information
           </h4>
           <div className="space-y-2">
-            <InfoRow 
-              icon={FileText} 
-              label="Specialization" 
+            <InfoRow
+              icon={FileText}
+              label="Specialization"
               value={event.specialization}
             />
-            <InfoRow 
-              icon={Video} 
-              label="Format" 
+            <InfoRow
+              icon={Video}
+              label="Format"
               value={event.format.charAt(0).toUpperCase() + event.format.slice(1)}
             />
             {event.venue && (
-              <InfoRow 
-                icon={MapPin} 
-                label="Venue" 
+              <InfoRow
+                icon={MapPin}
+                label="Venue"
                 value={event.venue}
               />
             )}
             {event.event_link && (
-              <InfoRow 
-                icon={Video} 
-                label="Event Link" 
+              <InfoRow
+                icon={Video}
+                label="Event Link"
                 value={
-                  <a 
-                    href={event.event_link} 
-                    target="_blank" 
+                  <a
+                    href={event.event_link}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 underline"
                   >
@@ -206,15 +206,15 @@ export default function EventDetailsModal({
             Registration
           </h4>
           <div className="space-y-2">
-            <InfoRow 
-              icon={DollarSign} 
-              label="Registration Fee" 
+            <InfoRow
+              icon={DollarSign}
+              label="Registration Fee"
               value={event.is_free ? "Free" : `₹${parseFloat(event.registration_fee).toFixed(2)}`}
             />
-            
-            <InfoRow 
-              icon={event.is_certificate_available ? CheckCircle : XCircle} 
-              label="Certificate" 
+
+            <InfoRow
+              icon={event.is_certificate_available ? CheckCircle : XCircle}
+              label="Certificate"
               value={event.is_certificate_available ? "Available" : "Not Available"}
             />
           </div>
@@ -266,8 +266,8 @@ export default function EventDetailsModal({
             <div className="grid grid-cols-3 gap-3">
               {event.images.map((image) => (
                 <div key={image.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                  <img 
-                    src={BackendBaseURL + image.image} 
+                  <img
+                    src={BackendBaseURL + image.image}
                     alt={event.title}
                     className="w-full h-full object-cover"
                   />

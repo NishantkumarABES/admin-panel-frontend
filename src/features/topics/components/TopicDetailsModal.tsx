@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X, Calendar, User, Link, Video, ChevronDown, ChevronUp,
   Play, Download, RefreshCw, FileText, Loader2, AlertCircle, CheckCircle
@@ -23,7 +23,62 @@ export default function TopicDetailsModal({
   const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(false);
   const [isStartingTranscription, setIsStartingTranscription] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isVideoPlayable, setIsVideoPlayable] = useState<boolean | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
+  const extractVimeoId = (url: string): string | null => {
+    const match = url.match(/vimeo\.com\/(\d+)/);
+    return match ? match[1] : null;
+  };
+
+  const validateVideoUrl = async (videoUrl: string): Promise<boolean> => {
+    try {
+      const vimeoId = extractVimeoId(videoUrl);
+      if (!vimeoId) {
+        setVideoError("Invalid Vimeo URL format");
+        return false;
+      }
+
+      // Check if the video is accessible via Vimeo's oEmbed API
+      const response = await fetch(
+        `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vimeoId}`
+      );
+
+      if (!response.ok) {
+        setVideoError("Video not found or not accessible");
+        return false;
+      }
+
+      const data = await response.json();
+      if (!data || !data.video_id) {
+        setVideoError("Invalid video data");
+        return false;
+      }
+
+      setVideoError(null);
+      return true;
+    } catch (error) {
+      setVideoError("Failed to validate video");
+      return false;
+    }
+  };
+
+  // Validate video when modal opens or topic changes
+  useEffect(() => {
+    if (isOpen && topic?.video_url) {
+      setIsVideoPlayable(null); // Reset state
+      setVideoError(null);
+
+      validateVideoUrl(topic.video_url).then((isValid) => {
+        setIsVideoPlayable(isValid);
+      });
+    } else {
+      setIsVideoPlayable(null);
+      setVideoError(null);
+    }
+  }, [isOpen, topic?.video_url]);
+
+  // Early return AFTER all hooks have been called
   if (!isOpen || !topic) return null;
 
   const getStatusBadge = (publishStatus: boolean) => {
@@ -59,13 +114,24 @@ export default function TopicDetailsModal({
     }
   };
 
-  const extractVimeoId = (url: string): string | null => {
-    const match = url.match(/vimeo\.com\/(\d+)/);
-    return match ? match[1] : null;
-  };
-
   const handleStartTranscription = async () => {
     if (!topic) return;
+
+    // Strict validation before starting transcription
+    if (!topic.video_url) {
+      alert("No video URL available for transcription");
+      return;
+    }
+
+    if (isVideoPlayable === false || videoError) {
+      alert("Cannot start transcription: Video is not playable or not available");
+      return;
+    }
+
+    if (isVideoPlayable === null) {
+      alert("Please wait while we validate the video availability");
+      return;
+    }
 
     setIsStartingTranscription(true);
     try {
@@ -107,11 +173,18 @@ export default function TopicDetailsModal({
   const hasTranscription = topic.transcription;
   const transcriptionCompleted = hasTranscription?.status === "completed";
 
+  // Determine if transcription button should be disabled
+  const isTranscriptionDisabled =
+    isStartingTranscription ||
+    !topic.video_url ||
+    isVideoPlayable === false ||
+    isVideoPlayable === null ||
+    !!videoError;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div
         className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={onClose}
       />
 
       <div className="flex min-h-full items-center justify-center p-4">
@@ -206,27 +279,66 @@ export default function TopicDetailsModal({
                   </h4>
 
                   {!hasTranscription ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-800 mb-3">
-                        Start transcription to automatically generate a transcript and AI summary of this video.
-                      </p>
-                      <button
-                        onClick={handleStartTranscription}
-                        disabled={isStartingTranscription}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isStartingTranscription ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Starting...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4" />
-                            Start Transcription
-                          </>
-                        )}
-                      </button>
+                    <div className="space-y-3">
+                      {/* Video Validation Status */}
+                      {isVideoPlayable === null && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 text-yellow-600 animate-spin" />
+                          <p className="text-sm text-yellow-800">
+                            Validating video availability...
+                          </p>
+                        </div>
+                      )}
+
+                      {videoError && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-red-800">Video Validation Failed</p>
+                            <p className="text-sm text-red-700 mt-1">{videoError}</p>
+                            <p className="text-xs text-red-600 mt-1">
+                              Transcription cannot be started for invalid or inaccessible videos.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {isVideoPlayable === true && !videoError && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <p className="text-sm text-green-800">
+                            Video is available and ready for transcription
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-800 mb-3">
+                          Start transcription to automatically generate a transcript and AI summary of this video.
+                        </p>
+                        <button
+                          onClick={handleStartTranscription}
+                          disabled={isTranscriptionDisabled}
+                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={
+                            isTranscriptionDisabled
+                              ? videoError || "Video validation in progress or video is not available"
+                              : "Start video transcription"
+                          }
+                        >
+                          {isStartingTranscription ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-4 h-4" />
+                              Start Transcription
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-3">

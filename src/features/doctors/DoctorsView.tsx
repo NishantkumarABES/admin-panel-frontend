@@ -201,7 +201,8 @@ export default function DoctorsView() {
       }
     } catch (error: any) {
       console.error("Failed to save doctor:", error);
-      const errorMessage = error?.response?.data?.message
+      const errorMessage = error?.response?.data?.detail
+        || error?.response?.data?.message
         || error?.response?.data?.error
         || error?.message
         || (selectedDoctor ? "Failed to update doctor. Please try again." : "Failed to add doctor. Please try again.");
@@ -413,8 +414,23 @@ export default function DoctorsView() {
         {loading ? (
           <div className="p-8 text-center text-gray-600">Loading doctors...</div>
         ) : doctors.length === 0 ? (
-          <div className="p-8 text-center text-gray-600">
-            No doctors found. Try adjusting your filters.
+          <div className="p-8 text-center">
+            <p className="text-gray-600 mb-4">
+              No doctors found. Try adjusting your filters.
+            </p>
+            {showAdminCreatedOnly && (
+              <div className="flex justify-center">
+                <label className="flex items-center gap-2 cursor-pointer select-none bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={showAdminCreatedOnly}
+                    onChange={(e) => setShowAdminCreatedOnly(e.target.checked)}
+                    className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                  />
+                  <span className="text-sm text-gray-700 whitespace-nowrap">Show only admin created accounts</span>
+                </label>
+              </div>
+            )}
           </div>
         ) : (
           <>
