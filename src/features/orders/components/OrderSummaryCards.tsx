@@ -10,7 +10,7 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
   const cards = [
     {
       label: "Total Orders",
-      value: analytics?.total_orders_today ?? 0,
+      value: analytics?.total_orders ?? 0,
       icon: Package,
       color: "text-blue-600",
       bgColor: "bg-blue-50"
@@ -45,7 +45,7 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
     },
     {
       label: "Total Revenue",
-      value: analytics?.total_revenue_today ?? 0,
+      value: analytics?.total_revenue ?? 0,
       icon: DollarSign,
       color: "text-green-600",
       bgColor: "bg-green-50",

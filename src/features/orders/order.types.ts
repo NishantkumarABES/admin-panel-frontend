@@ -64,12 +64,12 @@ export interface OrderTimelineEvent {
 }
 
 export interface OrderAnalytics {
-  total_orders_today: number;
+  total_orders: number;
   pending_payments: number;
   processing_orders: number;
   delivered_orders: number;
   cancelled_orders: number;
-  total_revenue_today: number;
+  total_revenue: number;
 }
 
 export interface OrderFilters {
