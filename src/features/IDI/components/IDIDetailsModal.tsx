@@ -1,5 +1,5 @@
 import { X, Pill, Tag, Calendar, AlertCircle, BookOpen, FlaskConical } from "lucide-react";
-import type { IDI } from "../IDI.types";
+import type { IDI } from "../idi.types";
 import Modal from "../../../components/common/Modal";
 
 interface IDIDetailsModalProps {
