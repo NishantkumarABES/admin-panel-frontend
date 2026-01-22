@@ -5,7 +5,7 @@ import type {
   UpdateIDIDTO,
   KeyInteraction,
   PracticalPearl,
-} from "../features/IDI/IDI.types";
+} from "../features/IDI/idi.types";
 
 // Backend response types (snake_case)
 interface BackendKeyInteraction {
@@ -160,7 +160,7 @@ export const getIDI = async (filters?: {
 
   const queryString = params.toString();
   const response = await api.get<BackendPaginatedResponse>(
-    `/admin/IDI/${queryString ? `?${queryString}` : ""}`
+    `/admin/idi/${queryString ? `?${queryString}` : ""}`
   );
 
   return {
@@ -174,7 +174,7 @@ export const getIDI = async (filters?: {
 };
 
 export const getIDIById = async (id: string) => {
-  const response = await api.get<{ data: BackendIDI }>(`/admin/IDI/${id}/`);
+  const response = await api.get<{ data: BackendIDI }>(`/admin/idi/${id}/`);
   return {
     data: transformIDIFromBackend(response.data.data),
   };
@@ -183,7 +183,7 @@ export const getIDIById = async (id: string) => {
 export const createIDI = async (data: CreateIDIDTO) => {
   const backendData = transformIDIToBackend(data);
   const response = await api.post<{ success: boolean; data: BackendIDI }>(
-    "/admin/IDI/",
+    "/admin/idi/",
     backendData
   );
   return {
@@ -195,7 +195,7 @@ export const updateIDI = async (data: UpdateIDIDTO) => {
   const { id, ...updateData } = data;
   const backendData = transformIDIToBackend(updateData as CreateIDIDTO);
   const response = await api.patch<{ success: boolean; data: BackendIDI }>(
-    `/admin/IDI/${id}/`,
+    `/admin/idi/${id}/`,
     backendData
   );
   return {
@@ -204,12 +204,12 @@ export const updateIDI = async (data: UpdateIDIDTO) => {
 };
 
 export const deleteIDI = async (id: string) => {
-  return api.delete(`/admin/IDI/${id}/`);
+  return api.delete(`/admin/idi/${id}/`);
 };
 
 export const publishIDI = async (id: string) => {
   const response = await api.patch<{ success: boolean; data: BackendIDI }>(
-    `/admin/IDI/${id}/`,
+    `/admin/idi/${id}/`,
     { status: "published" }
   );
   return {
@@ -219,7 +219,7 @@ export const publishIDI = async (id: string) => {
 
 export const archiveIDI = async (id: string) => {
   const response = await api.patch<{ success: boolean; data: BackendIDI }>(
-    `/admin/IDI/${id}/`,
+    `/admin/idi/${id}/`,
     { status: "archived" }
   );
   return {
@@ -233,5 +233,5 @@ export const getIDIAnalytics = async () => {
     published_drugs: number;
     draft_drugs: number;
     archived_drugs: number;
-  }>("/admin/IDI/analytics/");
+  }>("/admin/idi/analytics/");
 };
