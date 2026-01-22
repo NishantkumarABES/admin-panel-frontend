@@ -15,7 +15,7 @@ const navItems = [
   { label: "Topics", path: "/topics", icon: BookOpen },
   { label: "Events", path: "/events", icon: Calendar },
   { label: "Advertisements", path: "/advertisements", icon: Megaphone },
-  { label: "CIMS", path: "/cims", icon: Pill },
+  { label: "IDI", path: "/IDI", icon: Pill },
   { label: "Advisory", path: "/advisory", icon: Lightbulb },
   { label: "Settings", path: "/settings", icon: Settings },
 ];

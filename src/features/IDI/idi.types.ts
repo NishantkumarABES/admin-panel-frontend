@@ -1,4 +1,4 @@
-export type CIMSStatus = "draft" | "published";
+export type IDIStatus = "draft" | "published";
 
 export interface KeyInteraction {
   interactionTitle: string;
@@ -11,7 +11,7 @@ export interface PracticalPearl {
   pearlContent: string;
 }
 
-export interface CIMS {
+export interface IDI {
   id: string;
 
   // Basic Drug Information
@@ -46,15 +46,15 @@ export interface CIMS {
   landmarkTrials: string;
 
   // Metadata
-  status: CIMSStatus;
+  status: IDIStatus;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
   lastModifiedBy?: string;
 }
 
-// DTO for creating/editing CIMS
-export interface CreateCIMSDTO {
+// DTO for creating/editing IDI
+export interface CreateIDIDTO {
   // Basic Drug Information
   drugNameGeneric: string;
   drugClass: string;
@@ -87,27 +87,27 @@ export interface CreateCIMSDTO {
   landmarkTrials: string;
 
   // Status
-  status?: CIMSStatus;
+  status?: IDIStatus;
 }
 
-export interface UpdateCIMSDTO extends Partial<CreateCIMSDTO> {
+export interface UpdateIDIDTO extends Partial<CreateIDIDTO> {
   id: string;
 }
 
 // Table display type
-export type CIMSTableItem = {
+export type IDITableItem = {
   id: string;
   sno: number;
   drugNameGeneric: string;
   drugClass: string;
   therapeuticCategory: string;
-  status: CIMSStatus;
+  status: IDIStatus;
   createdAt: string;
   updatedAt: string;
 };
 
 // Mock data
-export const mockCIMS: CIMS[] = [
+export const mockIDI: IDI[] = [
   {
     id: "1",
     drugNameGeneric: "Metformin",

@@ -1,11 +1,11 @@
 import { api } from "./api";
 import type {
-  CIMS,
-  CreateCIMSDTO,
-  UpdateCIMSDTO,
+  IDI,
+  CreateIDIDTO,
+  UpdateIDIDTO,
   KeyInteraction,
   PracticalPearl,
-} from "../features/CIMS/cims.types";
+} from "../features/IDI/IDI.types";
 
 // Backend response types (snake_case)
 interface BackendKeyInteraction {
@@ -21,7 +21,7 @@ interface BackendPracticalPearl {
   pearl_content: string;
 }
 
-interface BackendCIMS {
+interface BackendIDI {
   id: string;
   drug_name_generic: string;
   drug_class: string;
@@ -51,7 +51,7 @@ interface BackendPaginatedResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: BackendCIMS[];
+  results: BackendIDI[];
   success: boolean;
 }
 
@@ -67,7 +67,7 @@ const transformPracticalPearl = (data: BackendPracticalPearl): PracticalPearl =>
   pearlContent: data.pearl_content,
 });
 
-const transformCIMSFromBackend = (data: BackendCIMS): CIMS => ({
+const transformIDIFromBackend = (data: BackendIDI): IDI => ({
   id: data.id,
   drugNameGeneric: data.drug_name_generic,
   drugClass: data.drug_class,
@@ -106,7 +106,7 @@ const transformPracticalPearlToBackend = (data: PracticalPearl): BackendPractica
   pearl_content: data.pearlContent,
 });
 
-const transformCIMSToBackend = (data: CreateCIMSDTO) => ({
+const transformIDIToBackend = (data: CreateIDIDTO) => ({
   drug_name_generic: data.drugNameGeneric,
   drug_class: data.drugClass,
   therapeutic_category: data.therapeuticCategory,
@@ -129,7 +129,7 @@ const transformCIMSToBackend = (data: CreateCIMSDTO) => ({
   practical_prescribing_pearls: (data.practicalPrescribingPearls || []).map(transformPracticalPearlToBackend),
 });
 
-export const getCIMS = async (filters?: {
+export const getIDI = async (filters?: {
   drugClass?: string;
   therapeuticCategory?: string;
   status?: string;
@@ -160,12 +160,12 @@ export const getCIMS = async (filters?: {
 
   const queryString = params.toString();
   const response = await api.get<BackendPaginatedResponse>(
-    `/admin/cims/${queryString ? `?${queryString}` : ""}`
+    `/admin/IDI/${queryString ? `?${queryString}` : ""}`
   );
 
   return {
     data: {
-      results: response.data.results.map(transformCIMSFromBackend),
+      results: response.data.results.map(transformIDIFromBackend),
       count: response.data.count,
       next: response.data.next,
       previous: response.data.previous,
@@ -173,65 +173,65 @@ export const getCIMS = async (filters?: {
   };
 };
 
-export const getCIMSById = async (id: string) => {
-  const response = await api.get<{ data: BackendCIMS }>(`/admin/cims/${id}/`);
+export const getIDIById = async (id: string) => {
+  const response = await api.get<{ data: BackendIDI }>(`/admin/IDI/${id}/`);
   return {
-    data: transformCIMSFromBackend(response.data.data),
+    data: transformIDIFromBackend(response.data.data),
   };
 };
 
-export const createCIMS = async (data: CreateCIMSDTO) => {
-  const backendData = transformCIMSToBackend(data);
-  const response = await api.post<{ success: boolean; data: BackendCIMS }>(
-    "/admin/cims/",
+export const createIDI = async (data: CreateIDIDTO) => {
+  const backendData = transformIDIToBackend(data);
+  const response = await api.post<{ success: boolean; data: BackendIDI }>(
+    "/admin/IDI/",
     backendData
   );
   return {
-    data: transformCIMSFromBackend(response.data.data),
+    data: transformIDIFromBackend(response.data.data),
   };
 };
 
-export const updateCIMS = async (data: UpdateCIMSDTO) => {
+export const updateIDI = async (data: UpdateIDIDTO) => {
   const { id, ...updateData } = data;
-  const backendData = transformCIMSToBackend(updateData as CreateCIMSDTO);
-  const response = await api.patch<{ success: boolean; data: BackendCIMS }>(
-    `/admin/cims/${id}/`,
+  const backendData = transformIDIToBackend(updateData as CreateIDIDTO);
+  const response = await api.patch<{ success: boolean; data: BackendIDI }>(
+    `/admin/IDI/${id}/`,
     backendData
   );
   return {
-    data: transformCIMSFromBackend(response.data.data),
+    data: transformIDIFromBackend(response.data.data),
   };
 };
 
-export const deleteCIMS = async (id: string) => {
-  return api.delete(`/admin/cims/${id}/`);
+export const deleteIDI = async (id: string) => {
+  return api.delete(`/admin/IDI/${id}/`);
 };
 
-export const publishCIMS = async (id: string) => {
-  const response = await api.patch<{ success: boolean; data: BackendCIMS }>(
-    `/admin/cims/${id}/`,
+export const publishIDI = async (id: string) => {
+  const response = await api.patch<{ success: boolean; data: BackendIDI }>(
+    `/admin/IDI/${id}/`,
     { status: "published" }
   );
   return {
-    data: transformCIMSFromBackend(response.data.data),
+    data: transformIDIFromBackend(response.data.data),
   };
 };
 
-export const archiveCIMS = async (id: string) => {
-  const response = await api.patch<{ success: boolean; data: BackendCIMS }>(
-    `/admin/cims/${id}/`,
+export const archiveIDI = async (id: string) => {
+  const response = await api.patch<{ success: boolean; data: BackendIDI }>(
+    `/admin/IDI/${id}/`,
     { status: "archived" }
   );
   return {
-    data: transformCIMSFromBackend(response.data.data),
+    data: transformIDIFromBackend(response.data.data),
   };
 };
 
-export const getCIMSAnalytics = async () => {
+export const getIDIAnalytics = async () => {
   return api.get<{
     total_drugs: number;
     published_drugs: number;
     draft_drugs: number;
     archived_drugs: number;
-  }>("/admin/cims/analytics/");
+  }>("/admin/IDI/analytics/");
 };

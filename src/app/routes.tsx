@@ -10,9 +10,9 @@ import EventsView from "../features/events/EventsView";
 import OrdersView from "../features/orders/OrdersView";
 import SettingsView from "../features/settings/SettingsView";
 import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
-import CIMSView from "../features/CIMS/CIMSView";
+import IDIView from "../features/IDI/IDIView";
 import AdvisoryView from "../features/Advisory/AdvisoryView";
-import ProfileView from "../features/profile/ProfileView"; 
+import ProfileView from "../features/profile/ProfileView";
 
 export default function AppRoutes() {
   return (
@@ -25,7 +25,7 @@ export default function AppRoutes() {
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/advertisements" element={<AdvertisementsView />} />
-      <Route path="/cims" element={<CIMSView />} />
+      <Route path="/IDI" element={<IDIView />} />
       <Route path="/advisory" element={<AdvisoryView />} />
       <Route path="/settings" element={<SettingsView />} />
       <Route path="/profile" element={<ProfileView />} />

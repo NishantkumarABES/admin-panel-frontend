@@ -11,8 +11,8 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/topics": { name: "Topics", description: "Manage educational topics and content" },
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
   "/advertisements": { name: "Advertisements", description: "Manage promotional advertisements" },
-  "/cims": {name: "CIMS", description: "Manage CIMS: Clinical Information Management"},
-  "/advisory" : {name: "Advisory", description: "Manage advisory panel and settings" },
+  "/IDI": { name: "IDI: Indian Drug Index", description: "Manage IDI: Clinical Information Management" },
+  "/advisory": { name: "Advisory", description: "Manage advisory panel and settings" },
   "/settings": { name: "Settings", description: "Manage application policies and information" },
   "/profile": { name: "Profile", description: "Admin User Profile" }
 };
@@ -34,9 +34,8 @@ export default function Topbar({ isSidebarCollapsed }: TopbarProps) {
   };
 
   return (
-    <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${
-      isSidebarCollapsed ? "left-20" : "left-64"
-    }`}>
+    <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${isSidebarCollapsed ? "left-20" : "left-64"
+      }`}>
       {/* Left - Current Page/Tab */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>

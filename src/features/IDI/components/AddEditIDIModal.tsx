@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import type { CIMS, CreateCIMSDTO, KeyInteraction, PracticalPearl } from "../cims.types";
+import type { IDI, CreateIDIDTO, KeyInteraction, PracticalPearl } from "../IDI.types";
 import Modal from "../../../components/common/Modal";
-import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "../cims.types";
+import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "../IDI.types";
 
-interface AddEditCIMSModalProps {
-  cims: CIMS | null;
+interface AddEditIDIModalProps {
+  IDI: IDI | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateCIMSDTO) => Promise<void>;
+  onSubmit: (data: CreateIDIDTO) => Promise<void>;
 }
 
-const initialFormData: CreateCIMSDTO = {
+const initialFormData: CreateIDIDTO = {
   drugNameGeneric: "",
   drugClass: "",
   therapeuticCategory: "",
@@ -34,43 +34,43 @@ const initialFormData: CreateCIMSDTO = {
   status: "draft",
 };
 
-export default function AddEditCIMSModal({
-  cims,
+export default function AddEditIDIModal({
+  IDI,
   isOpen,
   onClose,
   onSubmit,
-}: AddEditCIMSModalProps) {
-  const [formData, setFormData] = useState<CreateCIMSDTO>(initialFormData);
+}: AddEditIDIModalProps) {
+  const [formData, setFormData] = useState<CreateIDIDTO>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (cims) {
+    if (IDI) {
       setFormData({
-        drugNameGeneric: cims.drugNameGeneric,
-        drugClass: cims.drugClass,
-        therapeuticCategory: cims.therapeuticCategory,
-        brandsInIndia: cims.brandsInIndia,
-        strengthsAvailable: cims.strengthsAvailable,
-        formulationsRoutes: cims.formulationsRoutes,
-        coreClinicalRole: cims.coreClinicalRole,
-        preferredClinicalScenarios: cims.preferredClinicalScenarios,
-        whereBenefitLimited: cims.whereBenefitLimited,
-        usualAdultDose: cims.usualAdultDose,
-        timingRelativeToMeals: cims.timingRelativeToMeals,
-        reviewDurationPlan: cims.reviewDurationPlan,
-        commonAdverseEffects: cims.commonAdverseEffects,
-        seriousButUncommonRisks: cims.seriousButUncommonRisks,
-        longTermTherapyCautions: cims.longTermTherapyCautions,
-        keyInteractions: cims.keyInteractions || [],
-        practicalPrescribingPearls: cims.practicalPrescribingPearls || [],
-        guidelines: cims.guidelines,
-        landmarkTrials: cims.landmarkTrials,
-        status: cims.status,
+        drugNameGeneric: IDI.drugNameGeneric,
+        drugClass: IDI.drugClass,
+        therapeuticCategory: IDI.therapeuticCategory,
+        brandsInIndia: IDI.brandsInIndia,
+        strengthsAvailable: IDI.strengthsAvailable,
+        formulationsRoutes: IDI.formulationsRoutes,
+        coreClinicalRole: IDI.coreClinicalRole,
+        preferredClinicalScenarios: IDI.preferredClinicalScenarios,
+        whereBenefitLimited: IDI.whereBenefitLimited,
+        usualAdultDose: IDI.usualAdultDose,
+        timingRelativeToMeals: IDI.timingRelativeToMeals,
+        reviewDurationPlan: IDI.reviewDurationPlan,
+        commonAdverseEffects: IDI.commonAdverseEffects,
+        seriousButUncommonRisks: IDI.seriousButUncommonRisks,
+        longTermTherapyCautions: IDI.longTermTherapyCautions,
+        keyInteractions: IDI.keyInteractions || [],
+        practicalPrescribingPearls: IDI.practicalPrescribingPearls || [],
+        guidelines: IDI.guidelines,
+        landmarkTrials: IDI.landmarkTrials,
+        status: IDI.status,
       });
     } else {
       setFormData(initialFormData);
     }
-  }, [cims, isOpen]);
+  }, [IDI, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +142,7 @@ export default function AddEditCIMSModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={cims ? "Edit Drug Information" : "Add New Drug"}
+      title={IDI ? "Edit Drug Information" : "Add New Drug"}
       size="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -568,7 +568,7 @@ export default function AddEditCIMSModal({
             className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Saving..." : cims ? "Update Drug" : "Add Drug"}
+            {isSubmitting ? "Saving..." : IDI ? "Update Drug" : "Add Drug"}
           </button>
         </div>
       </form>

@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
-import type { CIMS, CreateCIMSDTO, CIMSStatus } from "./cims.types";
-import { mockCIMS, DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "./cims.types";
-import CIMSTable from "./components/CIMSTable";
-import CIMSDetailsModal from "./components/CIMSDetailsModal";
-import AddEditCIMSModal from "./components/AddEditCIMSModal";
+import type { IDI, CreateIDIDTO, IDIStatus } from "./idi.types";
+import { mockIDI, DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "./idi.types";
+import IDITable from "./components/IDITable";
+import IDIDetailsModal from "./components/IDIDetailsModal";
+import AddEditIDIModal from "./components/AddEditIDIModal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
-import * as cimsService from "../../services/cims.service";
+import * as IDIService from "../../services/idi.service";
 
-export default function CIMSView() {
-  const [cimsList, setCimsList] = useState<CIMS[]>([]);
+export default function IDIView() {
+  const [IDIList, setIDIList] = useState<IDI[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<CIMSStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<IDIStatus | "all">("all");
   const [drugClassFilter, setDrugClassFilter] = useState<string>("all");
   const [therapeuticCategoryFilter, setTherapeuticCategoryFilter] = useState<string>("all");
 
@@ -34,13 +34,13 @@ export default function CIMSView() {
   const [hasPrevious, setHasPrevious] = useState(false);
 
   // Modal states
-  const [selectedCIMS, setSelectedCIMS] = useState<CIMS | null>(null);
+  const [selectedIDI, setSelectedIDI] = useState<IDI | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Fetch CIMS data
-  const fetchCIMS = async () => {
+  // Fetch IDI data
+  const fetchIDI = async () => {
     try {
       setLoading(true);
       const filters = {
@@ -54,14 +54,14 @@ export default function CIMSView() {
 
       // Try to fetch from API, fallback to mock data on error
       try {
-        const response = await cimsService.getCIMS(filters);
-        setCimsList(response.data.results);
+        const response = await IDIService.getIDI(filters);
+        setIDIList(response.data.results);
         setTotalCount(response.data.count);
         setHasNext(response.data.next !== null);
         setHasPrevious(response.data.previous !== null);
       } catch (error) {
         console.log("Using mock data - API not available");
-        let filteredData = [...mockCIMS];
+        let filteredData = [...mockIDI];
 
         // Apply drug class filter
         if (drugClassFilter !== "all") {
@@ -90,11 +90,11 @@ export default function CIMSView() {
           );
         }
 
-        setCimsList(filteredData);
+        setIDIList(filteredData);
         setTotalCount(filteredData.length);
       }
     } catch (error) {
-      console.error("Failed to fetch CIMS:", error);
+      console.error("Failed to fetch IDI:", error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export default function CIMSView() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchCIMS();
+      fetchIDI();
     }, 300);
 
     return () => clearTimeout(timer);
@@ -144,48 +144,48 @@ export default function CIMSView() {
   }, [isTherapeuticCategoryDropdownOpen]);
 
   // Handlers
-  const handleView = (cims: CIMS) => {
-    setSelectedCIMS(cims);
+  const handleView = (IDI: IDI) => {
+    setSelectedIDI(IDI);
     setIsDetailsModalOpen(true);
   };
 
   const handleAdd = () => {
-    setSelectedCIMS(null);
+    setSelectedIDI(null);
     setIsAddEditModalOpen(true);
   };
 
-  const handleEdit = (cims: CIMS) => {
-    setSelectedCIMS(cims);
+  const handleEdit = (IDI: IDI) => {
+    setSelectedIDI(IDI);
     setIsAddEditModalOpen(true);
   };
 
-  const handleDelete = (cims: CIMS) => {
-    setSelectedCIMS(cims);
+  const handleDelete = (IDI: IDI) => {
+    setSelectedIDI(IDI);
     setIsDeleteDialogOpen(true);
   };
 
   // Submit handlers
-  const handleAddEditSubmit = async (data: CreateCIMSDTO) => {
+  const handleAddEditSubmit = async (data: CreateIDIDTO) => {
     try {
-      if (selectedCIMS) {
-        await cimsService.updateCIMS({ ...data, id: selectedCIMS.id });
+      if (selectedIDI) {
+        await IDIService.updateIDI({ ...data, id: selectedIDI.id });
       } else {
-        await cimsService.createCIMS(data);
+        await IDIService.createIDI(data);
       }
-      fetchCIMS();
+      fetchIDI();
     } catch (error) {
-      console.error("Failed to save CIMS:", error);
+      console.error("Failed to save IDI:", error);
       throw error;
     }
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedCIMS) return;
+    if (!selectedIDI) return;
     try {
-      await cimsService.deleteCIMS(selectedCIMS.id);
-      fetchCIMS();
+      await IDIService.deleteIDI(selectedIDI.id);
+      fetchIDI();
     } catch (error) {
-      console.error("Failed to delete CIMS:", error);
+      console.error("Failed to delete IDI:", error);
     }
   };
 
@@ -213,9 +213,9 @@ export default function CIMSView() {
 
   // Calculate stats
   const stats = {
-    total: totalCount || cimsList.length,
-    published: cimsList.filter(c => c.status === "published").length,
-    draft: cimsList.filter(c => c.status === "draft").length
+    total: totalCount || IDIList.length,
+    published: IDIList.filter(c => c.status === "published").length,
+    draft: IDIList.filter(c => c.status === "draft").length
   };
 
   return (
@@ -417,7 +417,7 @@ export default function CIMSView() {
                 <Filter className="w-5 h-5 text-gray-400 shrink-0" />
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as CIMSStatus | "all")}
+                  onChange={(e) => setStatusFilter(e.target.value as IDIStatus | "all")}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
                 >
                   <option value="all">All Status</option>
@@ -445,21 +445,21 @@ export default function CIMSView() {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-600">Loading drugs...</div>
-        ) : cimsList.length === 0 ? (
+        ) : IDIList.length === 0 ? (
           <div className="p-8 text-center text-gray-600">
             No drugs found. Try adjusting your filters.
           </div>
         ) : (
           <>
-            <CIMSTable
-              cimsList={cimsList}
+            <IDITable
+              IDIList={IDIList}
               onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
 
             {/* Pagination */}
-            {!loading && cimsList.length > 0 && (
+            {!loading && IDIList.length > 0 && (
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -518,14 +518,14 @@ export default function CIMSView() {
       </div>
 
       {/* Modals */}
-      <CIMSDetailsModal
-        cims={selectedCIMS}
+      <IDIDetailsModal
+        IDI={selectedIDI}
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
       />
 
-      <AddEditCIMSModal
-        cims={selectedCIMS}
+      <AddEditIDIModal
+        IDI={selectedIDI}
         isOpen={isAddEditModalOpen}
         onClose={() => setIsAddEditModalOpen(false)}
         onSubmit={handleAddEditSubmit}
@@ -536,7 +536,7 @@ export default function CIMSView() {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Drug"
-        message={`Are you sure you want to delete "${selectedCIMS?.drugNameGeneric}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedIDI?.drugNameGeneric}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
