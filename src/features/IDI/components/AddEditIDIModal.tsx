@@ -549,7 +549,6 @@ export default function AddEditIDIModal({
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
-            <option value="archived">Archived</option>
           </select>
         </div>
 

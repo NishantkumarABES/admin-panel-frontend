@@ -20,6 +20,7 @@ export default function ProductsView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProductStatus | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [userTypeFilter, setUserTypeFilter] = useState<"all" | "patients" | "doctors" | "both">("all");
   const [analytics, setAnalytics] = useState<ProductAnalytics | null>(null);
 
   // Category dropdown states
@@ -65,7 +66,7 @@ export default function ProductsView() {
       const total = mockProducts.length;
       const active = mockProducts.filter((p: Product) => p.is_active).length;
       const inactive = total - active;
-      setAnalytics({ total_products: total, instock_products: active, outofstock_products: inactive, success: true});
+      setAnalytics({ total_products: total, instock_products: active, outofstock_products: inactive, success: true });
     } finally {
       setAnalyticsLoading(false);
     }
@@ -75,13 +76,24 @@ export default function ProductsView() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const filters = {
+      const filters: any = {
         status: statusFilter !== "all" ? statusFilter : undefined,
         category: categoryFilter !== "all" ? categoryFilter : undefined,
+        user_type: userTypeFilter !== "all" ? userTypeFilter : undefined,
         search: searchTerm || undefined,
         page: currentPage,
         page_size: pageSize,
       };
+
+      // Add user type filter
+      if (userTypeFilter === "patients") {
+        filters.for_patients = true;
+      } else if (userTypeFilter === "doctors") {
+        filters.for_doctors = true;
+      } else if (userTypeFilter === "both") {
+        filters.for_patients = true;
+        filters.for_doctors = true;
+      }
 
       // Try to fetch from API, fallback to mock data on error
       try {
@@ -106,6 +118,14 @@ export default function ProductsView() {
           filteredData = filteredData.filter(p => p.category === categoryFilter);
         }
 
+        // Apply user type filter
+        if (userTypeFilter === "patients") {
+          filteredData = filteredData.filter(p => p.for_patients);
+        } else if (userTypeFilter === "doctors") {
+          filteredData = filteredData.filter(p => p.for_doctors);
+        } else if (userTypeFilter === "both") {
+          filteredData = filteredData.filter(p => p.for_patients && p.for_doctors);
+        }
 
         // Apply search filter
         if (searchTerm) {
@@ -127,7 +147,7 @@ export default function ProductsView() {
       setLoading(false);
     }
   };
-  
+
 
   // Fetch coupons from API with filters
   const fetchCoupons = async () => {
@@ -178,7 +198,7 @@ export default function ProductsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, categoryFilter, currentPage, pageSize]);
+  }, [searchTerm, statusFilter, categoryFilter, currentPage, pageSize, userTypeFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -191,7 +211,7 @@ export default function ProductsView() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, categoryFilter]);
+  }, [searchTerm, statusFilter, categoryFilter, userTypeFilter]);
 
   // Close category dropdown when clicking outside
   useEffect(() => {
@@ -311,7 +331,7 @@ export default function ProductsView() {
     }
   };
 
-  
+
 
   const handleConfirmDeleteCoupon = async () => {
     if (!selectedCoupon) return;
@@ -350,15 +370,15 @@ export default function ProductsView() {
   // Use API analytics data if available
   const stats = analytics
     ? {
-        total: analytics.total_products,
-        instock: analytics.instock_products,
-        outofstock: analytics.outofstock_products,
-      }
+      total: analytics.total_products,
+      instock: analytics.instock_products,
+      outofstock: analytics.outofstock_products,
+    }
     : {
-        total: totalCount || products.length,
-        instock: products.filter(p => p.is_active).length,
-        outofstock: products.filter(p => !p.is_active).length,
-      };
+      total: totalCount || products.length,
+      instock: products.filter(p => p.is_active).length,
+      outofstock: products.filter(p => !p.is_active).length,
+    };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
@@ -397,7 +417,7 @@ export default function ProductsView() {
           )}
         </div>
       </div>
-      
+
       {/* Filters and Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
@@ -464,9 +484,8 @@ export default function ProductsView() {
                             setIsCategoryDropdownOpen(false);
                             setCategorySearchTerm("");
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                            categoryFilter === "all" ? "bg-gray-100 font-medium" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${categoryFilter === "all" ? "bg-gray-100 font-medium" : ""
+                            }`}
                         >
                           All Categories
                         </button>
@@ -479,9 +498,8 @@ export default function ProductsView() {
                                 setIsCategoryDropdownOpen(false);
                                 setCategorySearchTerm("");
                               }}
-                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                                categoryFilter === category ? "bg-gray-100 font-medium" : ""
-                              }`}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${categoryFilter === category ? "bg-gray-100 font-medium" : ""
+                                }`}
                             >
                               {category}
                             </button>
@@ -510,6 +528,21 @@ export default function ProductsView() {
                   <option value="outofstock">Out of Stock</option>
                 </select>
               </div>
+
+              {/* User Type Filter */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                <select
+                  value={userTypeFilter}
+                  onChange={(e) => setUserTypeFilter(e.target.value as "all" | "patients" | "doctors" | "both")}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                >
+                  <option value="all">All Users</option>
+                  <option value="patient">For Patients</option>
+                  <option value="doctor">For Doctors</option>
+                  <option value="both">For Both</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -525,7 +558,7 @@ export default function ProductsView() {
           </div>
         </div>
       </div>
-      
+
       {/* Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
@@ -540,7 +573,7 @@ export default function ProductsView() {
               products={products}
               onView={handleView}
               onEdit={handleEdit}
-              // onDelete={handleDelete}
+            // onDelete={handleDelete}
             />
 
             {/* Pagination */}
@@ -684,7 +717,7 @@ export default function ProductsView() {
             onToggleStatus={handleToggleCouponStatus}
           />
         )}
-  
+
         {!loading && products.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
             <div className="flex flex-col gap-4">
@@ -766,7 +799,7 @@ export default function ProductsView() {
         }}
       />
 
-      <AddEditCouponModal 
+      <AddEditCouponModal
         coupon={selectedCoupon}
         isOpen={isAddEditCouponModalOpen}
         onClose={() => {

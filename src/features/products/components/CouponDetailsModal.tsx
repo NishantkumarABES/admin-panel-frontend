@@ -1,4 +1,4 @@
-import { Calendar, TrendingUp, DollarSign, ShoppingCart, AlertCircle } from "lucide-react";
+import { Calendar, TrendingUp, IndianRupee, ShoppingCart, AlertCircle } from "lucide-react";
 import type { Coupon } from "../coupon.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -15,7 +15,7 @@ export default function CouponDetailsModal({
   isOpen,
   onClose,
 }: CouponDetailsModalProps) {
-  
+
   if (!coupon) return null;
 
   const InfoRow = ({
@@ -41,8 +41,8 @@ export default function CouponDetailsModal({
 
   const isExpired = new Date(coupon.valid_until) < new Date();
   const isNotYetValid = new Date(coupon.valid_from) > new Date();
-  const usagePercentage = coupon.max_uses 
-    ? (coupon.current_uses / coupon.max_uses) * 100 
+  const usagePercentage = coupon.max_uses
+    ? (coupon.current_uses / coupon.max_uses) * 100
     : 0;
 
   return (
@@ -55,9 +55,9 @@ export default function CouponDetailsModal({
               <h3 className="text-xl font-mono font-bold text-gray-900">
                 {coupon.code}
               </h3>
-              <StatusBadge 
-                status={coupon.is_active && !isExpired ? "active" : "inactive"} 
-                size="sm" 
+              <StatusBadge
+                status={coupon.is_active && !isExpired ? "active" : "inactive"}
+                size="sm"
               />
             </div>
             {coupon.description && (
@@ -99,7 +99,7 @@ export default function CouponDetailsModal({
               }
             />
             <InfoRow
-              icon={DollarSign}
+              icon={IndianRupee}
               label="Discount Value"
               value={
                 <span className="font-semibold text-emerald-600 text-base">
@@ -178,13 +178,12 @@ export default function CouponDetailsModal({
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      usagePercentage >= 100
+                    className={`h-full rounded-full transition-all ${usagePercentage >= 100
                         ? "bg-red-500"
                         : usagePercentage >= 75
-                        ? "bg-amber-500"
-                        : "bg-emerald-500"
-                    }`}
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
+                      }`}
                     style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                   />
                 </div>
@@ -196,7 +195,7 @@ export default function CouponDetailsModal({
               </div>
             )}
           </div>
-        </div>      
+        </div>
       </div>
       <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
         <button

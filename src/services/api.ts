@@ -91,7 +91,7 @@ api.interceptors.response.use(
           { refresh: refreshToken }
         );
 
-        const { access } = response.data;
+        const { access } = response.data.data;
 
         // Update stored access token
         localStorage.setItem('accessToken', access);

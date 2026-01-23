@@ -20,6 +20,8 @@ const initialFormData: CreateProductDTO = {
   tax_percentage: "0",
   is_active: true,
   stock_quantity: 0,
+  for_patients: false,
+  for_doctors: false,
   images: [],
 };
 
@@ -56,6 +58,8 @@ export default function AddEditProductModal({
         tax_percentage: product.tax_percentage,
         is_active: product.is_active,
         stock_quantity: product.stock_quantity,
+        for_patients: product.for_patients,
+        for_doctors: product.for_doctors,
         images: [],
       });
       // Set existing image previews
@@ -158,6 +162,10 @@ export default function AddEditProductModal({
 
     if (formData.stock_quantity === undefined || formData.stock_quantity < 0) {
       newErrors.stock_quantity = "Stock quantity must be 0 or greater";
+    }
+
+    if (!formData.for_patients && !formData.for_doctors) {
+      newErrors.for_patients = "Product must be for patients, doctors, or both";
     }
 
     setErrors(newErrors);
@@ -453,6 +461,42 @@ export default function AddEditProductModal({
             </div>
           </div>
 
+          {/* User Classification */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              User Classification *
+            </h3>
+            <p className="text-xs text-gray-600 mb-3">
+              Select who this product is intended for (at least one must be selected)
+            </p>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.for_patients}
+                  onChange={(e) => {
+                    setFormData({ ...formData, for_patients: e.target.checked });
+                    if (errors.for_patients) setErrors({ ...errors, for_patients: "" });
+                  }}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                />
+                <span className="text-sm font-medium text-gray-700">For Patients</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.for_doctors}
+                  onChange={(e) => {
+                    setFormData({ ...formData, for_doctors: e.target.checked });
+                    if (errors.for_patients) setErrors({ ...errors, for_patients: "" });
+                  }}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-2 focus:ring-gray-900"
+                />
+                <span className="text-sm font-medium text-gray-700">For Doctors</span>
+              </label>
+            </div>
+            {errors.for_patients && <p className="text-xs text-red-500 mt-1">{errors.for_patients}</p>}
+          </div>
 
           {/* Product Images */}
           <div>

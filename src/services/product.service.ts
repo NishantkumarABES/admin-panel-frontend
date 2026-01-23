@@ -1,6 +1,6 @@
 import { api } from "./api";
-import type { 
-    PaginatedResponse, CreateProductDTO, UpdateProductDTO,  Product, ProductAnalytics
+import type {
+    PaginatedResponse, CreateProductDTO, UpdateProductDTO, Product, ProductAnalytics
 } from "../features/products/product.types";
 
 export interface ProductFilters {
@@ -9,16 +9,17 @@ export interface ProductFilters {
     search?: string;
     status?: string;
     category?: string;
+    user_type?: string;
 }
 
 export const getProductsAnalytics = () =>
-  api.get<ProductAnalytics>("/analytics/admin/products/metrics/");
+    api.get<ProductAnalytics>("/analytics/admin/products/metrics/");
 
 export const getProducts = async (filters: ProductFilters = {}): Promise<{ data: PaginatedResponse<Product> }> => {
     const params = new URLSearchParams();
 
     if (filters.page) {
-      params.append("page", filters.page.toString());
+        params.append("page", filters.page.toString());
     }
     if (filters.page_size) {
         params.append("page_size", filters.page_size.toString());
@@ -31,6 +32,9 @@ export const getProducts = async (filters: ProductFilters = {}): Promise<{ data:
     }
     if (filters.category) {
         params.append("category", filters.category);
+    }
+    if (filters.user_type) {
+        params.append("user_type", filters.user_type);
     }
 
     const queryString = params.toString();
@@ -45,9 +49,9 @@ export const createProduct = async (productData: CreateProductDTO): Promise<{ da
     const formData = new FormData();
     Object.entries(productData).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
-        value.forEach(file => formData.append("images", file));
+            value.forEach(file => formData.append("images", file));
         } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
+            formData.append(key, String(value));
         }
     });
     const response = await api.post<Product>("/commerce/admin/products/", formData);
@@ -58,9 +62,9 @@ export const updateProduct = async (productData: UpdateProductDTO): Promise<{ da
     const formData = new FormData();
     Object.entries(productData).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
-        value.forEach(file => formData.append("images", file));
+            value.forEach(file => formData.append("images", file));
         } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
+            formData.append(key, String(value));
         }
     });
     const response = await api.patch<Product>(`/commerce/admin/products/${productData.id}/`, formData);
