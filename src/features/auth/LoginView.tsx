@@ -22,7 +22,7 @@ export default function LoginView() {
     try {
       // console.log("API Base URL:", import.meta.env.VITE_API_URL);
       const response = await api.post('/auth/login/email/', { email, password });
-      const data = response.data;
+      const data = response.data.data;
 
       // Check if the response contains an error
       if (data.error) {

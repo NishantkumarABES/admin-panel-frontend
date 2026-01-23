@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Bell, HelpCircle, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { pageHelpContent } from "../../utils/pageHelpContent";
+import HelpModal from "../common/HelpModal";
 
+// Simple page info for header display
 const pageNames: Record<string, { name: string; description: string }> = {
   "/": { name: "Dashboard", description: "Overview of platform activity and key metrics" },
   "/doctors": { name: "Doctors", description: "Manage doctor profiles and information" },
@@ -25,8 +29,11 @@ export default function Topbar({ isSidebarCollapsed }: TopbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const currentPage = pageNames[location.pathname].name || "Admin Panel";
-  const currentDescription = pageNames[location.pathname].description || "";
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+
+  const currentPage = pageNames[location.pathname]?.name || "Admin Panel";
+  const currentDescription = pageNames[location.pathname]?.description || "";
+  const currentHelpContent = pageHelpContent[location.pathname] || pageHelpContent["/"];
 
   const handleLogout = () => {
     logout();
@@ -34,42 +41,52 @@ export default function Topbar({ isSidebarCollapsed }: TopbarProps) {
   };
 
   return (
-    <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${isSidebarCollapsed ? "left-20" : "left-64"
-      }`}>
-      {/* Left - Current Page/Tab */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>
-        <p className="text-sm text-gray-600">{currentDescription}</p>
-      </div>
+    <>
+      <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${isSidebarCollapsed ? "left-20" : "left-64"
+        }`}>
+        {/* Left - Current Page/Tab */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>
+          <p className="text-sm text-gray-600">{currentDescription}</p>
+        </div>
 
-      {/* Right - Notifications, Help and Logout */}
-      <div className="flex items-center gap-2">
-        {/* Notifications */}
-        <button
-          title="Notifications"
-          className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <Bell className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-        </button>
+        {/* Right - Notifications, Help and Logout */}
+        <div className="flex items-center gap-2">
+          {/* Notifications */}
+          <button
+            title="Notifications"
+            className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <Bell className="w-5 h-5 text-gray-600" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+          </button>
 
-        {/* Help */}
-        <button
-          title="Help"
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <HelpCircle className="w-5 h-5 text-gray-600" />
-        </button>
+          {/* Help */}
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
+            title="Help"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <HelpCircle className="w-5 h-5 text-gray-600" />
+          </button>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          title="Logout"
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <LogOut className="w-5 h-5 text-gray-600" />
-        </button>
-      </div>
-    </header>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <LogOut className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+      </header>
+
+      {/* Help Modal */}
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        content={currentHelpContent}
+      />
+    </>
   );
 }
