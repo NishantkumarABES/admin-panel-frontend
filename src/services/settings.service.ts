@@ -22,17 +22,20 @@ export interface ContactSubmission {
 }
 
 export interface PaginatedContacts {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ContactSubmission[];
+  detail: string;
   success: boolean;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ContactSubmission[];
+  };
 }
 
 export const settingsService = {
   // Get all settings
-  getAllSettings: async (): Promise<Setting[]> => {
-    const response = await api.get<Setting[]>('/cms/admin/settings/');
+  getAllSettings: async (): Promise<Setting> => {
+    const response = await api.get<Setting>('/cms/admin/settings/');
     return response.data;
   },
 

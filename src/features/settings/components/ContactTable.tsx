@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, X, AlertCircle, Pencil } from 'lucide-react';
-import type { Setting, SettingType, UpdateSettingDTO } from '../settings.types';
+import type { SettingItem, SettingType, UpdateSettingDTO } from '../settings.types';
 
 interface Contact {
   name: string;
@@ -12,7 +12,7 @@ interface Contact {
 interface ContactTableProps {
   type: SettingType;
   title: string;
-  setting: Setting | null;
+  setting: SettingItem | null;
   loading: boolean;
   onSave: (type: SettingType, data: UpdateSettingDTO) => Promise<void>;
 }

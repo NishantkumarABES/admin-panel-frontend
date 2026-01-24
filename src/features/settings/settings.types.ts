@@ -5,7 +5,8 @@ export type SettingType =
   | 'about_us'
   | 'cookie_policy';
 
-export interface Setting {
+
+export interface SettingItem {
   id: string;
   type: SettingType;
   title: string;
@@ -13,6 +14,13 @@ export interface Setting {
   updatedAt: string;
   updatedBy?: string;
   version?: number;
+}
+
+
+export interface Setting {
+  detail: string;
+  data: SettingItem[];
+  success: boolean;
 }
 
 export interface UpdateSettingDTO {

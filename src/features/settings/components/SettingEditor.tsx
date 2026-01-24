@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Save, Eye, Edit, AlertCircle } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
-import type { Setting, SettingType, UpdateSettingDTO } from '../settings.types';
+import type { SettingItem, SettingType, UpdateSettingDTO } from '../settings.types';
 
 interface SettingEditorProps {
   type: SettingType;
   title: string;
-  setting: Setting | null;
+  setting: SettingItem | null;
   loading: boolean;
   onSave: (type: SettingType, data: UpdateSettingDTO) => Promise<void>;
 }

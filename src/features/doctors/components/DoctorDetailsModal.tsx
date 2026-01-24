@@ -136,8 +136,19 @@ export default function DoctorDetailsModal({
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex justify-end pt-4 mt-4 border-t border-gray-200">
+      {/* Timestamps */}
+
+
+
+      <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
+
+        {/* Left side timestamps */}
+        <div className="text-xs text-gray-500 space-x-4">
+          <span>Created: {new Date(doctor.created_at).toLocaleDateString()}</span>
+          <span>Updated: {new Date(doctor.updated_at).toLocaleDateString()}</span>
+        </div>
+
+        {/* Right side button */}
         <button
           onClick={onClose}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

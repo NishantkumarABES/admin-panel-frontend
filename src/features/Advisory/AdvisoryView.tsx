@@ -190,15 +190,15 @@ export default function AdvisoryView() {
   // Use API analytics data if available, or calculate from current members
   const stats = analytics
     ? {
-        total: analytics.total_members,
-        accepted: analytics.active_members,
-        pending: analytics.inactive_members,
-      }
+      total: analytics.total_members,
+      accepted: analytics.active_members,
+      pending: analytics.inactive_members,
+    }
     : {
-        total: totalCount || members.length,
-        accepted: members.filter((m) => m.status === "active").length,
-        pending: members.filter((m) => m.status === "inactive").length,
-      };
+      total: totalCount || members.length,
+      accepted: members.filter((m) => m.status === "active").length,
+      pending: members.filter((m) => m.status === "inactive").length,
+    };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
@@ -291,7 +291,7 @@ export default function AdvisoryView() {
           <div className="p-8 text-center text-gray-600">
             Loading advisory members...
           </div>
-        ) : members.length === 0 ? (
+        ) : !members?.length ? (
           <div className="p-8 text-center text-gray-600">
             No advisory members found. Try adjusting your filters.
           </div>
@@ -305,7 +305,7 @@ export default function AdvisoryView() {
             />
 
             {/* Pagination */}
-            {!loading && members.length > 0 && (
+            {!loading && members?.length > 0 && (
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

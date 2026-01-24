@@ -44,10 +44,14 @@ export interface UpdateAdvisoryDTO {
 }
 
 export interface PaginatedAdvisory {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: AdvisoryMember[];
+  detail: string;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: AdvisoryMember[];
+  };
+  success: boolean;
 }
 
 export interface AdvisoryAnalytics {

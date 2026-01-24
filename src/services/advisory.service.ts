@@ -11,42 +11,22 @@ import type {
 // Get all advisory members with optional filters (paginated)
 export const getAdvisoryMembers = async (
   filters?: AdvisoryFilters
-): Promise<{ data: PaginatedAdvisory }> => {
+): Promise<PaginatedAdvisory> => {
   const params = new URLSearchParams();
 
-  if (filters?.page) {
-    params.append("page", filters.page.toString());
-  }
-
-  if (filters?.page_size) {
-    params.append("page_size", filters.page_size.toString());
-  }
-
-  if (filters?.search) {
-    params.append("search", filters.search);
-  }
-
-  if (filters?.status) {
-    params.append("status", filters.status);
-  }
-
-  if (filters?.specialization) {
-    params.append("specialization", filters.specialization);
-  }
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.page_size) params.append("page_size", filters.page_size.toString());
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.specialization) params.append("specialization", filters.specialization);
 
   const queryString = params.toString();
+
   const response = await api.get<PaginatedAdvisory>(
     `/admin/advisory${queryString ? `?${queryString}` : ""}`
   );
 
-  return {
-    data: {
-      count: response.data.count,
-      next: response.data.next,
-      previous: response.data.previous,
-      results: response.data.results,
-    },
-  };
+  return response.data;
 };
 
 // Get advisory analytics

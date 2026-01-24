@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Settings, FileText, Shield, Mail, Info, Cookie } from 'lucide-react';
+import { FileText, Shield, Mail, Info, Cookie } from 'lucide-react';
 import SettingEditor from './components/SettingEditor';
 import ContactTable from './components/ContactTable';
 import { settingsService } from '../../services/settings.service';
-import type { Setting, SettingType, UpdateSettingDTO } from './settings.types';
+import type { SettingType, UpdateSettingDTO, SettingItem } from './settings.types';
 
 interface SettingTab {
   id: SettingType;
@@ -41,7 +41,7 @@ const tabs: SettingTab[] = [
 
 export default function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingType>('privacy_policy');
-  const [settings, setSettings] = useState<Record<SettingType, Setting | null>>({
+  const [settings, setSettings] = useState<Record<SettingType, SettingItem | null>>({
     privacy_policy: null,
     terms_and_conditions: null,
     contact_us: null,
@@ -60,7 +60,7 @@ export default function SettingsView() {
     setError('');
     try {
       const allSettings = await settingsService.getAllSettings();
-      const settingsMap: Record<SettingType, Setting | null> = {
+      const settingsMap: Record<SettingType, SettingItem | null> = {
         privacy_policy: null,
         terms_and_conditions: null,
         contact_us: null,
@@ -68,7 +68,7 @@ export default function SettingsView() {
         cookie_policy: null,
       };
 
-      allSettings.forEach((setting) => {
+      allSettings.data.forEach((setting) => {
         settingsMap[setting.type] = setting;
       });
 
@@ -109,11 +109,10 @@ export default function SettingsView() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-gray-900 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 {tab.icon}
                 {tab.label}

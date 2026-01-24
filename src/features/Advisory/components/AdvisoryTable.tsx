@@ -15,7 +15,7 @@ export default function AdvisoryTable({
   onEdit,
   onDelete,
 }: AdvisoryTableProps) {
-  if (members.length === 0) {
+  if (members?.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
         <p className="text-gray-500">No advisory members found</p>
@@ -50,7 +50,7 @@ export default function AdvisoryTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {members.map((member) => (
+            {members?.map((member) => (
               <tr
                 key={member.id}
                 className="hover:bg-gray-50 transition-colors"
