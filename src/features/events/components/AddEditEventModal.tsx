@@ -81,6 +81,9 @@ export default function AddEditEventModal({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   // Image preview
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -127,9 +130,10 @@ export default function AddEditEventModal({
       setImagePreviews([]);
       setSpeakerImagePreviews([]);
     }
-    // Reset submission states when modal opens/closes
+    // Reset submission and validation states when modal opens/closes
     setSubmitSuccess(false);
     setSubmitError(null);
+    setValidationErrors({});
   }, [event, isOpen]);
 
   // Close dropdown when clicking outside
@@ -167,7 +171,69 @@ export default function AddEditEventModal({
     setImagePreviews(newPreviews);
   };
 
+  // Validation function
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // Title is required
+    if (!formData.title.trim()) {
+      errors.title = "Event title is required";
+    }
+
+    // Event type is required (has default, but just in case)
+    if (!formData.event_type) {
+      errors.event_type = "Event type is required";
+    }
+
+    // Start date is required
+    if (!formData.start_date) {
+      errors.start_date = "Start date is required";
+    }
+
+    // End date is required
+    if (!formData.end_date) {
+      errors.end_date = "End date is required";
+    }
+
+    // Start time is required
+    if (!formData.start_time) {
+      errors.start_time = "Start time is required";
+    }
+
+    // End time is required
+    if (!formData.end_time) {
+      errors.end_time = "End time is required";
+    }
+
+    // Date validation: end date should not be before start date
+    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
+      errors.end_date = "End date cannot be before start date";
+    }
+
+
+    if (formData.format === "live" && !formData.venue?.trim()) {
+      errors.venue = "Venue is required for live events";
+    }
+
+    if (formData.format === "hybrid") {
+      if (!formData.event_link?.trim()) {
+        errors.event_link = "Event link is required for hybrid events";
+      }
+      if (!formData.venue?.trim()) {
+        errors.venue = "Venue is required for hybrid events";
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -195,6 +261,7 @@ export default function AddEditEventModal({
     setIsSpecializationDropdownOpen(false);
     setSubmitSuccess(false);
     setSubmitError(null);
+    setValidationErrors({});
     setImagePreviews([]);
     setSpeakerImagePreviews([]);
     onClose();
@@ -302,11 +369,16 @@ export default function AddEditEventModal({
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, title: e.target.value });
+                    if (validationErrors.title) setValidationErrors({ ...validationErrors, title: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.title ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter event title"
-                  required
                 />
+                {validationErrors.title && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.title}</p>
+                )}
               </div>
 
               <div>
@@ -315,9 +387,11 @@ export default function AddEditEventModal({
                 </label>
                 <select
                   value={formData.event_type}
-                  onChange={(e) => setFormData({ ...formData, event_type: e.target.value as EventType })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, event_type: e.target.value as EventType });
+                    if (validationErrors.event_type) setValidationErrors({ ...validationErrors, event_type: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.event_type ? "border-red-500" : "border-gray-300"}`}
                 >
                   {EVENT_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -325,11 +399,14 @@ export default function AddEditEventModal({
                     </option>
                   ))}
                 </select>
+                {validationErrors.event_type && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.event_type}</p>
+                )}
               </div>
 
               <div className="relative" ref={dropdownRef}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Specialization *
+                  Specialization
                 </label>
                 <div
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
@@ -390,7 +467,6 @@ export default function AddEditEventModal({
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder="Enter event description"
                   rows={3}
-                  required
                 />
               </div>
             </div>
@@ -409,10 +485,15 @@ export default function AddEditEventModal({
                 <input
                   type="date"
                   value={formData.start_date}
-                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, start_date: e.target.value });
+                    if (validationErrors.start_date) setValidationErrors({ ...validationErrors, start_date: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_date ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.start_date && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.start_date}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -421,10 +502,15 @@ export default function AddEditEventModal({
                 <input
                   type="date"
                   value={formData.end_date}
-                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, end_date: e.target.value });
+                    if (validationErrors.end_date) setValidationErrors({ ...validationErrors, end_date: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_date ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.end_date && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.end_date}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -433,10 +519,15 @@ export default function AddEditEventModal({
                 <input
                   type="time"
                   value={formData.start_time}
-                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, start_time: e.target.value });
+                    if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_time ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.start_time && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.start_time}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -445,10 +536,15 @@ export default function AddEditEventModal({
                 <input
                   type="time"
                   value={formData.end_time}
-                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, end_time: e.target.value });
+                    if (validationErrors.end_time) setValidationErrors({ ...validationErrors, end_time: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_time ? "border-red-500" : "border-gray-300"}`}
                 />
+                {validationErrors.end_time && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.end_time}</p>
+                )}
               </div>
             </div>
           </div>
@@ -465,9 +561,12 @@ export default function AddEditEventModal({
                 </label>
                 <select
                   value={formData.format}
-                  onChange={(e) => setFormData({ ...formData, format: e.target.value as EventFormat })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, format: e.target.value as EventFormat });
+                    // Clear related validation errors when format changes
+                    setValidationErrors({ ...validationErrors, venue: "", event_link: "" });
+                  }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
                 >
                   {EVENT_FORMATS.map((format) => (
                     <option key={format} value={format}>
@@ -480,28 +579,37 @@ export default function AddEditEventModal({
               {(formData.format === "live" || formData.format === "hybrid") && (
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Venue
+                    Venue {formData.format === "live" || formData.format === "hybrid" ? "*" : ""}
                   </label>
                   <input
                     type="text"
                     value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, venue: e.target.value });
+                      if (validationErrors.venue) setValidationErrors({ ...validationErrors, venue: "" });
+                    }}
+                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.venue ? "border-red-500" : "border-gray-300"}`}
                     placeholder="Enter venue address"
                   />
+                  {validationErrors.venue && (
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.venue}</p>
+                  )}
                 </div>
               )}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Event Link
-                </label>
                 <input
                   type="url"
                   value={formData.event_link}
-                  onChange={(e) => setFormData({ ...formData, event_link: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, event_link: e.target.value });
+                    if (validationErrors.event_link) setValidationErrors({ ...validationErrors, event_link: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.event_link ? "border-red-500" : "border-gray-300"}`}
                   placeholder="https://meet.example.com/event"
                 />
+                {validationErrors.event_link && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.event_link}</p>
+                )}
               </div>
             </div>
           </div>
