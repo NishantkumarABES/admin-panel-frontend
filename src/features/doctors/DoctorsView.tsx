@@ -107,7 +107,7 @@ export default function DoctorsView() {
 
         // Apply speciality filter
         if (specialityFilter !== "all") {
-          filteredData = filteredData.filter(d => d.specialization === specialityFilter);
+          filteredData = filteredData.filter(d => d.doctor_profile?.specialization === specialityFilter);
         }
 
         // Apply search filter
@@ -118,7 +118,7 @@ export default function DoctorsView() {
               d.full_name.toLowerCase().includes(search) ||
               d.email.toLowerCase().includes(search) ||
               d.phone.toLowerCase().includes(search) ||
-              d.license_number.toLowerCase().includes(search)
+              d.doctor_profile?.license_number.toLowerCase().includes(search)
           );
         }
 

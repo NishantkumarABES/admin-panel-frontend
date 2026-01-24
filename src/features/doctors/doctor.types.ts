@@ -3,8 +3,8 @@ export type DoctorStatus = "active" | "inactive";
 
 export interface DoctorProfile {
   credentials: string | null;
-  specialization: string | null;
-  years_of_experience: number | null;
+  specialization: string;
+  years_of_experience: number;
   license_number: string;
   medical_council: string | null;
   clinic_name: string | null;
@@ -35,7 +35,7 @@ export interface DoctorUser {
   is_active: boolean;
   created_at: string;
   updated_at: string
-  doctor_profile?: DoctorProfile;
+  doctor_profile: DoctorProfile;
   by_admin?: boolean;
 }
 

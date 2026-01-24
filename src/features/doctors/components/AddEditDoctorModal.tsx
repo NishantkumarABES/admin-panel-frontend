@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { DoctorUser, CreateDoctorDTO } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 import { SPECIALTIES } from "../doctor.types";
@@ -33,7 +34,11 @@ export default function AddEditDoctorModal({
   const [formData, setFormData] = useState<CreateDoctorDTO>(initialFormData);
   const [specialtySearch, setSpecialtySearch] = useState("");
   const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
 
   // Submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,9 +58,9 @@ export default function AddEditDoctorModal({
         email: doctor.email,
         phone: doctor.phone,
         countryCode: doctor.country_code,
-        specialty: doctor.specialization,
-        licenseNumber: doctor.license_number,
-        yearsOfExperience: doctor.years_of_experience,
+        specialty: doctor.doctor_profile.specialization,
+        licenseNumber: doctor.doctor_profile.license_number,
+        yearsOfExperience: doctor.doctor_profile.years_of_experience,
       });
     } else {
       setFormData(initialFormData);
@@ -72,7 +77,15 @@ export default function AddEditDoctorModal({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      const clickedInsideTrigger =
+        containerRef.current && containerRef.current.contains(target);
+
+      const clickedInsidePortal =
+        portalRef.current && portalRef.current.contains(target);
+
+      if (!clickedInsideTrigger && !clickedInsidePortal) {
         setIsSpecialtyDropdownOpen(false);
       }
     };
@@ -364,8 +377,19 @@ export default function AddEditDoctorModal({
                 </label>
                 <div className="relative" ref={dropdownRef}>
                   <div
+                    ref={triggerRef}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
-                    onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+                    onClick={() => {
+                      if (!isSpecialtyDropdownOpen && triggerRef.current) {
+                        const rect = triggerRef.current.getBoundingClientRect();
+                        setDropdownPosition({
+                          top: rect.bottom + window.scrollY,
+                          left: rect.left + window.scrollX,
+                          width: rect.width,
+                        });
+                      }
+                      setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen);
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <span className={formData.specialty ? "text-gray-900" : "text-gray-500"}>
@@ -375,8 +399,17 @@ export default function AddEditDoctorModal({
                     </div>
                   </div>
 
-                  {isSpecialtyDropdownOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                  {isSpecialtyDropdownOpen && createPortal(
+                    <div
+                      ref={containerRef}
+                      className="fixed bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden"
+                      style={{
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width,
+                        zIndex: 9999,
+                      }}
+                    >
                       <div className="p-2 border-b border-gray-200">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -395,20 +428,24 @@ export default function AddEditDoctorModal({
                           filteredSpecialties.map((specialty) => (
                             <div
                               key={specialty}
-                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
+                              className={`px-3 py-1.5 text-xs cursor-pointer hover:bg-gray-100 ${formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
                                 }`}
-                              onClick={() => handleSpecialtySelect(specialty)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSpecialtySelect(specialty);
+                              }}
                             >
                               {specialty}
                             </div>
                           ))
                         ) : (
-                          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                          <div className="px-3 py-1.5 text-xs text-gray-500 text-center">
                             No specialties found
                           </div>
                         )}
                       </div>
-                    </div>
+                    </div>,
+                    document.body
                   )}
                 </div>
               </div>
