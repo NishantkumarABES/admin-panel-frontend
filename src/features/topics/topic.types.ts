@@ -57,12 +57,18 @@ export interface TopicsAnalytics {
   success: boolean;
 }
 
+// Article extraction data from backend
+export interface ArticleExtractionData {
+  title: string;
+  summary: string;
+  images: string[];
+}
+
 // Article extraction response from backend
 export interface ArticleExtractionResponse {
+  detail: string;
+  data?: ArticleExtractionData;
   success: boolean;
-  title?: string;
-  summary?: string;
-  images?: string[];
   error?: string;
 }
 

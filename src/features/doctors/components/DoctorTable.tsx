@@ -114,8 +114,8 @@ export default function DoctorTable({
                     {doctor && (
                       <img
                         src={
-                          doctor.image
-                            ? doctor.image
+                          doctor.doctor_profile?.profile_photo
+                            ? doctor.doctor_profile.profile_photo
                             : doctor.gender === "male"
                               ? "/src/assets/placeholders/male_doctor.jpg"
                               : "/src/assets/placeholders/female_doctor.jpg"
@@ -132,7 +132,7 @@ export default function DoctorTable({
                 </td>
                 <td className="px-4 py-4  wrap-break-words">
                   <div className="text-sm text-gray-900">
-                    {doctor.specialization}
+                    {doctor.doctor_profile?.specialization}
                   </div>
                 </td>
                 {/* <td className="px-4 py-4 max-w-xs">
@@ -142,11 +142,11 @@ export default function DoctorTable({
                 </td> */}
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {doctor.license_number}
+                    {doctor.doctor_profile?.license_number}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {doctor.years_of_experience} years
+                  {doctor.doctor_profile?.years_of_experience} years
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                   {doctor.phone}

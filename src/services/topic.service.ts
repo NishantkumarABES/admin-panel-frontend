@@ -125,8 +125,9 @@ export const extractArticleFromUrl = async (
     return response.data;
   } catch (error: any) {
     return {
+      detail: error.response?.data?.detail || "Failed to extract article content",
       success: false,
-      error: error.response?.data?.error || "Failed to extract article content",
+      error: error.response?.data?.detail || "Failed to extract article content",
     };
   }
 };

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import type { Topic, CreateTopicDTO, ArticleExtractionResponse,
+import type {
+  Topic, CreateTopicDTO, ArticleExtractionResponse,
 } from "../topic.types";
 import Modal from "../../../components/common/Modal";
-import { Link, AlertCircle, Loader2, Check, Upload, X,
+import {
+  Link, AlertCircle, Loader2, Check, Upload, X,
 } from "lucide-react";
 import * as topicService from "../../../services/topic.service";
 import RichTextEditor from "../../settings/components/RichTextEditor";
@@ -109,13 +111,13 @@ export default function AddEditTopicModal({
     try {
       const result = await topicService.extractArticleFromUrl(articleUrl);
 
-      if (result.success && result.title && result.summary) {
+      if (result.success && result.data?.title && result.data?.summary) {
         // Success - AI extraction worked
         setExtractedData(result);
-        setExtractedImages(result.images || []);
+        setExtractedImages(result.data.images || []);
         setFormData({
-          title: result.title,
-          description: result.summary,
+          title: result.data.title,
+          description: result.data.summary,
           image: undefined,
           source_url: articleUrl,
           publishing_time: new Date().toISOString(),
@@ -269,11 +271,10 @@ export default function AddEditTopicModal({
                     setUrlError("");
                   }}
                   onBlur={() => validateUrl(articleUrl)}
-                  className={`w-full pl-10 pr-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    urlError
+                  className={`w-full pl-10 pr-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all ${urlError
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                       : "border-gray-300 focus:border-blue-500"
-                  }`}
+                    }`}
                   placeholder="https://example.com/medical-article"
                 />
               </div>
@@ -397,11 +398,10 @@ export default function AddEditTopicModal({
                       <div
                         key={index}
                         onClick={() => handleImageSelect(index)}
-                        className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-                          selectedImageIndex === index
+                        className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${selectedImageIndex === index
                             ? "border-blue-600 ring-2 ring-blue-200"
                             : "border-gray-200 hover:border-gray-300"
-                        }`}
+                          }`}
                       >
                         <img
                           src={imageUrl}
