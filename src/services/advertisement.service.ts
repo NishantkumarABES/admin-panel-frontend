@@ -33,7 +33,7 @@ export const advertisementService = {
       `/advertisements/${queryString ? `?${queryString}` : ""}`
     );
     return {
-      data :{
+      data: {
         count: response.data.count,
         next: response.data.next,
         previous: response.data.previous,
@@ -51,6 +51,7 @@ export const advertisementService = {
     formData.append("title", data.title);
     formData.append("url", data.url);
     formData.append("image", data.image);
+    formData.append("specializations", JSON.stringify(data.specializations));
     formData.append("status", data.status);
 
     return api.post<GeneralAdvertisement>("/advertisements/create/", formData, {

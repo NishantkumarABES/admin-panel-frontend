@@ -156,9 +156,8 @@ export default function AddGeneralAdForm({
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-              errors.title ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.title ? "border-red-500" : "border-gray-300"
+              }`}
             placeholder="Enter advertisement title"
             disabled={isSubmitting}
           />
@@ -175,10 +174,12 @@ export default function AddGeneralAdForm({
           <input
             type="url"
             value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-              errors.url ? "border-red-500" : "border-gray-300"
-            }`}
+            onChange={(e) => {
+              setFormData({ ...formData, url: e.target.value });
+              if (errors.url) setErrors({ ...errors, url: "" });
+            }}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.url ? "border-red-500" : "border-gray-300"
+              }`}
             placeholder="https://example.com"
             disabled={isSubmitting}
           />
@@ -196,9 +197,8 @@ export default function AddGeneralAdForm({
             <button
               type="button"
               onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
-              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${
-                errors.specialties ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${errors.specialties ? "border-red-500" : "border-gray-300"
+                }`}
               disabled={isSubmitting}
             >
               <span className="text-sm text-gray-700">
@@ -277,9 +277,8 @@ export default function AddGeneralAdForm({
               />
               <label
                 htmlFor="image-upload"
-                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                  errors.image ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${errors.image ? "border-red-500" : "border-gray-300"
+                  }`}
               >
                 <Upload className="w-8 h-8 text-gray-400 mb-2" />
                 <p className="text-sm text-gray-600">Click to upload image</p>

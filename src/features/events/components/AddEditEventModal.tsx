@@ -211,17 +211,9 @@ export default function AddEditEventModal({
     }
 
 
-    if (formData.format === "live" && !formData.venue?.trim()) {
-      errors.venue = "Venue is required for live events";
-    }
-
-    if (formData.format === "hybrid") {
-      if (!formData.event_link?.trim()) {
-        errors.event_link = "Event link is required for hybrid events";
-      }
-      if (!formData.venue?.trim()) {
-        errors.venue = "Venue is required for hybrid events";
-      }
+    // Event link is always required (official registration website)
+    if (!formData.event_link?.trim()) {
+      errors.event_link = "Event link is required";
     }
 
     setValidationErrors(errors);
@@ -563,8 +555,6 @@ export default function AddEditEventModal({
                   value={formData.format}
                   onChange={(e) => {
                     setFormData({ ...formData, format: e.target.value as EventFormat });
-                    // Clear related validation errors when format changes
-                    setValidationErrors({ ...validationErrors, venue: "", event_link: "" });
                   }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 >
@@ -579,24 +569,21 @@ export default function AddEditEventModal({
               {(formData.format === "live" || formData.format === "hybrid") && (
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Venue {formData.format === "live" || formData.format === "hybrid" ? "*" : ""}
+                    Venue
                   </label>
                   <input
                     type="text"
                     value={formData.venue}
-                    onChange={(e) => {
-                      setFormData({ ...formData, venue: e.target.value });
-                      if (validationErrors.venue) setValidationErrors({ ...validationErrors, venue: "" });
-                    }}
-                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.venue ? "border-red-500" : "border-gray-300"}`}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="Enter venue address"
                   />
-                  {validationErrors.venue && (
-                    <p className="mt-1 text-xs text-red-600">{validationErrors.venue}</p>
-                  )}
                 </div>
               )}
               <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Link *
+                </label>
                 <input
                   type="url"
                   value={formData.event_link}
@@ -605,7 +592,7 @@ export default function AddEditEventModal({
                     if (validationErrors.event_link) setValidationErrors({ ...validationErrors, event_link: "" });
                   }}
                   className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.event_link ? "border-red-500" : "border-gray-300"}`}
-                  placeholder="https://meet.example.com/event"
+                  placeholder="https://example.com/event-registration"
                 />
                 {validationErrors.event_link && (
                   <p className="mt-1 text-xs text-red-600">{validationErrors.event_link}</p>
