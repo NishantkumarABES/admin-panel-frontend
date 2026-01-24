@@ -47,9 +47,9 @@ export default function EventsView() {
       const ongoing = mockEvents.filter((e: Event) => e.status === "ongoing").length;
       const completed = mockEvents.filter((e: Event) => e.status === "completed").length;
       const cancelled = mockEvents.filter((e: Event) => e.status === "cancelled").length;
-      setAnalytics({ 
-        total_events: total, 
-        upcoming_events: upcoming, 
+      setAnalytics({
+        total_events: total,
+        upcoming_events: upcoming,
         ongoing_events: ongoing,
         completed_events: completed,
         cancelled_events: cancelled,
@@ -75,10 +75,10 @@ export default function EventsView() {
       // Try to fetch from API, fallback to mock data on error
       try {
         const response = await eventService.getEvents(filters);
-        setEvents(response.data.results);
-        setTotalCount(response.data.count);
-        setHasNext(response.data.next !== null);
-        setHasPrevious(response.data.previous !== null);
+        setEvents(response.data.data.results);
+        setTotalCount(response.data.data.count);
+        setHasNext(response.data.data.next !== null);
+        setHasPrevious(response.data.data.previous !== null);
       } catch (error) {
         console.log("Using mock data - API not available");
         let filteredData = [...mockEvents];
@@ -197,19 +197,19 @@ export default function EventsView() {
   // Use API analytics data if available
   const stats = analytics
     ? {
-        total: analytics.total_events,
-        upcoming: analytics.upcoming_events,
-        ongoing: analytics.ongoing_events,
-        completed: analytics.completed_events,
-        // cancelled: analytics.cancelled_events,
-      }
+      total: analytics.total_events,
+      upcoming: analytics.upcoming_events,
+      ongoing: analytics.ongoing_events,
+      completed: analytics.completed_events,
+      // cancelled: analytics.cancelled_events,
+    }
     : {
-        total: totalCount || events.length,
-        upcoming: events.filter(e => e.status === "upcoming").length,
-        ongoing: events.filter(e => e.status === "ongoing").length,
-        completed: events.filter(e => e.status === "completed").length,
-        // cancelled: events.filter(e => e.status === "cancelled").length,
-      };
+      total: totalCount || events.length,
+      upcoming: events.filter(e => e.status === "upcoming").length,
+      ongoing: events.filter(e => e.status === "ongoing").length,
+      completed: events.filter(e => e.status === "completed").length,
+      // cancelled: events.filter(e => e.status === "cancelled").length,
+    };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
@@ -270,7 +270,7 @@ export default function EventsView() {
           )}
         </div> */}
       </div>
-      
+
       {/* Filters and Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
@@ -337,9 +337,8 @@ export default function EventsView() {
                             setIsTypeDropdownOpen(false);
                             setTypeSearchTerm("");
                           }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                            typeFilter === "all" ? "bg-gray-100 font-medium" : ""
-                          }`}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${typeFilter === "all" ? "bg-gray-100 font-medium" : ""
+                            }`}
                         >
                           All Types
                         </button>
@@ -352,9 +351,8 @@ export default function EventsView() {
                                 setIsTypeDropdownOpen(false);
                                 setTypeSearchTerm("");
                               }}
-                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
-                                typeFilter === type ? "bg-gray-100 font-medium" : ""
-                              }`}
+                              className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${typeFilter === type ? "bg-gray-100 font-medium" : ""
+                                }`}
                             >
                               {type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                             </button>
@@ -400,12 +398,12 @@ export default function EventsView() {
           </div>
         </div>
       </div>
-      
+
       {/* Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-600">Loading events...</div>
-        ) : events.length === 0 ? (
+        ) : !events?.length ? (
           <div className="p-8 text-center text-gray-600">
             No events found. Try adjusting your filters.
           </div>

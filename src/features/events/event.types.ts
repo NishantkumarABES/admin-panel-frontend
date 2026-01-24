@@ -45,10 +45,14 @@ export interface Event {
 
 // Paginated Response
 export interface PaginatedResponse<T> {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
+  success: boolean;
+  detail: string;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+  }
 }
 
 export interface EventAnalytics {
