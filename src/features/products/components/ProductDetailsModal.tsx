@@ -137,7 +137,11 @@ export default function ProductDetailsModal({
                 <InfoRow
                   icon={IndianRupee}
                   label="Tax Percentage"
-                  value={`${product.tax_percentage}%`}
+                  value={
+                    <span className="font-medium text-red-600">
+                      {product.tax_percentage}%
+                    </span>
+                  }
                 />
                 <InfoRow
                   icon={IndianRupee}

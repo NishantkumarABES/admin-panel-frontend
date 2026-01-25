@@ -4,6 +4,7 @@ import Modal from "../../../components/common/Modal";
 import type { CreateGeneralAdDTO } from "../advertisement.types";
 import { SPECIALTIES } from "../advertisement.types";
 import { advertisementService } from "../../../services/advertisement.service";
+import { isValidUrl } from "../../../utils/common";
 
 interface AddGeneralAdFormProps {
   isOpen: boolean;
@@ -171,12 +172,20 @@ export default function AddGeneralAdForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             URL <span className="text-red-500">*</span>
           </label>
+
           <input
             type="url"
             value={formData.url}
             onChange={(e) => {
               setFormData({ ...formData, url: e.target.value });
               if (errors.url) setErrors({ ...errors, url: "" });
+            }}
+            onBlur={() => {
+              if (!formData.url) {
+                setErrors({ ...errors, url: "URL is required" });
+              } else if (!isValidUrl(formData.url)) {
+                setErrors({ ...errors, url: "Enter a valid URL (example: https://domain.com)" });
+              }
             }}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.url ? "border-red-500" : "border-gray-300"
               }`}
@@ -187,7 +196,6 @@ export default function AddGeneralAdForm({
             <p className="text-red-500 text-xs mt-1">{errors.url}</p>
           )}
         </div>
-
         {/* Specialties Multi-Select */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

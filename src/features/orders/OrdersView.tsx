@@ -45,7 +45,7 @@ export default function OrdersView() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState(false);
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
-
+  const today = new Date().toDateString();
   // Fetch analytics
   const fetchAnalytics = async () => {
     try {
@@ -55,17 +55,16 @@ export default function OrdersView() {
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
       // Calculate from mock data
-      const today = new Date().toDateString();
       const todayOrders = mockOrders.filter(
         (o) => new Date(o.created_at).toDateString() === today
       );
       setAnalytics({
-        total_orders_today: todayOrders.length,
+        total_orders: todayOrders.length,
         pending_payments: mockOrders.filter((o) => o.status === "pending_payment").length,
         processing_orders: mockOrders.filter((o) => o.status === "processing").length,
         delivered_orders: mockOrders.filter((o) => o.status === "delivered").length,
         cancelled_orders: mockOrders.filter((o) => o.status === "cancelled").length,
-        total_revenue_today: todayOrders.reduce((sum, o) => sum + o.total_amount, 0),
+        total_revenue: todayOrders.reduce((sum, o) => sum + o.total_amount, 0),
       });
     } finally {
       setAnalyticsLoading(false);

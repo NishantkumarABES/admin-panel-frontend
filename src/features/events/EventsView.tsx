@@ -165,6 +165,12 @@ export default function EventsView() {
   // Submit handlers
   const handleAddEditSubmit = async (data: CreateEventDTO): Promise<{ error?: string }> => {
     try {
+      const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
+      const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
+
+      if (startDateTime > endDateTime) {
+        return { error: "Event start date & time cannot be later than end date & time." };
+      }
       if (selectedEvent) {
         await eventService.updateEvent({ ...data, id: selectedEvent.id });
       } else {
