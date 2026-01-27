@@ -155,7 +155,7 @@ export default function DoctorTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
+                  <StatusBadge status={doctor.state === "inactive"? "inactive" : "active"} size="sm" />
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
