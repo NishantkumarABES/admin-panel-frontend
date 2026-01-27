@@ -540,7 +540,7 @@ export default function ProductsView() {
                   <option value="all">All Users</option>
                   <option value="patient">For Patients</option>
                   <option value="doctor">For Doctors</option>
-                  <option value="both">For Both</option>
+                  {/* <option value="both">For Both</option> */}
                 </select>
               </div>
             </div>
