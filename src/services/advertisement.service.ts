@@ -53,6 +53,7 @@ export const advertisementService = {
     formData.append("image", data.image);
     formData.append("specializations", JSON.stringify(data.specializations));
     formData.append("status", data.status);
+    formData.append("target_user", data.target_user);
 
     return api.post<GeneralAdvertisement>("/advertisements/create/", formData, {
       headers: {
@@ -70,6 +71,7 @@ export const advertisementService = {
     }
     formData.append("specializations", JSON.stringify(data.specializations));
     formData.append("status", data.status);
+    formData.append("target_user", data.target_user);
 
     return api.patch<GeneralAdvertisement>(
       `/advertisements/update/${data.id}/`,

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Upload, X, ChevronDown } from "lucide-react";
 import Modal from "../../../components/common/Modal";
-import type { GeneralAdvertisement, UpdateGeneralAdDTO } from "../advertisement.types";
-import { SPECIALTIES } from "../advertisement.types";
+import type { GeneralAdvertisement, UpdateGeneralAdDTO, UserType } from "../advertisement.types";
+import { SPECIALTIES, USER_TYPES } from "../advertisement.types";
 import { advertisementService } from "../../../services/advertisement.service";
 
 interface EditGeneralAdFormProps {
@@ -18,6 +18,7 @@ export default function EditGeneralAdForm({
   const [formData, setFormData] = useState({
     title: "", url: "",
     status: "enabled" as "enabled" | "disabled",
+    target_user: "doctor" as UserType,
   });
   // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -35,6 +36,7 @@ export default function EditGeneralAdForm({
         title: advertisement.title,
         url: advertisement.url,
         status: advertisement.status,
+        target_user: advertisement.target_user || "doctor",
       });
       setSelectedSpecialties(advertisement.specializations || []);
       setImagePreview(advertisement.image);
@@ -119,6 +121,7 @@ export default function EditGeneralAdForm({
         url: formData.url,
         specializations: selectedSpecialties,
         status: formData.status,
+        target_user: formData.target_user,
       };
 
       if (image) {
@@ -163,9 +166,8 @@ export default function EditGeneralAdForm({
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-              errors.title ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.title ? "border-red-500" : "border-gray-300"
+              }`}
             placeholder="Enter advertisement title"
             disabled={isSubmitting}
           />
@@ -183,9 +185,8 @@ export default function EditGeneralAdForm({
             type="url"
             value={formData.url}
             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-              errors.url ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.url ? "border-red-500" : "border-gray-300"
+              }`}
             placeholder="https://example.com"
             disabled={isSubmitting}
           />
@@ -203,9 +204,8 @@ export default function EditGeneralAdForm({
             <button
               type="button"
               onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
-              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${
-                errors.specialties ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${errors.specialties ? "border-red-500" : "border-gray-300"
+                }`}
               disabled={isSubmitting}
             >
               <span className="text-sm text-gray-700">
@@ -284,9 +284,8 @@ export default function EditGeneralAdForm({
               />
               <label
                 htmlFor="image-upload-edit"
-                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                  errors.image ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${errors.image ? "border-red-500" : "border-gray-300"
+                  }`}
               >
                 <Upload className="w-8 h-8 text-gray-400 mb-2" />
                 <p className="text-sm text-gray-600">Click to upload new image</p>
@@ -353,6 +352,25 @@ export default function EditGeneralAdForm({
           >
             <option value="enabled">Enable</option>
             <option value="disabled">Disable</option>
+          </select>
+        </div>
+
+        {/* User Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Target User <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.target_user}
+            onChange={(e) => setFormData({ ...formData, target_user: e.target.value as UserType })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            disabled={isSubmitting}
+          >
+            {USER_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
           </select>
         </div>
 

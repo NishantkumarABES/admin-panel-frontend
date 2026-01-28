@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Upload, X, ChevronDown } from "lucide-react";
 import Modal from "../../../components/common/Modal";
 import type { CreateGeneralAdDTO } from "../advertisement.types";
-import { SPECIALTIES } from "../advertisement.types";
+import { SPECIALTIES, USER_TYPES } from "../advertisement.types";
+import type { UserType } from "../advertisement.types";
 import { advertisementService } from "../../../services/advertisement.service";
 import { isValidUrl } from "../../../utils/common";
 
@@ -21,6 +22,7 @@ export default function AddGeneralAdForm({
     title: "",
     url: "",
     status: "enabled" as "enabled" | "disabled",
+    user_type: "doctor" as UserType,
   });
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
@@ -112,12 +114,13 @@ export default function AddGeneralAdForm({
         image: image!,
         specializations: selectedSpecialties,
         status: formData.status,
+        user_type: formData.user_type,
       };
 
       await advertisementService.createGeneralAd(createData);
 
       // Reset form
-      setFormData({ title: "", url: "", status: "enabled" });
+      setFormData({ title: "", url: "", status: "enabled", user_type: "doctor" });
       setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
@@ -136,7 +139,7 @@ export default function AddGeneralAdForm({
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setFormData({ title: "", url: "", status: "enabled" });
+      setFormData({ title: "", url: "", status: "enabled", user_type: "doctor" });
       setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
@@ -328,6 +331,25 @@ export default function AddGeneralAdForm({
           >
             <option value="enabled">Enable</option>
             <option value="disabled">Disable</option>
+          </select>
+        </div>
+
+        {/* User Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Target User <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.user_type}
+            onChange={(e) => setFormData({ ...formData, user_type: e.target.value as UserType })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            disabled={isSubmitting}
+          >
+            {USER_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
           </select>
         </div>
 

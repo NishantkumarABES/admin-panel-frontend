@@ -1,3 +1,5 @@
+export type UserType = "patient" | "doctor";
+
 export interface GeneralAdvertisement {
   id: string;
   title: string;
@@ -5,6 +7,7 @@ export interface GeneralAdvertisement {
   image: string;
   specializations: string[];
   status: "enabled" | "disabled";
+  target_user: UserType;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -15,6 +18,7 @@ export interface CreateGeneralAdDTO {
   image: File;
   specializations: string[];
   status: "enabled" | "disabled";
+  target_user: UserType;
 }
 
 export interface UpdateGeneralAdDTO {
@@ -24,6 +28,7 @@ export interface UpdateGeneralAdDTO {
   image?: File;
   specializations: string[];
   status: "enabled" | "disabled";
+  target_user: UserType;
 }
 
 export interface SpecialityAdvertisement {
@@ -50,6 +55,11 @@ export interface PaginatedResponse<T> {
   previous: string | null;
   results: T[];
 }
+export const USER_TYPES: { value: UserType; label: string }[] = [
+  { value: "patient", label: "Patient" },
+  { value: "doctor", label: "Doctor" },
+];
+
 // Mock data for development
 export const mockGeneralAds: GeneralAdvertisement[] = [
   {
@@ -59,6 +69,7 @@ export const mockGeneralAds: GeneralAdvertisement[] = [
     image: "/ads/summer-sale.jpg",
     specializations: ["Cardiology", "Neurology"],
     status: "enabled",
+    target_user: "doctor",
     createdAt: "2025-01-15T10:00:00Z",
     updatedAt: "2025-01-15T10:00:00Z",
   },
@@ -69,6 +80,7 @@ export const mockGeneralAds: GeneralAdvertisement[] = [
     image: "/ads/new-product.jpg",
     specializations: ["General Medicine"],
     status: "disabled",
+    target_user: "patient",
     createdAt: "2025-01-10T14:30:00Z",
     updatedAt: "2025-01-10T14:30:00Z",
   },
