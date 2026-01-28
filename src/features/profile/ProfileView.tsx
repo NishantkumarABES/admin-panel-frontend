@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { User, Lock, LogOut, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { User, Lock, LogOut, Eye, EyeOff, CheckCircle2, Bell } from "lucide-react";
 import { api } from "../../services/api";
 import toast from "react-hot-toast";
+import AllNotificationsModal from "../notifications/AllNotificationsModal";
 
 export default function ProfileView() {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ export default function ProfileView() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -117,7 +119,7 @@ export default function ProfileView() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
+
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-6 py-2">
         <div className="space-y-6">
@@ -144,7 +146,33 @@ export default function ProfileView() {
               </div>
             </div>
           </div>
-          
+
+          {/* Notifications Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Bell className="w-6 h-6 text-gray-700" />
+              <h2 className="text-2xl font-semibold text-gray-900">Notifications</h2>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">View All Notifications</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    View your notification history and manage preferences
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsNotificationsModalOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  View Notifications
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Security Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -321,7 +349,13 @@ export default function ProfileView() {
             </div>
           </div>
         </div>
-        </div>
+      </div>
+
+      {/* All Notifications Modal */}
+      <AllNotificationsModal
+        isOpen={isNotificationsModalOpen}
+        onClose={() => setIsNotificationsModalOpen(false)}
+      />
     </div>
   );
 }
