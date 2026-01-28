@@ -20,7 +20,7 @@ export default function DoctorTable({
 }: DoctorTableProps) {
 
   // Get sort icon for a field
-  
+
   const getSortIcon = (field: DoctorSortField) => {
     if (sortField !== field) {
       return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
@@ -38,7 +38,7 @@ export default function DoctorTable({
       </div>
     );
   }
-  
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-w-0">
       <div className="overflow-x-auto min-w-0">
@@ -156,7 +156,7 @@ export default function DoctorTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <StatusBadge status={doctor.state === "active" || doctor.state === "created" ? "active" : "inactive"} size="sm"/>
+                  <StatusBadge status={doctor.state} size="sm" />
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">

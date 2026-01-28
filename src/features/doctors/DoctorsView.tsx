@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X, HelpCircle } from "lucide-react";
 import type { DoctorUser, CreateDoctorDTO, DoctorAnalytics, DoctorStatus } from "./doctor.types";
 import { mockDoctors, SPECIALTIES } from "./doctor.types";
 import DoctorTable from "./components/DoctorTable";
@@ -237,49 +237,149 @@ export default function DoctorsView() {
       total: analytics.total_doctors,
       active: analytics.active_doctors,
       inactive: analytics.inactive_doctors,
+      created: analytics.created_doctors,
+      deleted: analytics.deleted_doctors,
+      pendingInvitations: analytics.pending_invitations,
+      acceptedInvitations: analytics.accepted_invitations,
     }
     : {
       total: totalCount || doctors.length,
       active: doctors.filter(d => d.is_active).length,
       inactive: doctors.filter(d => !d.is_active).length,
+      created: 0,
+      deleted: 0,
+      pendingInvitations: 0,
+      acceptedInvitations: 0,
     };
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Total Doctors</div>
-          {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-          ) : (
-            <div className="text-2xl font-bold text-gray-900 mt-1">
-              {stats.total}
+      {/* Stats - Two Row Layout */}
+      <div className="space-y-4">
+        {/* Row 1: Account Status Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Total Doctors</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  The total number of doctor accounts registered in the system.
+                </div>
+              </div>
             </div>
-          )}
+            {analyticsLoading ? (
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Active</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Doctors with active accounts, recent activity, and all required profile information completed.
+                </div>
+              </div>
+            </div>
+            {analyticsLoading ? (
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Inactive</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Accounts that have been inactive for an extended period of time.
+                </div>
+              </div>
+            </div>
+            {analyticsLoading ? (
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Created</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Newly registered doctors who have not yet completed all required profile fields.
+                </div>
+              </div>
+            </div>
+            {analyticsLoading ? (
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-blue-600 mt-1">{stats.created}</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">Deleted</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Accounts that have been permanently deleted by the user.
+                </div>
+              </div>
+            </div>
+            {analyticsLoading ? (
+              <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-red-600 mt-1">{stats.deleted}</div>
+            )}
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Active</div>
-          {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-          ) : (
-            <div className="text-2xl font-bold text-emerald-600 mt-1">
-              {stats.active}
+        {/* Row 2: Invitation Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-orange-700 font-medium">Pending Invitations</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-orange-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Invitations sent by admin to doctors who have not yet logged in with the provided credentials.
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+            {analyticsLoading ? (
+              <div className="h-8 bg-orange-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-orange-700 mt-1">{stats.pendingInvitations}</div>
+            )}
+          </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Inactive</div>
-          {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-          ) : (
-            <div className="text-2xl font-bold text-amber-600 mt-1">
-              {stats.inactive}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-blue-700 font-medium">Accepted Invitations</div>
+              <div className="group relative">
+                <HelpCircle className="w-4 h-4 text-blue-400 cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                  Doctors who have logged in using admin-provided credentials. Once they complete their profile, they become active.
+                </div>
+              </div>
             </div>
-          )}
+            {analyticsLoading ? (
+              <div className="h-8 bg-blue-200 rounded animate-pulse mt-1"></div>
+            ) : (
+              <div className="text-2xl font-bold text-blue-700 mt-1">{stats.acceptedInvitations}</div>
+            )}
+          </div>
         </div>
       </div>
 

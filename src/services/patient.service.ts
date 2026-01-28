@@ -9,6 +9,8 @@ export interface PatientAnalytics {
   total_patients: number;
   active_patients: number;
   inactive_patients: number;
+  deleted_patients: number;
+  created_patients: number;
 }
 
 export interface PaginatedPatients {

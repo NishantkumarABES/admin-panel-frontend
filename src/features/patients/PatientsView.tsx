@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Filter, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Eye, Filter, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from "lucide-react";
 import type { PatientUser } from "./patient.types";
 import { mockPatients } from "./patient.types";
 import { patientService, type PatientAnalytics } from "../../services/patient.service";
@@ -197,19 +197,31 @@ export default function PatientsView() {
       total: analytics.total_patients,
       active: analytics.active_patients,
       inactive: analytics.inactive_patients,
+      deleted: analytics.deleted_patients,
+      created: analytics.created_patients,
     }
     : {
       total: totalCount || patients.length,
       active: patients.filter(p => p.is_active).length,
       inactive: patients.filter(p => !p.is_active).length,
+      deleted: 0,
+      created: 0,
     };
 
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Total Patients</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Total Patients</p>
+            <div className="group relative">
+              <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                The total number of patient accounts registered in the system.
+              </div>
+            </div>
+          </div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
@@ -217,7 +229,15 @@ export default function PatientsView() {
           )}
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Active</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Active</p>
+            <div className="group relative">
+              <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                Active accounts with recent activity and all required profile fields completed.
+              </div>
+            </div>
+          </div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
@@ -225,11 +245,51 @@ export default function PatientsView() {
           )}
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Inactive</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Inactive</p>
+            <div className="group relative">
+              <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                Accounts that have been inactive for an extended period of time.
+              </div>
+            </div>
+          </div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
             <p className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</p>
+          )}
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Created</p>
+            <div className="group relative">
+              <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                Newly registered users who have not yet completed all required profile fields.
+              </div>
+            </div>
+          </div>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-blue-600 mt-1">{stats.created}</p>
+          )}
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Deleted</p>
+            <div className="group relative">
+              <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+                Accounts that have been permanently deleted by the user.
+              </div>
+            </div>
+          </div>
+          {analyticsLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+          ) : (
+            <p className="text-2xl font-bold text-red-600 mt-1">{stats.deleted}</p>
           )}
         </div>
       </div>
@@ -351,7 +411,7 @@ export default function PatientsView() {
                       <div className="text-sm text-gray-600">{patient.phone}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={patient.is_active ? "active" : "inactive"} size="sm" />
+                      <StatusBadge status={patient.state} size="sm" />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex justify-end gap-2">

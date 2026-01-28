@@ -75,7 +75,7 @@ export default function DoctorDetailsModal({
               <span>{profile.average_rating.toFixed(1)}</span>
             </div>
           )}
-          <StatusBadge status={doctor.is_active ? "active" : "inactive"} size="sm" />
+          <StatusBadge status={doctor.state} size="sm" />
         </div>
       </div>
 

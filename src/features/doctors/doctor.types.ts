@@ -1,5 +1,5 @@
 // API Response User for doctors
-export type DoctorStatus = "active" | "inactive";
+export type DoctorStatus = "active" | "inactive" | "created" | "deleted" | "pending_invitation" | "accepted_invitation";
 
 export interface DoctorProfile {
   credentials: string | null;
@@ -29,7 +29,7 @@ export interface DoctorUser {
   full_name: string;
   date_of_birth: string | null;
   gender: "male" | "female" | "other" | null;
-  state: string;
+  state: DoctorStatus;
   is_email_verified: boolean;
   is_phone_verified: boolean;
   is_active: boolean;
@@ -51,6 +51,10 @@ export interface DoctorAnalytics {
   total_doctors: number;
   active_doctors: number;
   inactive_doctors: number;
+  created_doctors: number;
+  deleted_doctors: number;
+  pending_invitations: number;
+  accepted_invitations: number;
   success: boolean;
 }
 

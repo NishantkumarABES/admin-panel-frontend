@@ -1,4 +1,4 @@
-export type PatientStatus = "active" | "inactive";
+export type PatientStatus = "active" | "inactive" | "created" | "deleted";
 
 // API Response User
 export interface PatientUser {
@@ -10,7 +10,7 @@ export interface PatientUser {
   country_code: string;
   date_of_birth: string;
   gender: "male" | "female" | "other";
-  state: string;
+  state: PatientStatus;
   is_email_verified: boolean;
   is_phone_verified: boolean;
   is_active: boolean;
