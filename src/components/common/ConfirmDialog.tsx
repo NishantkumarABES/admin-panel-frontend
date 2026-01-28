@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info" | "success";
+  hideCancelButton?: boolean;
 }
 
 export default function ConfirmDialog({
@@ -20,6 +21,7 @@ export default function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "danger",
+  hideCancelButton = false,
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
@@ -86,12 +88,14 @@ export default function ConfirmDialog({
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {cancelText}
-              </button>
+              {!hideCancelButton && (
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  {cancelText}
+                </button>
+              )}
               <button
                 onClick={handleConfirm}
                 className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${config.buttonClass}`}

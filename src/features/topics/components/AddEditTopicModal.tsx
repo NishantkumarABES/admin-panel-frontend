@@ -69,9 +69,16 @@ export default function AddEditTopicModal({
     } else if (isOpen && topic) {
       // Edit mode - go directly to manual mode with pre-filled data
       setMode("manual");
+
+      // For video topics, use the AI-generated summary from transcription if description is empty
+      let description = topic.description || "";
+      if (topic.video_url && !description && topic.transcription?.summary_text) {
+        description = topic.transcription.summary_text;
+      }
+
       setFormData({
         title: topic.title || "",
-        description: topic.description || "",
+        description: description,
         image: topic.image || undefined,
         source_url: topic.source_url || "",
         publishing_time: topic.publishing_time || new Date().toISOString(),
@@ -272,8 +279,8 @@ export default function AddEditTopicModal({
                   }}
                   onBlur={() => validateUrl(articleUrl)}
                   className={`w-full pl-10 pr-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all ${urlError
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:border-blue-500"
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-blue-500"
                     }`}
                   placeholder="https://example.com/medical-article"
                 />
@@ -399,8 +406,8 @@ export default function AddEditTopicModal({
                         key={index}
                         onClick={() => handleImageSelect(index)}
                         className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${selectedImageIndex === index
-                            ? "border-blue-600 ring-2 ring-blue-200"
-                            : "border-gray-200 hover:border-gray-300"
+                          ? "border-blue-600 ring-2 ring-blue-200"
+                          : "border-gray-200 hover:border-gray-300"
                           }`}
                       >
                         <img

@@ -55,7 +55,6 @@ export interface DoctorAnalytics {
   deleted_doctors: number;
   pending_invitations: number;
   accepted_invitations: number;
-  success: boolean;
 }
 
 export interface DoctorQualification {

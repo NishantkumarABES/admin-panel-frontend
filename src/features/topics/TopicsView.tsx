@@ -26,6 +26,7 @@ export default function TopicsView() {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isTranscriptionWarningOpen, setIsTranscriptionWarningOpen] = useState(false);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [pageSize, setPageSize] = useState(5);
@@ -104,6 +105,18 @@ export default function TopicsView() {
 
   const handlePublish = (topic: Topic) => {
     setSelectedTopic(topic);
+
+    // Check if it's a video topic trying to be published (not unpublished)
+    // and transcription is not completed
+    if (
+      !topic.publish_status && // Only check when trying to publish
+      topic.video_url && // It's a video topic
+      (!topic.transcription || topic.transcription.status !== "completed")
+    ) {
+      setIsTranscriptionWarningOpen(true);
+      return;
+    }
+
     setIsPublishDialogOpen(true);
   };
 
@@ -333,6 +346,17 @@ export default function TopicsView() {
         }
         confirmText={selectedTopic?.publish_status ? "Unpublish" : "Publish"}
         variant={selectedTopic?.publish_status ? "warning" : "success"}
+      />
+
+      <ConfirmDialog
+        isOpen={isTranscriptionWarningOpen}
+        onClose={() => setIsTranscriptionWarningOpen(false)}
+        onConfirm={() => setIsTranscriptionWarningOpen(false)}
+        title="Transcription Not Complete"
+        message="This video topic cannot be published yet. Please complete the transcription and summarization process first before publishing."
+        confirmText="OK"
+        variant="warning"
+        hideCancelButton={true}
       />
     </div>
   );
