@@ -1,19 +1,25 @@
-import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package, BarChart3, ShoppingCart } from "lucide-react";
+import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getDashboardMetrics, getDashboardAnalytics, getPendingActions, type DashboardMetrics, type DashboardAnalytics, type PendingActions } from "../../services/dashboard.service";
+import { getDashboardMetrics, getPendingActions, getTopSellingProducts, getRevenueAnalytics, getOrderStatusAnalytics, type DashboardMetrics, type DashboardAnalytics, type PendingActions } from "../../services/dashboard.service";
 import OrderStatusDistributionChart, { type OrderStatusData } from "../../components/charts/OrderStatusDistributionChart";
 import RevenueOverTimeChart, { type RevenueDataPoint } from "../../components/charts/RevenueOverTimeChart";
 import TopSellingProductsChart, { type TopProductData } from "../../components/charts/TopSellingProductsChart";
-import { generateMockAnalytics, generateMockOrderStatusData, generateMockRevenueData, generateMockTopProducts } from "../../utils/mockAnalyticsData";
+import { generateMockOrderStatusData, generateMockRevenueData, generateMockTopProducts } from "../../utils/mockAnalyticsData";
 
 export default function DashboardView() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  // const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [pendingActions, setPendingActions] = useState<PendingActions | null>(null);
   const [pendingActionsLoading, setPendingActionsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Order Analytics State
+  const [topProducts, setTopProducts] = useState<TopProductData[]>([]);
+  const [revenueData, setRevenueData] = useState<RevenueDataPoint[]>([]);
+  const [orderStatusData, setOrderStatusData] = useState<OrderStatusData[]>([]);
+  const [orderAnalyticsLoading, setOrderAnalyticsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -55,21 +61,55 @@ export default function DashboardView() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Fetch Order Analytics data
   useEffect(() => {
-    const fetchAnalytics = async () => {
-
+    const fetchOrderAnalytics = async () => {
+      setOrderAnalyticsLoading(true);
       try {
-        const response = await getDashboardAnalytics();
-        setAnalytics(response.data);
+        const [topProductsRes, revenueRes, orderStatusRes] = await Promise.all([
+          getTopSellingProducts(),
+          getRevenueAnalytics(),
+          getOrderStatusAnalytics()
+        ]);
+
+        // Map API response to chart-compatible format
+        setTopProducts(topProductsRes.data.map(p => ({
+          id: p.id,
+          name: p.name,
+          quantity_sold: p.quantity_sold,
+          revenue: p.revenue,
+          image_url: p.image_url
+        })));
+
+        setRevenueData(revenueRes.data.map(r => ({
+          date: r.date,
+          revenue: r.revenue,
+          orders: r.orders
+        })));
+
+        setOrderStatusData(orderStatusRes.data.map(o => ({
+          status: o.status as OrderStatusData['status'],
+          count: o.count,
+          percentage: o.percentage
+        })));
       } catch (err) {
-        console.error("Error fetching dashboard analytics:", err);
-        // Use mock data for development if API is not ready
-        console.log("Using mock analytics data for development");
-        setAnalytics(generateMockAnalytics());
+        console.error("Error fetching order analytics:", err);
+        // Use mock data as fallback
+        console.log("Using mock order analytics data for development");
+        setTopProducts(generateMockTopProducts());
+        setRevenueData(generateMockRevenueData());
+        setOrderStatusData(generateMockOrderStatusData());
+      } finally {
+        setOrderAnalyticsLoading(false);
       }
     };
 
-    fetchAnalytics();
+    // Delay slightly for progressive loading
+    const timer = setTimeout(() => {
+      fetchOrderAnalytics();
+    }, 200);
+
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -181,13 +221,33 @@ export default function DashboardView() {
             <h2 className="text-lg font-semibold text-gray-900">Order Analytics</h2>
           </div>
           {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <TopSellingProductsChart data={generateMockTopProducts()} />
-            <OrderStatusDistributionChart data={generateMockOrderStatusData()} />
-          </div>
+          {orderAnalyticsLoading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-64 mb-4"></div>
+                  <div className="h-64 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <TopSellingProductsChart data={topProducts} />
+              <OrderStatusDistributionChart data={orderStatusData} />
+            </div>
+          )}
 
           {/* Revenue Over Time - Full Width */}
-          <RevenueOverTimeChart data={generateMockRevenueData()} />
+          {orderAnalyticsLoading ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-64 mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          ) : (
+            <RevenueOverTimeChart data={revenueData} />
+          )}
         </div>
       </div>
 
