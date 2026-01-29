@@ -10,6 +10,7 @@ export type OrderStatus =
   | "refunded";
 
 export type PaymentMethod = "card" | "upi" | "netbanking" | "wallet" | "cod";
+export type CouponType = "percentage" | "fixed";
 
 export interface Address {
   name: string;
@@ -30,7 +31,9 @@ export interface OrderItem {
     sku?: string;
   };
   quantity: number;
-  unit_price: number;
+  base_price: number;
+  tax_percentage: number;
+  discount_percentage: number;
   final_total: number;
 }
 
@@ -48,8 +51,11 @@ export interface Order {
   payment_method: PaymentMethod;
   payment_reference?: string;
   items: OrderItem[];
-  subtotal?: number;
+  subtotal_amount?: number;
   coupon_code?: string;
+  coupon_type?: CouponType;
+  coupon_value?: string;
+  coupon_discount?: number;
   shipping_charge?: number;
   notes?: string;
   timeline?: OrderTimelineEvent[];
@@ -190,11 +196,13 @@ export const mockOrders: Order[] = [
           sku: "MED-STET-001"
         },
         quantity: 1,
-        unit_price: 2499.00,
-        final_total: 2499.00
+        base_price: 2499.00,
+        final_total: 2499.00,
+        tax_percentage: 5,
+        discount_percentage: 0
       }
     ],
-    subtotal: 2499.00,
+    subtotal_amount: 2499.00,
     // tax: 449.82,
     // discount: 0,
     shipping_charge: 0,
@@ -232,11 +240,13 @@ export const mockOrders: Order[] = [
           sku: "MED-BP-002"
         },
         quantity: 2,
-        unit_price: 2999.50,
-        final_total: 5999.00
+        base_price: 2999.50,
+        final_total: 5999.00,
+        tax_percentage: 10,
+        discount_percentage: 200
       }
     ],
-    subtotal: 5999.00,
+    subtotal_amount: 5999.00,
     // tax: 1079.82,
     // discount: 200,
     shipping_charge: 50,
@@ -270,11 +280,13 @@ export const mockOrders: Order[] = [
           sku: "MED-GLOVE-003"
         },
         quantity: 1,
-        unit_price: 1299.00,
+        base_price: 1299.00,
+        tax_percentage: 0,
+        discount_percentage: 0,
         final_total: 1299.00
       }
     ],
-    subtotal: 1299.00,
+    subtotal_amount: 1299.00,
     // tax: 233.82,
     // discount: 0,
     shipping_charge: 40,
@@ -311,11 +323,13 @@ export const mockOrders: Order[] = [
           sku: "MED-ECG-004"
         },
         quantity: 1,
-        unit_price: 8999.00,
+        base_price: 8999.00,
+        tax_percentage: 10,
+        discount_percentage: 50,
         final_total: 8999.00
       }
     ],
-    subtotal: 8999.00,
+    subtotal_amount: 8999.00,
     // tax: 1619.82,
     // discount: 500,
     shipping_charge: 0,

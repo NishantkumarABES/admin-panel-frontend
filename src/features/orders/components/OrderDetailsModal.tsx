@@ -2,6 +2,7 @@ import { X, User, MapPin, Package, CreditCard, Clock, FileText } from "lucide-re
 import type { Order } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { PAYMENT_METHOD_LABELS } from "../order.types";
+import productPlaceholder from "../../../assets/placeholders/product.png";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -31,6 +32,15 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
     })}`;
   };
 
+  const calculateUnitPrice = (item: { base_price: number; discount_percentage: number; tax_percentage: number }) => {
+    const basePrice = Number(item.base_price) || 0;
+    const discountPercentage = Number(item.discount_percentage) || 0;
+    const taxPercentage = Number(item.tax_percentage) || 0;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    const priceAfterDiscount = basePrice - discountAmount;
+    const taxAmount = (priceAfterDiscount * taxPercentage) / 100;
+    return priceAfterDiscount + taxAmount;
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -40,7 +50,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+          className="relative bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -121,15 +131,18 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                 </div>
                 {/* Price note */}
                 <p className="text-xs text-gray-500 mb-3">
-                  Note: The item prices below are shown after applying discounts and taxes.
+                  Note: Unit Price is calculated after applying discount and tax on the base price.
                 </p>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="border border-gray-200 rounded-lg overflow-hidden overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base Price</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Discount</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tax</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                       </tr>
                     </thead>
@@ -138,13 +151,11 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                         <tr key={item.id}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              {item.product.image_url && (
-                                <img
-                                  src={item.product.image_url}
-                                  alt={item.product.name}
-                                  className="w-12 h-12 object-cover rounded border border-gray-200"
-                                />
-                              )}
+                              <img
+                                src={item.product.image_url || productPlaceholder}
+                                alt={item.product.name}
+                                className="w-10 h-10 object-cover rounded border border-gray-200"
+                              />
                               <div>
                                 <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
                                 {item.product.sku && (
@@ -153,12 +164,27 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-center text-sm text-gray-900">{item.quantity}</td>
                           <td className="px-4 py-3 text-right text-sm text-gray-900">
-                            {formatCurrency(
-                              item.quantity ? item.unit_price : 0
+                            {formatCurrency(item.base_price)}
+                          </td>
+                          <td className="px-4 py-3 text-center text-sm">
+                            {item.discount_percentage > 0 ? (
+                              <span className="text-green-600 font-medium">-{item.discount_percentage}%</span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
                             )}
                           </td>
+                          <td className="px-4 py-3 text-center text-sm">
+                            {item.tax_percentage > 0 ? (
+                              <span className="text-red-700">+{item.tax_percentage}%</span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-900">
+                            {formatCurrency(calculateUnitPrice(item))}
+                          </td>
+                          <td className="px-4 py-3 text-center text-sm text-gray-900">{item.quantity}</td>
                           <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
                             {formatCurrency(item.final_total)}
                           </td>
@@ -175,7 +201,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                 <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="text-gray-900">{formatCurrency(order.subtotal || 0)}</span>
+                    <span className="text-gray-900">{formatCurrency(order.subtotal_amount || 0)}</span>
                   </div>
                   {/* {order.discount && order.discount > 0 && (
                     <div className="flex justify-between text-sm">
@@ -190,9 +216,24 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                     </div>
                   )}
                   {order.coupon_code && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Coupon Code:</span>
-                      <span className="text-gray-900">{order.coupon_code}</span>
+                    <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Coupon Applied:</span>
+                        <span className="text-gray-900 font-medium">
+                          {order.coupon_code}
+                          {order.coupon_type && order.coupon_value && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              {order.coupon_type === 'percentage' ? `${order.coupon_value}% OFF` : `₹${order.coupon_value} OFF`}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      {order.coupon_discount != null && order.coupon_discount > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Coupon Discount:</span>
+                          <span className="text-green-600 font-medium">-{formatCurrency(order.coupon_discount)}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                   {/* {order.tax && order.tax > 0 && (
