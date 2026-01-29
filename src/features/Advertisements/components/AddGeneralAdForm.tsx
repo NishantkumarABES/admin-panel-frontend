@@ -22,7 +22,7 @@ export default function AddGeneralAdForm({
     title: "",
     url: "",
     status: "enabled" as "enabled" | "disabled",
-    user_type: "doctor" as UserType,
+    target_user: "doctor" as UserType,
   });
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
@@ -114,13 +114,13 @@ export default function AddGeneralAdForm({
         image: image!,
         specializations: selectedSpecialties,
         status: formData.status,
-        user_type: formData.user_type,
+        target_user: formData.target_user,
       };
 
       await advertisementService.createGeneralAd(createData);
 
       // Reset form
-      setFormData({ title: "", url: "", status: "enabled", user_type: "doctor" });
+      setFormData({ title: "", url: "", status: "enabled", target_user: "doctor" });
       setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
@@ -139,7 +139,7 @@ export default function AddGeneralAdForm({
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setFormData({ title: "", url: "", status: "enabled", user_type: "doctor" });
+      setFormData({ title: "", url: "", status: "enabled", target_user: "doctor" });
       setSelectedSpecialties([]);
       setImage(null);
       setImagePreview(null);
@@ -340,8 +340,8 @@ export default function AddGeneralAdForm({
             Target User <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.user_type}
-            onChange={(e) => setFormData({ ...formData, user_type: e.target.value as UserType })}
+            value={formData.target_user}
+            onChange={(e) => setFormData({ ...formData, target_user: e.target.value as UserType })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
             disabled={isSubmitting}
           >
