@@ -384,7 +384,7 @@ export default function DoctorsView() {
       </div>
 
       {/* Filters and Actions - All in one row */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0 -mt-2">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
           {/* Left side: Search + Filters */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
@@ -510,7 +510,7 @@ export default function DoctorsView() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden -mt-2">
         {loading ? (
           <div className="p-8 text-center text-gray-600">Loading doctors...</div>
         ) : doctors.length === 0 ? (
