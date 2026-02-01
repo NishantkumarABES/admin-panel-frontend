@@ -145,10 +145,10 @@ export default function AddEditCouponModal({
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={handleClose} 
-      title={isEditMode ? `Edit Coupon: ${coupon?.code}` : "Create Coupon"} 
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEditMode ? `Edit Coupon: ${coupon?.code}` : "Create Coupon"}
       size="lg"
     >
       {/* Success State */}
@@ -173,224 +173,247 @@ export default function AddEditCouponModal({
       ) : (
         /* Form State */
         <form onSubmit={handleSubmit} className="space-y-6">
-        {submitError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-red-800">{submitError}</p>
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-red-800">{submitError}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Coupon Code */}
-          <div className="md:col-span-2">
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-              Coupon Code <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="code"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent uppercase ${
-                errors.code ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="e.g., SAVE20"
-            />
-            {errors.code && <p className="text-sm text-red-600 mt-1">{errors.code}</p>}
-          </div>
-
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description (Optional)
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description || ""}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                errors.description ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-          </div>
-
-          {/* Discount Type */}
-          <div>
-            <label htmlFor="discount_type" className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="discount_type"
-              name="discount_type"
-              value={formData.discount_type}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            >
-              <option value="percentage">Percentage (%)</option>
-              <option value="fixed">Fixed Amount (₹)</option>
-            </select>
-          </div>
-
-          {/* Discount Value */}
-          <div>
-            <label htmlFor="discount_value" className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Value <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              id="discount_value"
-              name="discount_value"
-              value={formData.discount_value}
-              onChange={handleChange}
-              step="0.01"
-              min="0"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                errors.discount_value ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder={formData.discount_type === "percentage" ? "e.g., 20" : "e.g., 100"}
-            />
-            {errors.discount_value && <p className="text-sm text-red-600 mt-1">{errors.discount_value}</p>}
-          </div>
-
-          {/* Valid From */}
-          <div>
-            <label htmlFor="valid_from" className="block text-sm font-medium text-gray-700 mb-1">
-              Valid From <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              id="valid_from"
-              name="valid_from"
-              value={formData.valid_from}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            />
-          </div>
-
-          {/* Valid Until */}
-          <div>
-            <label htmlFor="valid_until" className="block text-sm font-medium text-gray-700 mb-1">
-              Valid Until <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              id="valid_until"
-              name="valid_until"
-              value={formData.valid_until}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                errors.valid_until ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.valid_until && <p className="text-sm text-red-600 mt-1">{errors.valid_until}</p>}
-          </div>
-
-          {/* Max Uses */}
-          <div>
-            <label htmlFor="max_uses" className="block text-sm font-medium text-gray-700 mb-1">
-              Max Uses (Optional)
-            </label>
-            <input
-              type="number"
-              id="max_uses"
-              name="max_uses"
-              value={formData.max_uses || ""}
-              onChange={handleChange}
-              min="0"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                errors.max_uses ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Unlimited"
-            />
-            {errors.max_uses && <p className="text-sm text-red-600 mt-1">{errors.max_uses}</p>}
-          </div>
-
-          {/* Min Purchase Amount */}
-          <div>
-            <label htmlFor="min_purchase_amount" className="block text-sm font-medium text-gray-700 mb-1">
-              Min Purchase Amount (Optional)
-            </label>
-            <input
-              type="number"
-              id="min_purchase_amount"
-              name="min_purchase_amount"
-              value={formData.min_purchase_amount || ""}
-              onChange={handleChange}
-              step="0.01"
-              min="0"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                errors.min_purchase_amount ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="No minimum"
-            />
-            {errors.min_purchase_amount && <p className="text-sm text-red-600 mt-1">{errors.min_purchase_amount}</p>}
-          </div>
-
-          {/* Max Discount Amount */}
-          {formData.discount_type === "percentage" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Coupon Code */}
             <div className="md:col-span-2">
-              <label htmlFor="max_discount_amount" className="block text-sm font-medium text-gray-700 mb-1">
-                Max Discount Amount (Optional)
+              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
+                Coupon Code <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="code"
+                name="code"
+                value={formData.code}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent uppercase ${errors.code ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="e.g., SAVE20"
+              />
+              {errors.code && <p className="text-sm text-red-600 mt-1">{errors.code}</p>}
+            </div>
+
+            {/* Description */}
+            <div className="md:col-span-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description (Optional)
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description || ""}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.description ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+            </div>
+
+            {/* Discount Type */}
+            <div>
+              <label htmlFor="discount_type" className="block text-sm font-medium text-gray-700 mb-1">
+                Discount Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="discount_type"
+                name="discount_type"
+                value={formData.discount_type}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              >
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (₹)</option>
+              </select>
+            </div>
+
+            {/* Discount Value */}
+            <div>
+              <label htmlFor="discount_value" className="block text-sm font-medium text-gray-700 mb-1">
+                Discount Value <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                id="max_discount_amount"
-                name="max_discount_amount"
-                value={formData.max_discount_amount || ""}
+                id="discount_value"
+                name="discount_value"
+                value={formData.discount_value}
                 onChange={handleChange}
                 step="0.01"
                 min="0"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                  errors.max_discount_amount ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="No maximum"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.discount_value ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder={formData.discount_type === "percentage" ? "e.g., 20" : "e.g., 100"}
               />
-              {errors.max_discount_amount && <p className="text-sm text-red-600 mt-1">{errors.max_discount_amount}</p>}
+              {errors.discount_value && <p className="text-sm text-red-600 mt-1">{errors.discount_value}</p>}
             </div>
-          )}
-        </div>
 
-        {/* Current Usage Info - Only shown in edit mode */}
-        {isEditMode && coupon && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="text-sm font-medium text-blue-900 mb-1">Current Usage</div>
-            <div className="text-sm text-blue-800">
-              This coupon has been used {coupon.current_uses} time{coupon.current_uses !== 1 ? "s" : ""}
-              {coupon.max_uses ? ` out of ${coupon.max_uses} maximum uses` : ""}.
+            {/* Valid From */}
+            <div>
+              <label htmlFor="valid_from" className="block text-sm font-medium text-gray-700 mb-1">
+                Valid From <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="valid_from"
+                name="valid_from"
+                value={formData.valid_from}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+            </div>
+
+            {/* Valid Until */}
+            <div>
+              <label htmlFor="valid_until" className="block text-sm font-medium text-gray-700 mb-1">
+                Valid Until <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="valid_until"
+                name="valid_until"
+                value={formData.valid_until}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.valid_until ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.valid_until && <p className="text-sm text-red-600 mt-1">{errors.valid_until}</p>}
+            </div>
+
+            {/* Max Uses */}
+            <div>
+              <label htmlFor="max_uses" className="block text-sm font-medium text-gray-700 mb-1">
+                Max Uses (Optional)
+              </label>
+              <input
+                type="number"
+                id="max_uses"
+                name="max_uses"
+                value={formData.max_uses || ""}
+                onChange={handleChange}
+                min="0"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.max_uses ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Unlimited"
+              />
+              {errors.max_uses && <p className="text-sm text-red-600 mt-1">{errors.max_uses}</p>}
+            </div>
+
+            {/* Min Purchase Amount */}
+            <div>
+              <label htmlFor="min_purchase_amount" className="block text-sm font-medium text-gray-700 mb-1">
+                Min Purchase Amount (Optional)
+              </label>
+              <input
+                type="number"
+                id="min_purchase_amount"
+                name="min_purchase_amount"
+                value={formData.min_purchase_amount || ""}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.min_purchase_amount ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="No minimum"
+              />
+              {errors.min_purchase_amount && <p className="text-sm text-red-600 mt-1">{errors.min_purchase_amount}</p>}
+            </div>
+
+            {/* Max Discount Amount */}
+            {formData.discount_type === "percentage" && (
+              <div className="md:col-span-2">
+                <label htmlFor="max_discount_amount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Discount Amount (Optional)
+                </label>
+                <input
+                  type="number"
+                  id="max_discount_amount"
+                  name="max_discount_amount"
+                  value={formData.max_discount_amount || ""}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.max_discount_amount ? "border-red-500" : "border-gray-300"
+                    }`}
+                  placeholder="No maximum"
+                />
+                {errors.max_discount_amount && <p className="text-sm text-red-600 mt-1">{errors.max_discount_amount}</p>}
+              </div>
+            )}
+
+            {/* Active Status */}
+            <div className="md:col-span-2">
+              <label htmlFor="is_active" className="block text-sm font-medium text-gray-700 mb-2">
+                Active Status
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.is_active}
+                  onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 ${formData.is_active ? "bg-emerald-600" : "bg-gray-300"
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.is_active ? "translate-x-6" : "translate-x-1"
+                      }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium ${formData.is_active ? "text-emerald-600" : "text-gray-500"}`}>
+                  {formData.is_active ? "Active" : "Inactive"}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.is_active
+                  ? "This coupon is currently active and can be used by customers."
+                  : "This coupon is inactive and cannot be used by customers."}
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{isEditMode ? "Updating..." : "Creating..."}</span>
-              </>
-            ) : (
-              <span>{isEditMode ? "Update Coupon" : "Create Coupon"}</span>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Current Usage Info - Only shown in edit mode */}
+          {isEditMode && coupon && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="text-sm font-medium text-blue-900 mb-1">Current Usage</div>
+              <div className="text-sm text-blue-800">
+                This coupon has been used {coupon.current_uses} time{coupon.current_uses !== 1 ? "s" : ""}
+                {coupon.max_uses ? ` out of ${coupon.max_uses} maximum uses` : ""}.
+              </div>
+            </div>
+          )}
+
+          {/* Form Actions */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>{isEditMode ? "Updating..." : "Creating..."}</span>
+                </>
+              ) : (
+                <span>{isEditMode ? "Update Coupon" : "Create Coupon"}</span>
+              )}
+            </button>
+          </div>
+        </form>
       )}
     </Modal>
   );
