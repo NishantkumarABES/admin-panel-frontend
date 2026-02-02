@@ -200,6 +200,16 @@ export default function EventsView() {
     return typeFilter.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all" || typeFilter !== "all";
+
   // Use API analytics data if available
   const stats = analytics
     ? {
@@ -389,6 +399,16 @@ export default function EventsView() {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 

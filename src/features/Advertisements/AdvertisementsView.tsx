@@ -135,6 +135,15 @@ export default function AdvertisementsView() {
     disabled: generalAds.filter(ad => ad.status === "disabled").length,
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all";
+
   return (
     <div className="space-y-6">
 
@@ -182,6 +191,17 @@ export default function AdvertisementsView() {
                   <option value="disabled">Disabled</option>
                 </select>
               </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
+
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"

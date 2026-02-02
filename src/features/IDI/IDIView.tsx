@@ -218,6 +218,17 @@ export default function IDIView() {
     draft: IDIList.filter(c => c.status === "draft").length
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setDrugClassFilter("all");
+    setTherapeuticCategoryFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all" || drugClassFilter !== "all" || therapeuticCategoryFilter !== "all";
+
   return (
     <div className="space-y-6 min-w-0 max-w-full">
       {/* Stats */}
@@ -425,6 +436,16 @@ export default function IDIView() {
                   <option value="draft">Draft</option>
                 </select>
               </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 

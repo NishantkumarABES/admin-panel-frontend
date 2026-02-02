@@ -356,6 +356,14 @@ export default function ProductsView() {
   //   }
   // };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setUserTypeFilter("all");
+  };
+
   // Filter categories based on search term
   const filteredCategories = PRODUCT_CATEGORIES.filter((category) =>
     category.toLowerCase().includes(categorySearchTerm.toLowerCase())
@@ -366,6 +374,19 @@ export default function ProductsView() {
     if (categoryFilter === "all") return "All Categories";
     return categoryFilter;
   };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all" || categoryFilter !== "all" || userTypeFilter !== "all";
+
+  // Clear coupon filters handler
+  const handleClearCouponFilters = () => {
+    setCouponSearchTerm("");
+    setCouponTypeFilter("all");
+    setCouponStatusFilter("all");
+  };
+
+  // Check if any coupon filters are active
+  const hasCouponActiveFilters = couponSearchTerm || couponTypeFilter !== "all" || couponStatusFilter !== "all";
 
   // Use API analytics data if available
   const stats = analytics
@@ -543,6 +564,16 @@ export default function ProductsView() {
                   {/* <option value="both">For Both</option> */}
                 </select>
               </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 
@@ -667,9 +698,8 @@ export default function ProductsView() {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
                 >
                   <option value="all">All Types</option>
-                  <option value="product">Product</option>
-                  <option value="category">Category</option>
-                  <option value="all">All Products</option>
+                  <option value="percentage">Percentage</option>
+                  <option value="fixed">Fixed Amount</option>
                 </select>
               </div>
 
@@ -686,6 +716,16 @@ export default function ProductsView() {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
+
+              {/* Clear Coupon Filters */}
+              {hasCouponActiveFilters && (
+                <button
+                  onClick={handleClearCouponFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
 
             {/* Right side: Create Coupon Button */}

@@ -231,6 +231,17 @@ export default function DoctorsView() {
     return specialityFilter;
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setspecialityFilter("all");
+    setShowAdminCreatedOnly(false);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all" || specialityFilter !== "all" || showAdminCreatedOnly;
+
   // Use API analytics data if available, or totalCount from pagination, or calculate from current doctors
   const stats = analytics
     ? {
@@ -347,7 +358,7 @@ export default function DoctorsView() {
 
         {/* Row 2: Invitation Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-4 min-w-0">
+          <div className="bg-linear-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-4 min-w-0">
             <div className="flex items-center justify-between">
               <div className="text-sm text-orange-700 font-medium">Pending Invitations</div>
               <div className="group relative">
@@ -364,7 +375,7 @@ export default function DoctorsView() {
             )}
           </div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4 min-w-0">
+          <div className="bg-linear-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4 min-w-0">
             <div className="flex items-center justify-between">
               <div className="text-sm text-blue-700 font-medium">Accepted Invitations</div>
               <div className="group relative">
@@ -491,8 +502,21 @@ export default function DoctorsView() {
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
+                  <option value="created">Created</option>
+                  <option value="deleted">Deleted</option>
+
                 </select>
               </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 

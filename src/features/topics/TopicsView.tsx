@@ -163,6 +163,15 @@ export default function TopicsView() {
     }
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all";
+
   return (
 
     <div className="space-y-6 min-w-0 max-w-full">
@@ -194,7 +203,7 @@ export default function TopicsView() {
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Left side: Search */}
-          <div className="flex-1 min-w-0 w-full sm:min-w-300 sm:max-w-md relative">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -204,23 +213,37 @@ export default function TopicsView() {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
             />
           </div>
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent appearance-none bg-white"
-            >
-              <option value="all">All Status</option>
-              <option value="publish">Publish</option>
-              <option value="unpublish">UnPublish</option>
-            </select>
-          </div>
-          {/* Right side: Add Topic Button */}
-          <div className="flex justify-end lg:justify-normal shrink-0">
+
+          {/* Right side: Filters and Actions */}
+          <div className="flex gap-2">
+            {/* Status Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent appearance-none bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="publish">Publish</option>
+                <option value="unpublish">UnPublish</option>
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+              >
+                Clear Filters
+              </button>
+            )}
+
+            {/* Add Topic Button */}
             <button
               onClick={handleAdd}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4" />
               Add Topic

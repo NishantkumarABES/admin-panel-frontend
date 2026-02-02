@@ -191,14 +191,23 @@ export default function AdvisoryView() {
   const stats = analytics
     ? {
       total: analytics.total_members,
-      accepted: analytics.active_members,
-      pending: analytics.inactive_members,
+      active: analytics.active_members,
+      inactive: analytics.inactive_members,
     }
     : {
       total: totalCount || members.length,
-      accepted: members.filter((m) => m.status === "active").length,
-      pending: members.filter((m) => m.status === "inactive").length,
+      active: members.filter((m) => m.status === "active").length,
+      inactive: members.filter((m) => m.status === "inactive").length,
     };
+
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all";
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
@@ -216,23 +225,23 @@ export default function AdvisoryView() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Accepted Invitations</div>
+          <div className="text-sm text-gray-600 mb-1">Active Members</div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
             <div className="text-2xl font-bold text-emerald-600 mt-1">
-              {stats.accepted}
+              {stats.active}
             </div>
           )}
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Pending Invitations</div>
+          <div className="text-sm text-gray-600 mb-1">Inactive Members</div>
           {analyticsLoading ? (
             <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
           ) : (
             <div className="text-2xl font-bold text-amber-600 mt-1">
-              {stats.pending}
+              {stats.inactive}
             </div>
           )}
         </div>
@@ -270,6 +279,16 @@ export default function AdvisoryView() {
                 <option value="inactive">Inactive</option>
               </select>
             </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
 
           {/* Right side: Add Member Button */}
