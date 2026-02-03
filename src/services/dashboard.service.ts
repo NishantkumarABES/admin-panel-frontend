@@ -1,0 +1,104 @@
+import { api } from "./api";
+
+export interface MetricData {
+  total: number;
+  growth_percent: number;
+}
+
+export interface GrowthDataPoint {
+  month: string;
+  doctors: number;
+  patients: number;
+}
+
+export interface SpecializationData {
+  name: string;
+  count: number;
+}
+
+export interface CategoryData {
+  category: string;
+  count: number;
+}
+
+export interface StatusData {
+  status: string;
+  count: number;
+}
+
+export interface VerificationData {
+  verified: number;
+  unverified: number;
+  label: string;
+}
+
+export interface UserStatusData {
+  active: number;
+  inactive: number;
+  type: string;
+}
+
+export interface DashboardMetrics {
+  doctors: MetricData;
+  patients: MetricData;
+  topics: MetricData;
+  products: MetricData;
+}
+
+export interface DashboardAnalytics {
+  metrics: DashboardMetrics;
+  growthTrend: GrowthDataPoint[];
+  specializations: SpecializationData[];
+  topicCategories: CategoryData[];
+  topicStatus: StatusData[];
+  userStatus: UserStatusData[];
+  verification: VerificationData[];
+}
+
+// Get dashboard metrics
+export const getDashboardMetrics = () =>
+  api.get<DashboardMetrics>("/analytics/admin/dashboard/metrics/");
+
+export interface PendingActions {
+  out_of_stock_products: number;
+  unpublished_topics: number;
+  unpublished_advt: number;
+}
+
+// Get dashboard metrics
+export const getPendingActions = () =>
+  api.get<PendingActions>("/analytics/admin/dashboard/pending-actions/");
+
+
+// Order Analytics Types
+export interface TopSellingProduct {
+  id: string;
+  name: string;
+  quantity_sold: number;
+  revenue: number;
+  image_url?: string;
+}
+
+export interface RevenueAnalyticsDataPoint {
+  date: string;
+  revenue: number;
+  orders: number;
+}
+
+export interface OrderStatusAnalytics {
+  status: string;
+  count: number;
+  percentage: number;
+}
+
+// Get top selling products
+export const getTopSellingProducts = () =>
+  api.get<TopSellingProduct[]>("/analytics/admin/dashboard/top-selling-products/");
+
+// Get revenue analytics
+export const getRevenueAnalytics = () =>
+  api.get<RevenueAnalyticsDataPoint[]>("/analytics/admin/dashboard/revenue-analytics/");
+
+// Get order status analytics
+export const getOrderStatusAnalytics = () =>
+  api.get<OrderStatusAnalytics[]>("/analytics/admin/dashboard/order-status-analytics/");

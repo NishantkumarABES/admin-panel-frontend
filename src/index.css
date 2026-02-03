@@ -48,6 +48,13 @@ body {
   min-height: 100vh;
   background-color: var(--color-bg-secondary);
   color: var(--color-text);
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Typography */
@@ -98,4 +105,51 @@ a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
+}
+
+
+/* Large screens */
+@media (min-width: 1440px) {
+  #root {
+    zoom: 0.825;
+  }
+}
+
+/* Medium screens */
+@media (max-width: 1439px) and (min-width: 1200px) {
+  #root {
+    zoom: 0.7;
+  }
+}
+
+/* Small laptops */
+@media (max-width: 1199px) {
+  #root {
+    zoom: 0.75;
+  }
+}
+
+
+/* Control dropdown height */
+.PhoneInputCountrySelect {
+  max-height: 100px; /* Adjust this value as needed */
+}
+
+/* Style the dropdown list */
+.PhoneInputCountrySelectDropdown {
+  max-height: 100px; /* Adjust this value as needed */
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Optional: Style individual country options */
+.PhoneInputCountryOption {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.PhoneInputCountryOption:hover {
+  background-color: #f3f4f6;
 }

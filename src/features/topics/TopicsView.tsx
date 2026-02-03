@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter } from "lucide-react";
-import type { Topic, CreateTopicDTO, TopicStatus } from "./topic.types";
-import { mockTopics } from "./topic.types";
+import { Plus, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Topic, CreateTopicDTO, TopicsAnalytics } from "./topic.types";
 import TopicTable from "./components/TopicTable";
 import TopicDetailsModal from "./components/TopicDetailsModal";
 import AddEditTopicModal from "./components/AddEditTopicModal";
@@ -12,55 +11,76 @@ export default function TopicsView() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<TopicStatus | "all">("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState<TopicsAnalytics | null>(null);
 
   // Modal states
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isTranscriptionWarningOpen, setIsTranscriptionWarningOpen] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [pageSize, setPageSize] = useState(5);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Fetch analytics
+  const fetchAnalytics = async () => {
+    try {
+      const data = await topicService.getTopicsAnalytics();
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+    }
+  };
 
   // Fetch topics
   const fetchTopics = async () => {
     try {
       setLoading(true);
-      const filters: any = {};
-      if (statusFilter !== "all") filters.status = statusFilter;
-      if (categoryFilter !== "all") filters.category = categoryFilter;
-      if (searchTerm) filters.search = searchTerm;
-      const response = await topicService.getTopics(filters);
-      setTopics(Array.isArray(response.data) ? response.data : [...mockTopics]);
+      const response = await topicService.getTopics({
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        page: currentPage,
+        page_size: pageSize,
+        search: searchTerm || undefined,
+      });
+
+      setTopics(response.results || []);
+      setTotalCount(response.count || 0);
+      setHasNext(response.next !== null);
+      setHasPrevious(response.previous !== null);
+      // setTotalPages(Math.ceil((response.count || 0) / pageSize));
     } catch (error) {
       console.error("Failed to fetch topics:", error);
-      // Use mock data on error
-      setTopics(mockTopics);
+      setTopics([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial fetch
   useEffect(() => {
-    // Use mock data for now
-    setTopics(mockTopics);
-    setLoading(false);
-  }, []);
+    fetchAnalytics();
+    fetchTopics();
+  }, [currentPage, pageSize, statusFilter]);
 
   // Handle search with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm !== undefined) {
-        fetchTopics();
-      }
+      setCurrentPage(1); // Reset to first page on search
+      fetchTopics();
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  // Refetch when filters change
-  useEffect(() => {
-    // fetchTopics();
-  }, [statusFilter, categoryFilter]);
 
   // Handlers
   const handleView = (topic: Topic) => {
@@ -83,6 +103,23 @@ export default function TopicsView() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handlePublish = (topic: Topic) => {
+    setSelectedTopic(topic);
+
+    // Check if it's a video topic trying to be published (not unpublished)
+    // and transcription is not completed
+    if (
+      !topic.publish_status && // Only check when trying to publish
+      topic.video_url && // It's a video topic
+      (!topic.transcription || topic.transcription.status !== "completed")
+    ) {
+      setIsTranscriptionWarningOpen(true);
+      return;
+    }
+
+    setIsPublishDialogOpen(true);
+  };
+
   // Submit handlers
   const handleAddEditSubmit = async (data: CreateTopicDTO) => {
     try {
@@ -91,9 +128,12 @@ export default function TopicsView() {
       } else {
         await topicService.createTopic(data);
       }
-      fetchTopics();
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsAddEditModalOpen(false);
     } catch (error) {
       console.error("Failed to save topic:", error);
+      alert("Failed to save topic. Please try again.");
     }
   };
 
@@ -101,87 +141,109 @@ export default function TopicsView() {
     if (!selectedTopic) return;
     try {
       await topicService.deleteTopic(selectedTopic.id);
-      fetchTopics();
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Failed to delete topic:", error);
+      alert("Failed to delete topic. Please try again.");
     }
   };
 
-  // Get unique categories for filter
-  const uniqueCategories = Array.from(
-    new Set(topics.map((topic) => topic.category))
-  ).sort();
-
-  // Get stats for all topics
-  const stats = {
-    total: topics.length,
-    published: topics.filter((t) => t.status === "published").length,
-    scheduled: topics.filter((t) => t.status === "scheduled").length,
-    draft: topics.filter((t) => t.status === "draft").length,
+  const handleConfirmPublish = async () => {
+    if (!selectedTopic) return;
+    try {
+      await topicService.togglePublishStatus(selectedTopic.id);
+      await fetchTopics();
+      await fetchAnalytics();
+      setIsPublishDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to update topic status:", error);
+      alert("Failed to update publish status. Please try again.");
+    }
   };
 
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== "all";
+
   return (
+
     <div className="space-y-6 min-w-0 max-w-full">
-      {/* Filters and Actions */}
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Total Topics</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {analytics?.total_topics || 0}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Published</div>
+          <div className="text-2xl font-bold text-emerald-600">
+            {analytics?.published_topics || 0}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
+          <div className="text-sm text-gray-600 mb-1">Unpublished</div>
+          <div className="text-2xl font-bold text-gray-600">
+            {analytics?.unpublished_topics || 0}
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between min-w-0">
-          {/* Left side: Search + Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
-            {/* Search */}
-            <div className="flex-1 min-w-0 w-full sm:min-w-[280px] sm:max-w-md relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title, category, or author..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              />
-            </div>
-
-            {/* Filters group */}
-            <div className="flex flex-wrap items-center gap-4 min-w-0">
-              {/* Category Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All Categories</option>
-                  {uniqueCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-[160px]">
-                <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) =>
-                    setStatusFilter(e.target.value as TopicStatus | "all")
-                  }
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                >
-                  <option value="all">All Status</option>
-                  <option value="published">Published</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Left side: Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title or description..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            />
           </div>
 
-          {/* Right side: Add Topic Button */}
-          <div className="flex justify-end lg:justify-normal flex-shrink-0">
+          {/* Right side: Filters and Actions */}
+          <div className="flex gap-2">
+            {/* Status Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent appearance-none bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="publish">Publish</option>
+                <option value="unpublish">UnPublish</option>
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+              >
+                Clear Filters
+              </button>
+            )}
+
+            {/* Add Topic Button */}
             <button
               onClick={handleAdd}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4" />
               Add Topic
@@ -190,52 +252,92 @@ export default function TopicsView() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Total Topics</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-        </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Published</div>
-          <div className="text-2xl font-bold text-emerald-600">
-            {stats.published}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Scheduled</div>
-          <div className="text-2xl font-bold text-amber-600">
-            {stats.scheduled}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-          <div className="text-sm text-gray-600 mb-1">Draft</div>
-          <div className="text-2xl font-bold text-gray-600">{stats.draft}</div>
-        </div>
-      </div>
 
       {/* Table */}
-      {loading ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading topics...</p>
-        </div>
-      ) : (
-        <TopicTable
-          topics={topics}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      )}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <p className="text-gray-500">Loading topics...</p>
+          </div>
+        ) : (
+          <>
+            <TopicTable
+              topics={topics}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPublish={handlePublish}
+            />
+
+            {/* Pagination */}
+            {!loading && topics.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} doctors
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="pageSize" className="text-sm text-gray-600">
+                          Per page:
+                        </label>
+                        <select
+                          id="pageSize"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+
+
+
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!hasPrevious}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <div className="px-3 py-1.5 text-sm text-gray-600">
+                        Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!hasNext}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Modals */}
       <TopicDetailsModal
         topic={selectedTopic}
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
+        onRefresh={fetchTopics}
       />
 
       <AddEditTopicModal
@@ -253,6 +355,31 @@ export default function TopicsView() {
         message={`Are you sure you want to delete "${selectedTopic?.title}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={isPublishDialogOpen}
+        onClose={() => setIsPublishDialogOpen(false)}
+        onConfirm={handleConfirmPublish}
+        title={selectedTopic?.publish_status ? "Unpublish Topic" : "Publish Topic"}
+        message={
+          selectedTopic?.publish_status
+            ? `Are you sure you want to unpublish "${selectedTopic?.title}"? This will make it invisible to users.`
+            : `Are you sure you want to publish "${selectedTopic?.title}"? This will make it visible to users.`
+        }
+        confirmText={selectedTopic?.publish_status ? "Unpublish" : "Publish"}
+        variant={selectedTopic?.publish_status ? "warning" : "success"}
+      />
+
+      <ConfirmDialog
+        isOpen={isTranscriptionWarningOpen}
+        onClose={() => setIsTranscriptionWarningOpen(false)}
+        onConfirm={() => setIsTranscriptionWarningOpen(false)}
+        title="Transcription Not Complete"
+        message="This video topic cannot be published yet. Please complete the transcription and summarization process first before publishing."
+        confirmText="OK"
+        variant="warning"
+        hideCancelButton={true}
       />
     </div>
   );

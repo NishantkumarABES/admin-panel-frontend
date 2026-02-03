@@ -1,8 +1,11 @@
-import type { DoctorStatus } from "../../features/doctors/doctor.types";
+
 import type { TopicStatus } from "../../features/topics/topic.types";
+import type { ProductStatus } from "../../features/products/product.types";
+import type { PatientStatus } from "../../features/patients/patient.types";
+import type { DoctorStatus } from "../../features/doctors/doctor.types";
 
 interface StatusBadgeProps {
-  status: DoctorStatus | TopicStatus | "active" | "inactive";
+  status: TopicStatus | ProductStatus | PatientStatus | DoctorStatus | "draft";
   size?: "sm" | "md";
 }
 
@@ -13,27 +16,31 @@ export default function StatusBadge({ status, size = "md" }: StatusBadgeProps) {
   };
 
   const statusStyles = {
-    verified: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    pending: "bg-amber-50 text-amber-700 border-amber-200",
-    rejected: "bg-red-50 text-red-700 border-red-200",
-    suspended: "bg-gray-50 text-gray-700 border-gray-200",
     active: "bg-emerald-50 text-emerald-700 border-emerald-200",
     inactive: "bg-amber-50 text-amber-700 border-amber-200",
-    published: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    scheduled: "bg-amber-50 text-amber-700 border-amber-200",
+    created: "bg-gray-50 text-gray-700 border-gray-200",
+    deleted: "bg-red-50 text-red-700 border-red-200",
+    pending_invitation: "bg-orange-50 text-orange-700 border-orange-200",
+    accepted_invitation: "bg-blue-50 text-blue-700 border-blue-200",
+    instock: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    outofstock: "bg-amber-50 text-amber-700 border-amber-200",
     draft: "bg-gray-50 text-gray-700 border-gray-200",
+    published: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    unpublished: "bg-gray-50 text-gray-700 border-gray-200",
   };
 
   const statusLabels = {
-    verified: "Verified",
-    pending: "Pending",
-    rejected: "Rejected",
-    suspended: "Suspended",
+    instock: "In Stock",
+    outofstock: "Out of Stock",
     active: "Active",
     inactive: "Inactive",
     published: "Published",
-    scheduled: "Scheduled",
+    unpublished: "Unpublished",
     draft: "Draft",
+    created: "Created",
+    deleted: "Deleted",
+    pending_invitation: "Pending",
+    accepted_invitation: "Accepted",
   };
 
   return (

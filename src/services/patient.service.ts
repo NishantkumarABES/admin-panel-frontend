@@ -1,33 +1,78 @@
 import { api } from "./api";
 import type {
-  PatientForm, CreatePatientDTO, UpdatePatientDTO, PatientFilters,
+  CreatePatientDTO, UpdatePatientDTO, PatientFilters,
+  PaginatedResponse, PatientUser
 } from "../features/patients/patient.types";
 
+
+export interface PatientAnalytics {
+  total_patients: number;
+  active_patients: number;
+  inactive_patients: number;
+  deleted_patients: number;
+  created_patients: number;
+}
+
+export interface PaginatedPatients {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PatientUser[];
+}
+
 export const patientService = {
-  getPatients: (filters?: PatientFilters) => {
+  getAnalytics: () => {
+    return api.get<PatientAnalytics>("/analytics/admin/patients/metrics/");
+  },
+
+  getPatients: async (filters?: PatientFilters): Promise<{ data: PaginatedPatients }> => {
     const params = new URLSearchParams();
-    if (filters?.status && filters.status !== "all") {
-      params.append("status", filters.status);
+
+    if (filters?.page) {
+      params.append("page", filters.page.toString());
     }
+
+    if (filters?.page_size) {
+      params.append("page_size", filters.page_size.toString());
+    }
+
     if (filters?.search) {
       params.append("search", filters.search);
     }
+
+    if (filters?.status) {
+      params.append("status", filters.status);
+    }
+
+    if (filters?.ordering) {
+      params.append("ordering", filters.ordering);
+    }
+
     const queryString = params.toString();
-    return api.get<PatientForm[]>(
-      `/admin/patients${queryString ? `?${queryString}` : ""}`
+    const response = await api.get<PaginatedResponse<PatientUser>>(
+      `/auth/admin/users/patient${queryString ? `?${queryString}` : ""}`
     );
+
+    return {
+      data: {
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
+        results: response.data.results,
+      }
+    };
   },
 
   getPatient: (id: string) => {
-    return api.get<PatientForm>(`/admin/patients/${id}`);
+    return api.get<PatientUser>(`/admin/patients/${id}`);
   },
 
   createPatient: (data: CreatePatientDTO) => {
-    return api.post<PatientForm>("/admin/patients", data);
+    return api.post<PatientUser>("/admin/patients", data);
   },
 
   updatePatient: (data: UpdatePatientDTO) => {
-    return api.put<PatientForm>(`/admin/patients/${data.id}`, data);
+    return api.put<PatientUser>(`/admin/patients/${data.id}`, data);
   },
 
   deletePatient: (id: string) => {
