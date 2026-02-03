@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import type { IDI, CreateIDIDTO, KeyInteraction, PracticalPearl } from "../idi.types";
 import Modal from "../../../components/common/Modal";
 import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "../idi.types";

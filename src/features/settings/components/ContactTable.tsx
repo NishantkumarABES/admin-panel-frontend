@@ -29,7 +29,7 @@ export default function ContactTable({
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [originalContactsCount, setOriginalContactsCount] = useState(0);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  // const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (setting?.content) {
@@ -58,7 +58,7 @@ export default function ContactTable({
   };
 
   const handleEditContact = (index: number) => {
-    setEditingIndex(index);
+    // setEditingIndex(index);
     setIsEditing(true);
   };
 
@@ -98,7 +98,7 @@ export default function ContactTable({
       await onSave(type, { content: JSON.stringify(contacts) });
       setOriginalContactsCount(contacts.length);
       setIsEditing(false);
-      setEditingIndex(null);
+      // setEditingIndex(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to save changes');
     } finally {
@@ -118,7 +118,7 @@ export default function ContactTable({
       setContacts([]);
     }
     setIsEditing(false);
-    setEditingIndex(null);
+    // setEditingIndex(null);
     setError('');
   };
 
@@ -181,7 +181,7 @@ export default function ContactTable({
       {/* Error Message */}
       {error && (
         <div className="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}

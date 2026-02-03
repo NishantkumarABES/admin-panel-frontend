@@ -1,7 +1,7 @@
 import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getDashboardMetrics, getPendingActions, getTopSellingProducts, getRevenueAnalytics, getOrderStatusAnalytics, type DashboardMetrics, type DashboardAnalytics, type PendingActions } from "../../services/dashboard.service";
+import { getDashboardMetrics, getPendingActions, getTopSellingProducts, getRevenueAnalytics, getOrderStatusAnalytics, type DashboardMetrics, type PendingActions } from "../../services/dashboard.service";
 import OrderStatusDistributionChart, { type OrderStatusData } from "../../components/charts/OrderStatusDistributionChart";
 import RevenueOverTimeChart, { type RevenueDataPoint } from "../../components/charts/RevenueOverTimeChart";
 import TopSellingProductsChart, { type TopProductData } from "../../components/charts/TopSellingProductsChart";
