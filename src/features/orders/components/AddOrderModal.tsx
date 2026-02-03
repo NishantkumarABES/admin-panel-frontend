@@ -48,7 +48,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [userSearch, setUserSearch] = useState("");
-    const [loadingUsers, setLoadingUsers] = useState(false);
+    // const [loadingUsers, setLoadingUsers] = useState(false);
 
     // Address selection
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -58,7 +58,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
     // Product selection
     const [products, setProducts] = useState<Product[]>([]);
     const [productSearch, setProductSearch] = useState("");
-    const [loadingProducts, setLoadingProducts] = useState(false);
+    // const [loadingProducts, setLoadingProducts] = useState(false);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
     // Order details
@@ -73,7 +73,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
     // Import API
     const fetchUsers = async (search?: string) => {
         try {
-            setLoadingUsers(true);
+            // setLoadingUsers(true);
             const { api } = await import("../../../services/api");
             const params = new URLSearchParams();
             if (search) params.append("search", search);
@@ -84,7 +84,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
         } catch (err) {
             console.error("Failed to fetch users:", err);
         } finally {
-            setLoadingUsers(false);
+            // setLoadingUsers(false);
         }
     };
 
@@ -104,7 +104,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
 
     const fetchProducts = async (search?: string) => {
         try {
-            setLoadingProducts(true);
+            // setLoadingProducts(true);
             const { api } = await import("../../../services/api");
             const params = new URLSearchParams();
             if (search) params.append("search", search);
@@ -115,7 +115,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
         } catch (err) {
             console.error("Failed to fetch products:", err);
         } finally {
-            setLoadingProducts(false);
+            // setLoadingProducts(false);
         }
     };
 

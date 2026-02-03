@@ -1,4 +1,4 @@
-import { X, Pill, Tag, Calendar, AlertCircle, BookOpen, FlaskConical } from "lucide-react";
+import { Pill, Tag, Calendar, AlertCircle, BookOpen, FlaskConical } from "lucide-react"; // X
 import type { IDI } from "../idi.types";
 import Modal from "../../../components/common/Modal";
 
