@@ -58,6 +58,7 @@ export default function ContactTable({
   };
 
   const handleEditContact = (index: number) => {
+    console.log('Editing contact at index:', index);
     // setEditingIndex(index);
     setIsEditing(true);
   };
