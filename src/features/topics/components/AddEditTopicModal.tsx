@@ -21,7 +21,8 @@ type WorkflowMode = "article_input" | "ai_processing" | "ai_success" | "manual";
 const initialFormData: CreateTopicDTO = {
   title: "",
   description: "",
-  image: undefined,
+  image_url: undefined,
+  image_file: undefined,
   source_url: "",
   publishing_time: new Date().toISOString(),
 };
@@ -79,7 +80,8 @@ export default function AddEditTopicModal({
       setFormData({
         title: topic.title || "",
         description: description,
-        image: topic.image || undefined,
+        image_url: topic.image || undefined,
+        image_file: undefined,
         source_url: topic.source_url || "",
         publishing_time: topic.publishing_time || new Date().toISOString(),
       });
@@ -125,7 +127,8 @@ export default function AddEditTopicModal({
         setFormData({
           title: result.data.title,
           description: result.data.summary,
-          image: undefined,
+          image_url: undefined,
+          image_file: undefined,
           source_url: articleUrl,
           publishing_time: new Date().toISOString(),
         });
@@ -149,7 +152,7 @@ export default function AddEditTopicModal({
   const handleImageSelect = (index: number) => {
     setSelectedImageIndex(index);
     const selectedUrl = extractedImages[index];
-    setFormData({ ...formData, image: selectedUrl });
+    setFormData({ ...formData, image_url: selectedUrl, image_file: undefined });
     setImagePreview(selectedUrl);
   };
 
@@ -157,7 +160,7 @@ export default function AddEditTopicModal({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, image: file });
+      setFormData({ ...formData, image_file: file, image_url: undefined });
       setImagePreview(URL.createObjectURL(file));
       setSelectedImageIndex(null); // Deselect any extracted image
     }
@@ -165,7 +168,7 @@ export default function AddEditTopicModal({
 
   // Remove uploaded/selected image
   const handleRemoveImage = () => {
-    setFormData({ ...formData, image: undefined });
+    setFormData({ ...formData, image_url: undefined, image_file: undefined });
     setImagePreview("");
     setSelectedImageIndex(null);
     if (fileInputRef.current) {
@@ -482,7 +485,7 @@ export default function AddEditTopicModal({
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || (!formData.image && !imagePreview)}
+                disabled={isSubmitting || (!formData.image_url && !formData.image_file && !imagePreview)}
                 className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-700 rounded-xl hover:bg-blue-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Submitting..." : "Create Topic"}

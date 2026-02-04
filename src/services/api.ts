@@ -53,7 +53,8 @@ api.interceptors.response.use(
     // Check if error is due to expired token
     if (
       error.response?.status === 401 &&
-      error.response?.data?.code === 'token_not_valid' &&
+      (error.response?.data?.code === 'token_not_valid' ||
+        error.response?.data?.detail === 'Given token not valid for any token type') &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {

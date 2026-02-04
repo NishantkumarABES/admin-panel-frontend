@@ -76,7 +76,8 @@ export interface ArticleExtractionResponse {
 export interface CreateTopicDTO {
   title: string;
   description: string;
-  image?: File | string;
+  image_url?: string;
+  image_file?: File;
   source_url?: string;
   publishing_time: string;
 }

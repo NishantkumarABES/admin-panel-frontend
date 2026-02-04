@@ -55,9 +55,11 @@ export const createTopic = async (data: CreateTopicDTO) => {
 
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      if (key === "image" && value instanceof File) {
+      if (key === "image_file" && value instanceof File) {
         formData.append(key, value);
-      } else {
+      } else if (key === "image_url" && typeof value === "string") {
+        formData.append(key, value);
+      } else if (key !== "image_file" && key !== "image_url") {
         formData.append(key, value.toString());
       }
     }
@@ -82,9 +84,11 @@ export const updateTopic = async (data: UpdateTopicDTO) => {
 
   Object.entries(updateData).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      if (key === "image" && value instanceof File) {
+      if (key === "image_file" && value instanceof File) {
         formData.append(key, value);
-      } else {
+      } else if (key === "image_url" && typeof value === "string") {
+        formData.append(key, value);
+      } else if (key !== "image_file" && key !== "image_url") {
         formData.append(key, value.toString());
       }
     }
