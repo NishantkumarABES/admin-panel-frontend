@@ -90,7 +90,7 @@ export default function AdvertisementsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, currentPage, pageSize]);
 
   const handleAddSuccess = () => {
     setIsAddModalOpen(false);
