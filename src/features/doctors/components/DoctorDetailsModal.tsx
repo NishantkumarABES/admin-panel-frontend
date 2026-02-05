@@ -2,6 +2,9 @@ import { Mail, Phone, Briefcase, FileText, Building2, MapPin, Star, IndianRupee,
 import type { DoctorUser } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
+import maleDoctorPlaceholder from "../../../assets/placeholders/male_doctor.jpg";
+import femaleDoctorPlaceholder from "../../../assets/placeholders/female_doctor.jpg";
+
 
 interface DoctorDetailsModalProps {
   doctor: DoctorUser | null;
@@ -51,8 +54,8 @@ export default function DoctorDetailsModal({
               doctor.doctor_profile?.profile_photo
                 ? doctor.doctor_profile.profile_photo
                 : doctor.gender === "male"
-                  ? "/src/assets/placeholders/male_doctor.jpg"
-                  : "/src/assets/placeholders/female_doctor.jpg"
+                  ? maleDoctorPlaceholder
+                  : femaleDoctorPlaceholder
             }
             alt={doctor.full_name}
             className="w-10 h-10 rounded-lg object-cover"

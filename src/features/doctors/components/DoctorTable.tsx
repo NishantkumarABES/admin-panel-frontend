@@ -1,6 +1,8 @@
 import { Eye, Edit, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { DoctorUser } from "../doctor.types";
 import StatusBadge from "../../../components/common/StatusBadge";
+import maleDoctorPlaceholder from "../../../assets/placeholders/male_doctor.jpg";
+import femaleDoctorPlaceholder from "../../../assets/placeholders/female_doctor.jpg";
 
 type SortDirection = "asc" | "desc" | null;
 type DoctorSortField = "full_name" | "specialization" | "license_number" | "years_of_experience" | "phone" | "is_active";
@@ -118,8 +120,8 @@ export default function DoctorTable({
                           doctor.doctor_profile?.profile_photo
                             ? doctor.doctor_profile.profile_photo
                             : doctor.gender?.toLowerCase() === "male"
-                              ? "/src/assets/placeholders/male_doctor.jpg"
-                              : "/src/assets/placeholders/female_doctor.jpg"
+                              ? maleDoctorPlaceholder
+                              : femaleDoctorPlaceholder
                         }
                         alt={doctor.full_name}
                         className="w-10 h-10 rounded object-cover"

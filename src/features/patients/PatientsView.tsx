@@ -6,6 +6,9 @@ import { patientService, type PatientAnalytics } from "../../services/patient.se
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import PatientDetailsModal from "./components/PatientDetailsModal";
 import StatusBadge from "../../components/common/StatusBadge";
+import malePatientPlaceholder from "../../assets/placeholders/male_patient.jpg";
+import femalePatientPlaceholder from "../../assets/placeholders/female_patient.jpg";
+
 
 type SortDirection = "asc" | "desc" | null;
 type PatientSortField = "full_name" | "email" | "phone" | "is_active";
@@ -413,8 +416,8 @@ export default function PatientsView() {
                               patient.image
                                 ? patient.image
                                 : patient.gender === "male"
-                                  ? "/src/assets/placeholders/male_patient.jpg"
-                                  : "/src/assets/placeholders/female_patient.jpg"
+                                  ? malePatientPlaceholder
+                                  : femalePatientPlaceholder
                             }
                             alt={patient.full_name}
                             className="w-10 h-10 rounded object-cover"
