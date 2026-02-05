@@ -71,15 +71,11 @@ export default function AddEditTopicModal({
       // Edit mode - go directly to manual mode with pre-filled data
       setMode("manual");
 
-      // For video topics, use the AI-generated summary from transcription if description is empty
-      let description = topic.description || "";
-      if (topic.video_url && !description && topic.transcription?.summary_text) {
-        description = topic.transcription.summary_text;
-      }
-
+      // Keep description as is - don't auto-fill with AI summary for video topics
+      // The AI-generated summary_text should remain separate in transcription data
       setFormData({
         title: topic.title || "",
-        description: description,
+        description: topic.description || "",
         image_url: topic.image || undefined,
         image_file: undefined,
         source_url: topic.source_url || "",
