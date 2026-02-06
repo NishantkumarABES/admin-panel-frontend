@@ -349,7 +349,7 @@ export default function AddEditEventModal({
           )}
 
           {/* Basic Details */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Basic Details
             </h3>
@@ -465,7 +465,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Date & Time */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Date & Time
             </h3>
@@ -542,7 +542,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Event Format & Location */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Format & Location
             </h3>
@@ -602,7 +602,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Registration & Credits */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Registration & Credits
             </h3>
@@ -667,7 +667,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Agenda */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Agenda
             </h3>
@@ -681,7 +681,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Speakers */}
-          <div>
+          <div className="p-3">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-900">
                 Speakers
@@ -804,7 +804,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Event Images */}
-          <div>
+          <div className="p-3">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
               Event Images
             </h3>
@@ -851,7 +851,7 @@ export default function AddEditEventModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 p-3">
             <button
               type="button"
               onClick={handleClose}

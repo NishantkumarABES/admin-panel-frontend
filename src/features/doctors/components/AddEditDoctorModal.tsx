@@ -324,6 +324,7 @@ export default function AddEditDoctorModal({
                   <PhoneInput
                     international
                     defaultCountry="IN"
+                    countrySelectProps={{ unicodeFlags: true }}
                     value={formData.countryCode + formData.phone}
                     onChange={(value) => {
                       if (value) {
@@ -340,9 +341,34 @@ export default function AddEditDoctorModal({
                         setFormData({ ...formData, countryCode: '', phone: '' });
                       }
                     }}
+                    limitMaxLength
+                    numberInputProps={{
+                      maxLength: 15,
+                      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+                        const input = e.currentTarget;
+                        const digitsOnly = input.value.replace(/\D/g, '');
+                        // Allow: backspace, delete, tab, escape, enter, navigation keys
+                        if (
+                          e.key === 'Backspace' ||
+                          e.key === 'Delete' ||
+                          e.key === 'Tab' ||
+                          e.key === 'Escape' ||
+                          e.key === 'Enter' ||
+                          e.key === 'ArrowLeft' ||
+                          e.key === 'ArrowRight' ||
+                          e.key === 'Home' ||
+                          e.key === 'End'
+                        ) {
+                          return;
+                        }
+                        // Block input if already at 10 digits and trying to add more
+                        if (digitsOnly.length >= 12 && /^\d$/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      },
+                    }}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="Enter phone number"
-
                     required
                   />
                 </div>

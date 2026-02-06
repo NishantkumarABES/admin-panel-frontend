@@ -97,9 +97,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''
+              }`}
             title="Heading 1"
           >
             <Heading1 className="w-4 h-4" />
@@ -107,9 +106,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''
+              }`}
             title="Heading 2"
           >
             <Heading2 className="w-4 h-4" />
@@ -117,9 +115,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''
+              }`}
             title="Heading 3"
           >
             <Heading3 className="w-4 h-4" />
@@ -131,9 +128,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('bold') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''
+              }`}
             title="Bold"
           >
             <Bold className="w-4 h-4" />
@@ -141,9 +137,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('italic') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''
+              }`}
             title="Italic"
           >
             <Italic className="w-4 h-4" />
@@ -151,9 +146,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('underline') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-300' : ''
+              }`}
             title="Underline"
           >
             <UnderlineIcon className="w-4 h-4" />
@@ -165,9 +159,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('bulletList') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''
+              }`}
             title="Bullet List"
           >
             <List className="w-4 h-4" />
@@ -175,9 +168,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('orderedList') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-300' : ''
+              }`}
             title="Numbered List"
           >
             <ListOrdered className="w-4 h-4" />
@@ -189,9 +181,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().setTextAlign('left').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''
+              }`}
             title="Align Left"
           >
             <AlignLeft className="w-4 h-4" />
@@ -199,9 +190,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().setTextAlign('center').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''
+              }`}
             title="Align Center"
           >
             <AlignCenter className="w-4 h-4" />
@@ -209,9 +199,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={() => editor.chain().focus().setTextAlign('right').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''
+              }`}
             title="Align Right"
           >
             <AlignRight className="w-4 h-4" />
@@ -223,9 +212,8 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={editor.isActive('link') ? removeLink : addLink}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('link') ? 'bg-gray-300' : ''
-            }`}
+            className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-300' : ''
+              }`}
             title={editor.isActive('link') ? 'Remove Link' : 'Add Link'}
           >
             <LinkIcon className="w-4 h-4" />
@@ -233,12 +221,16 @@ export default function RichTextEditor({
         </div>
       )}
 
-      <EditorContent
-        editor={editor}
-        className={`prose prose-sm max-w-none p-4 min-h-[400px] focus:outline-none ${
-          editable ? 'bg-white' : 'bg-gray-50'
-        }`}
-      />
+      <div
+        onClick={() => editor.commands.focus()}
+        className={`prose prose-sm max-w-none p-4 min-h-[400px] cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? 'bg-white' : 'bg-gray-50'
+          }`}
+      >
+        <EditorContent
+          editor={editor}
+          className="focus:outline-none h-full outline-none"
+        />
+      </div>
     </div>
   );
 }
