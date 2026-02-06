@@ -260,7 +260,7 @@ export default function AdvertisementsView() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600  truncate">
+                          <div className="text-sm text-gray-600 truncate max-w-[200px]" title={ad.url}>
                             {ad.url}
                           </div>
                         </td>

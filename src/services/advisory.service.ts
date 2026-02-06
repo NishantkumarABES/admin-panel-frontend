@@ -109,6 +109,14 @@ export const updateAdvisoryMember = async (data: UpdateAdvisoryDTO) => {
     formData.append("years_of_experience", data.years_of_experience.toString());
   }
 
+  if (data.gender !== undefined) {
+    formData.append("gender", data.gender);
+  }
+
+  if (data.date_of_birth !== undefined) {
+    formData.append("date_of_birth", data.date_of_birth);
+  }
+
   if (data.bio !== undefined) {
     formData.append("bio", data.bio);
   }
