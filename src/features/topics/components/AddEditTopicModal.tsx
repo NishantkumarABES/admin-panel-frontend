@@ -10,7 +10,7 @@ import * as topicService from "../../../services/topic.service";
 import RichTextEditor from "../../settings/components/RichTextEditor";
 import { stripHtml } from "../../../utils/stripHtml";
 
-const MAX_DESCRIPTION_CHARS = 300;
+const MAX_DESCRIPTION_CHARS = 500;
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
