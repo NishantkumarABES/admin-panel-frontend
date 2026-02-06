@@ -8,6 +8,9 @@ import {
 } from "lucide-react";
 import * as topicService from "../../../services/topic.service";
 import RichTextEditor from "../../settings/components/RichTextEditor";
+import { stripHtml } from "../../../utils/stripHtml";
+
+const MAX_DESCRIPTION_CHARS = 300;
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
@@ -179,6 +182,11 @@ export default function AddEditTopicModal({
     setUrlError("");
   };
 
+  // Get plain text character count from HTML content
+  const getPlainTextLength = (html: string): number => {
+    return stripHtml(html).length;
+  };
+
   // Handle final form submission
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,8 +199,15 @@ export default function AddEditTopicModal({
       return;
     }
 
-    if (!formData.description?.trim()) {
+    const plainDescription = stripHtml(formData.description || "");
+    if (!plainDescription.trim()) {
       alert("Description is required");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (plainDescription.length > MAX_DESCRIPTION_CHARS) {
+      alert(`Description must be ${MAX_DESCRIPTION_CHARS} characters or less`);
       setIsSubmitting(false);
       return;
     }
@@ -205,7 +220,13 @@ export default function AddEditTopicModal({
       }
     }
 
-    onSubmit(formData);
+    // Strip HTML before sending to API
+    const submissionData = {
+      ...formData,
+      description: plainDescription,
+    };
+
+    onSubmit(submissionData);
 
     // Clear state without calling cleanup again
     setMode("article_input");
@@ -374,7 +395,7 @@ export default function AddEditTopicModal({
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Description (~300 words) *
+                Description (max {MAX_DESCRIPTION_CHARS} characters) *
               </label>
               <RichTextEditor
                 content={formData.description}
@@ -383,9 +404,16 @@ export default function AddEditTopicModal({
                 }
                 editable={true}
               />
-              <p className="text-xs text-gray-500 mt-1.5">
-                AI-generated summary. Feel free to edit as needed.
-              </p>
+              <div className="flex justify-between items-center mt-1.5">
+                <p className="text-xs text-gray-500">
+                  AI-generated summary. Feel free to edit as needed.
+                </p>
+                {getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS && (
+                  <p className="text-xs text-red-600 font-medium">
+                    {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Images */}
@@ -550,7 +578,7 @@ export default function AddEditTopicModal({
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Article Content / Description *
+                Article Content / Description (max {MAX_DESCRIPTION_CHARS} characters) *
               </label>
               <RichTextEditor
                 content={formData.description}
@@ -559,6 +587,11 @@ export default function AddEditTopicModal({
                 }
                 editable={true}
               />
+              {getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS && (
+                <p className="text-xs text-red-600 font-medium mt-1.5">
+                  {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
+                </p>
+              )}
             </div>
 
             {/* Image Upload */}
