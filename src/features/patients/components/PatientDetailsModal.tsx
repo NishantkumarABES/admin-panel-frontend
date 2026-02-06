@@ -24,7 +24,7 @@ export default function PatientDetailsModal({
             </h3>
             <p className="text-sm text-gray-600 mt-1">Patient ID: {patient.id}</p>
           </div>
-          <StatusBadge status={patient.is_active ? "active" : "inactive"} size="sm" />
+          <StatusBadge status={patient.state} size="sm" />
         </div>
 
         {/* Contact Information */}
