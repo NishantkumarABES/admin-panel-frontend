@@ -19,11 +19,12 @@ export default function OrdersView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
 
-  // Get today's date as default for both from and to
+  // Get first day of current month as "from" and today as "to"
   const getDefaultDates = () => {
     const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     return {
-      from: today.toISOString().split('T')[0],
+      from: firstDayOfMonth.toISOString().split('T')[0],
       to: today.toISOString().split('T')[0]
     };
   };
