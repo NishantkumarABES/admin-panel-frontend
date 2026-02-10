@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Filter, ChevronLeft, ChevronRight } from "lucide-react"; //Trash2 
+import { Plus, Search, Edit, Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react"; //Trash2 
 import type { GeneralAdvertisement } from "./advertisement.types";
 import { mockGeneralAds } from "./advertisement.types";
 import { advertisementService } from "../../services/advertisement.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import AddGeneralAdForm from "./components/AddGeneralAdForm";
 import EditGeneralAdForm from "./components/EditGeneralAdForm";
+import AdvertisementDetailsModal from "./components/AdvertisementDetailsModal";
 
 export default function AdvertisementsView() {
   // const BackendBaseURL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8000';
@@ -24,6 +25,7 @@ export default function AdvertisementsView() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<GeneralAdvertisement | null>(null);
 
@@ -106,6 +108,11 @@ export default function AdvertisementsView() {
   const handleEdit = (ad: GeneralAdvertisement) => {
     setSelectedAd(ad);
     setIsEditModalOpen(true);
+  };
+
+  const handleViewDetails = (ad: GeneralAdvertisement) => {
+    setSelectedAd(ad);
+    setIsDetailsModalOpen(true);
   };
 
   // const handleDelete = (ad: GeneralAdvertisement) => {
@@ -225,7 +232,7 @@ export default function AdvertisementsView() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[300px]">
                         Title
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking">
@@ -254,8 +261,8 @@ export default function AdvertisementsView() {
                         key={ad.id}
                         className="hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 max-w-[250px]">
+                          <div className="text-sm font-medium text-gray-900 break-words">
                             {ad.title}
                           </div>
                         </td>
@@ -308,6 +315,13 @@ export default function AdvertisementsView() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleViewDetails(ad)}
+                              className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => handleEdit(ad)}
                               className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
@@ -398,6 +412,15 @@ export default function AdvertisementsView() {
 
       {selectedAd && (
         <>
+          <AdvertisementDetailsModal
+            isOpen={isDetailsModalOpen}
+            onClose={() => {
+              setIsDetailsModalOpen(false);
+              setSelectedAd(null);
+            }}
+            advertisement={selectedAd}
+          />
+
           <EditGeneralAdForm
             isOpen={isEditModalOpen}
             onClose={() => {
