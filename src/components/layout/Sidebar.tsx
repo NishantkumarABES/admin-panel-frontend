@@ -1,8 +1,10 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck,
-  ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill, Lightbulb
+  ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill, Lightbulb,
+  Library, FileText, Video, Briefcase, ChevronDown
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
@@ -20,16 +22,26 @@ const navItems = [
   { label: "Settings", path: "/settings", icon: Settings },
 ];
 
+const myRepositItems = [
+  { label: "Books", path: "/my-reposit/books", icon: BookOpen },
+  { label: "Events", path: "/my-reposit/events", icon: Calendar },
+  { label: "Articles", path: "/my-reposit/articles", icon: FileText },
+  { label: "Videos", path: "/my-reposit/videos", icon: Video },
+  { label: "Jobs", path: "/my-reposit/jobs", icon: Briefcase },
+];
+
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
 }
 
-
-
 export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isRepositOpen, setIsRepositOpen] = useState(
+    location.pathname.startsWith("/my-reposit")
+  );
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -75,7 +87,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-1">
+      <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
         {navItems.map(({ label, path, icon: Icon }) => (
           <NavLink
             key={path}
@@ -95,6 +107,57 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             {!isCollapsed && <span className="transition-opacity duration-300 ease-in-out">{label}</span>}
           </NavLink>
         ))}
+
+        {/* My Reposit Section */}
+        <div className="pt-4 mt-4 border-t border-gray-800">
+          <button
+            onClick={() => {
+              if (isCollapsed) {
+                setIsCollapsed(false);
+                setIsRepositOpen(true);
+              } else {
+                setIsRepositOpen(!isRepositOpen);
+              }
+            }}
+            title={isCollapsed ? "My Reposit" : ""}
+            className={`flex items-center w-full ${isCollapsed ? "justify-center" : "gap-3"
+              } px-4 py-2.5 rounded-lg text-base font-medium transition-all duration-300 ease-in-out
+              ${location.pathname.startsWith("/my-reposit")
+                ? "bg-gray-800 text-white!"
+                : "text-white! hover:bg-gray-800"
+              }`}
+          >
+            <Library className="w-5 h-5 shrink-0" />
+            {!isCollapsed && (
+              <>
+                <span className="flex-1 text-left transition-opacity duration-300 ease-in-out">My Reposit</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isRepositOpen ? "rotate-180" : ""}`} />
+              </>
+            )}
+          </button>
+
+          {!isCollapsed && isRepositOpen && (
+            <div className="mt-1 space-y-1 pl-4">
+              {myRepositItems.map(({ label, path, icon: Icon }) => (
+                <NavLink
+                  key={path}
+                  to={path}
+                  end
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out
+                    ${isActive
+                      ? "bg-gray-800 text-white!"
+                      : "text-white! hover:bg-gray-800"
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="transition-opacity duration-300 ease-in-out">{label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Admin User Section */}
