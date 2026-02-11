@@ -92,8 +92,8 @@ export default function CouponTable({ coupons, onView, onEdit, onDelete, onToggl
                 <button
                   onClick={() => onToggleStatus(coupon)}
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${coupon.is_active
-                      ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                     }`}
                   title={`Click to ${coupon.is_active ? "deactivate" : "activate"}`}
                 >
@@ -104,7 +104,7 @@ export default function CouponTable({ coupons, onView, onEdit, onDelete, onToggl
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onView(coupon)}
-                    className="text-gray-600 hover:text-gray-900 transition-colors p-1"
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                     title="View coupon"
                   >
                     <Eye className="w-4 h-4" />

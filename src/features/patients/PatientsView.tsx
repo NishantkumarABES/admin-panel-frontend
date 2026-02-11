@@ -397,6 +397,9 @@ export default function PatientsView() {
                       {getSortIcon("is_active")}
                     </div>
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Registration Date
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -437,11 +440,22 @@ export default function PatientsView() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <StatusBadge status={patient.state} size="sm" />
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-600">
+                        {patient.created_at
+                          ? new Date(patient.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                          : "—"}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => handleView(patient)}
-                          className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                           title="View Profile"
                         >
                           <Eye className="w-4 h-4" />

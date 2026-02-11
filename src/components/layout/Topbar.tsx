@@ -21,7 +21,8 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/IDI": { name: "IDI: Indian Drug Index", description: "Manage IDI: Clinical Information Management" },
   "/advisory": { name: "Advisory", description: "Manage advisory panel and settings" },
   "/settings": { name: "Settings", description: "Manage application policies and information" },
-  "/profile": { name: "Profile", description: "Admin User Profile" }
+  "/profile": { name: "Profile", description: "Admin User Profile" },
+  "/my-reposit/books": { name: "Books", description: "Manage books and view stats" },
 };
 
 interface TopbarProps {
@@ -120,10 +121,10 @@ export default function Topbar({ isSidebarCollapsed }: TopbarProps) {
 
   return (
     <>
-      <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${isSidebarCollapsed ? "left-20" : "left-64"
+      <header className={`fixed top-0 right-0 h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20 transition-all duration-500 ease-in-out ${isSidebarCollapsed ? "left-20" : "left-68"
         }`}>
         {/* Left - Current Page/Tab */}
-        <div>
+        <div className="ml-2">
           <h2 className="text-xl font-semibold text-gray-900">{currentPage}</h2>
           <p className="text-sm text-gray-600">{currentDescription}</p>
         </div>

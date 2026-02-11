@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: Props) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 overflow-hidden">
+    <div className="flex min-h-screen bg-slate-100 overflow-hidden">
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-30">
         <Sidebar
@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: Props) {
         />
       </div>
       {/* Main Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out min-w-0 ${isSidebarCollapsed ? "ml-20" : "ml-64"
+      <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out min-w-0 ${isSidebarCollapsed ? "ml-20" : "ml-68"
         }`}>
         <Topbar isSidebarCollapsed={isSidebarCollapsed} />
 
