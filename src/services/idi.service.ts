@@ -235,3 +235,35 @@ export const getIDIAnalytics = async () => {
     archived_drugs: number;
   }>("/admin/idi/analytics/");
 };
+
+// AI Extract: send a paragraph and get structured IDI data back
+export const extractIDIFromParagraph = async (paragraph: string): Promise<CreateIDIDTO> => {
+  const response = await api.post<{ success: boolean; data: BackendIDI }>(
+    "/admin/idi/extract/",
+    { paragraph }
+  );
+  const transformed = transformIDIFromBackend(response.data.data);
+  // Map the IDI response to CreateIDIDTO (strip metadata fields)
+  return {
+    drugNameGeneric: transformed.drugNameGeneric,
+    drugClass: transformed.drugClass,
+    therapeuticCategory: transformed.therapeuticCategory,
+    brandsInIndia: transformed.brandsInIndia,
+    strengthsAvailable: transformed.strengthsAvailable,
+    formulationsRoutes: transformed.formulationsRoutes,
+    coreClinicalRole: transformed.coreClinicalRole,
+    preferredClinicalScenarios: transformed.preferredClinicalScenarios,
+    whereBenefitLimited: transformed.whereBenefitLimited,
+    usualAdultDose: transformed.usualAdultDose,
+    timingRelativeToMeals: transformed.timingRelativeToMeals,
+    reviewDurationPlan: transformed.reviewDurationPlan,
+    commonAdverseEffects: transformed.commonAdverseEffects,
+    seriousButUncommonRisks: transformed.seriousButUncommonRisks,
+    longTermTherapyCautions: transformed.longTermTherapyCautions,
+    keyInteractions: transformed.keyInteractions || [],
+    practicalPrescribingPearls: transformed.practicalPrescribingPearls || [],
+    guidelines: transformed.guidelines,
+    landmarkTrials: transformed.landmarkTrials,
+    status: "draft",
+  };
+};

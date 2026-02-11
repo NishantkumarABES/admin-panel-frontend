@@ -59,8 +59,12 @@ export default function IDITable({
                 <td className="px-6 py-4 text-sm text-gray-900">
                   <div className="max-w-xs">
                     <div className="font-medium">{IDI.drugNameGeneric}</div>
-                    <div className="text-xs text-gray-500 truncate">
-                      {IDI.brandsInIndia.split(',')[0]}...
+                    <div className="text-xs text-gray-500">
+                      {(() => {
+                        const brands = IDI.brandsInIndia.split(',').map(b => b.trim()).filter(Boolean);
+                        const displayBrands = brands.slice(0, 2).join(', ');
+                        return brands.length > 2 ? `${displayBrands}...` : displayBrands;
+                      })()}
                     </div>
                   </div>
                 </td>
