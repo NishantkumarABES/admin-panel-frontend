@@ -1,4 +1,4 @@
-import { BookOpen, User, Calendar, Hash, DollarSign, FileText, Download, XCircle } from "lucide-react";
+import { BookOpen, User, Calendar, Hash, DollarSign, FileText, Download, ExternalLink, XCircle } from "lucide-react";
 import type { Book, BookStatus } from "../books.types";
 
 interface BookDetailsModalProps {
@@ -181,17 +181,31 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                         <h4 className="text-sm font-semibold text-gray-900 mb-3">
                             Book File
                         </h4>
-                        <a
-                            href={book.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors group"
-                        >
-                            <Download className="w-5 h-5 text-blue-600 shrink-0" />
-                            <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
-                                Download Book File
-                            </span>
-                        </a>
+                        <div className="flex items-center gap-3">
+                            <a
+                                href={book.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors group"
+                            >
+                                <ExternalLink className="w-5 h-5 text-blue-600 shrink-0" />
+                                <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
+                                    View PDF
+                                </span>
+                            </a>
+                            <a
+                                href={book.file_url}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors group"
+                            >
+                                <Download className="w-5 h-5 text-gray-600 shrink-0" />
+                                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-800">
+                                    Download
+                                </span>
+                            </a>
+                        </div>
                     </div>
                 )}
 

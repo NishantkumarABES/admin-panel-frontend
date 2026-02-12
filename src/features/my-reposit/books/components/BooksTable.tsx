@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, BookOpen, ArrowRight, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, X, BookOpen, ArrowRight, Eye, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Book, BookStatus } from "../books.types";
 import ConfirmDialog from "../../../../components/common/ConfirmDialog";
 import BookDetailsModal from "./BookDetailsModal";
@@ -17,6 +17,7 @@ interface BooksTableProps {
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
     onRefresh: () => void;
+    onEdit: (book: Book) => void;
 }
 
 function getStatusBadge(status: BookStatus) {
@@ -50,6 +51,7 @@ export default function BooksTable({
     onPageChange,
     onPageSizeChange,
     onRefresh,
+    onEdit,
 }: BooksTableProps) {
     // Approve confirm state
     const [approvingBook, setApprovingBook] = useState<Book | null>(null);
@@ -168,6 +170,14 @@ export default function BooksTable({
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    {/* Edit (always visible) */}
+                                                    <button
+                                                        onClick={() => onEdit(book)}
+                                                        title="Edit Book"
+                                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
                                                     </button>
                                                     {/* Move to Review (pending only) */}
                                                     {book.status === "pending" && (

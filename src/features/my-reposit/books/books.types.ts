@@ -64,6 +64,20 @@ export interface CreateBookDTO {
     book_file?: File;
 }
 
+export interface UpdateBookDTO {
+    title?: string;
+    authors?: string;
+    publisher?: string;
+    edition?: string;
+    publication_year?: number;
+    isbn?: string;
+    speciality?: string;
+    book_type?: BookType;
+    description?: string;
+    price?: number;
+    book_file?: File;
+}
+
 export const BOOK_TYPES: { value: BookType; label: string }[] = [
     { value: "textbook", label: "Textbook" },
     { value: "handbook", label: "Handbook" },

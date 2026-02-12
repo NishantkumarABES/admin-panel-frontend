@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Filter, Plus } from "lucide-react";
-import type { Book, BookType, BookStatus, BookAnalytics, CreateBookDTO } from "./books.types";
+import type { Book, BookType, BookStatus, BookAnalytics, CreateBookDTO, UpdateBookDTO } from "./books.types";
 import { BOOK_TYPES } from "./books.types";
 import { SPECIALTIES } from "../../Advertisements/advertisement.types";
 import * as bookService from "../../../services/book.service";
 import toast from "react-hot-toast";
-import AddBookModal from "./components/AddBookModal";
+import AddEditBookModal from "./components/AddEditBookModal";
 import BooksTable from "./components/BooksTable";
 
 const STATUS_OPTIONS: { value: BookStatus | ""; label: string }[] = [
@@ -35,8 +35,9 @@ export default function BooksView() {
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
 
-    // Add book modal
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    // Add/Edit book modal
+    const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
+    const [editingBook, setEditingBook] = useState<Book | null>(null);
 
     // Track if this is the initial mount
     const isInitialMount = useRef(true);
@@ -102,9 +103,38 @@ export default function BooksView() {
         setCurrentPage(1);
     }, [searchTerm, specialtyFilter, bookTypeFilter, statusFilter]);
 
-    const handleAddBook = async (data: CreateBookDTO) => {
-        await bookService.createBook(data);
-        toast.success("Book added successfully");
+    const handleOpenAddModal = () => {
+        setEditingBook(null);
+        setIsAddEditModalOpen(true);
+    };
+
+    const handleOpenEditModal = (book: Book) => {
+        setEditingBook(book);
+        setIsAddEditModalOpen(true);
+    };
+
+    const handleAddOrEditBook = async (data: CreateBookDTO) => {
+        if (editingBook) {
+            // Edit mode: extract fields for update (exclude user_id)
+            const updateData: UpdateBookDTO = {
+                title: data.title,
+                authors: data.authors,
+                publisher: data.publisher,
+                edition: data.edition,
+                publication_year: data.publication_year,
+                isbn: data.isbn,
+                speciality: data.speciality,
+                book_type: data.book_type,
+                description: data.description,
+                price: data.price,
+                book_file: data.book_file,
+            };
+            await bookService.updateBook(editingBook.id, updateData);
+            toast.success("Book updated successfully");
+        } else {
+            await bookService.createBook(data);
+            toast.success("Book added successfully");
+        }
         fetchBooks();
         fetchAnalytics();
     };
@@ -264,7 +294,7 @@ export default function BooksView() {
                     {/* Right side: Add Book Button */}
                     <div className="flex justify-end lg:justify-normal shrink-0">
                         <button
-                            onClick={() => setIsAddModalOpen(true)}
+                            onClick={handleOpenAddModal}
                             className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
                         >
                             <Plus className="w-4 h-4" />
@@ -286,13 +316,18 @@ export default function BooksView() {
                 onPageChange={setCurrentPage}
                 onPageSizeChange={handlePageSizeChange}
                 onRefresh={handleRefresh}
+                onEdit={handleOpenEditModal}
             />
 
-            {/* Add Book Modal */}
-            <AddBookModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                onSubmit={handleAddBook}
+            {/* Add/Edit Book Modal */}
+            <AddEditBookModal
+                isOpen={isAddEditModalOpen}
+                onClose={() => {
+                    setIsAddEditModalOpen(false);
+                    setEditingBook(null);
+                }}
+                onSubmit={handleAddOrEditBook}
+                book={editingBook}
             />
         </div>
     );
