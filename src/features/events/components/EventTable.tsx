@@ -1,4 +1,4 @@
-import { Eye, Edit, Calendar, Clock, ExternalLink  } from "lucide-react";
+import { Eye, Edit, Calendar, Clock, ExternalLink } from "lucide-react";
 import type { Event } from "../event.types";
 
 interface EventTableProps {
@@ -14,7 +14,7 @@ const getStatusBadge = (status: string) => {
     completed: "bg-gray-100 text-gray-800",
     // cancelled: "bg-red-100 text-red-800",
   };
-  
+
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}`}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -30,9 +30,9 @@ const getTypeBadge = (type: string) => {
     patient_education: "bg-pink-100 text-pink-800",
     workshop: "bg-cyan-100 text-cyan-800",
   };
-  
+
   const displayName = type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-  
+
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeColors[type as keyof typeof typeColors] || "bg-gray-100 text-gray-800"}`}>
       {displayName}
@@ -42,10 +42,10 @@ const getTypeBadge = (type: string) => {
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', { 
+  return date.toLocaleDateString('en-IN', {
     day: '2-digit',
-    month: 'short', 
-    year: 'numeric' 
+    month: 'short',
+    year: 'numeric'
   });
 };
 
@@ -117,15 +117,15 @@ export default function EventTable({
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="text-xs text-gray-500 mb-1">
-                            {event.specialization}
+                          {event.specialization}
                         </div>
                         {event.is_featured && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
                             Featured
-                            </span>
+                          </span>
                         )}
                       </div>
-                      
+
                     </div>
                   </div>
                 </td>
@@ -168,7 +168,7 @@ export default function EventTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onView(event)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />

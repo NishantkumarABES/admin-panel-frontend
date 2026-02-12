@@ -142,7 +142,7 @@ export default function ProductTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onView(product)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />

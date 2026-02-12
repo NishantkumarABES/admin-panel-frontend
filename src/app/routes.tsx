@@ -13,6 +13,10 @@ import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
 import IDIView from "../features/IDI/IDIView";
 import AdvisoryView from "../features/Advisory/AdvisoryView";
 import ProfileView from "../features/profile/ProfileView";
+import BooksView from "../features/my-reposit/books/BooksView";
+import ArticlesView from "../features/my-reposit/articles/ArticlesView";
+import VideosView from "../features/my-reposit/videos/VideosView";
+import JobsView from "../features/my-reposit/jobs/JobsView";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +33,10 @@ export default function AppRoutes() {
       <Route path="/advisory" element={<AdvisoryView />} />
       <Route path="/settings" element={<SettingsView />} />
       <Route path="/profile" element={<ProfileView />} />
+      <Route path="/my-reposit/books" element={<BooksView />} />
+      <Route path="/my-reposit/articles" element={<ArticlesView />} />
+      <Route path="/my-reposit/videos" element={<VideosView />} />
+      <Route path="/my-reposit/jobs" element={<JobsView />} />
     </Routes>
   );
 }

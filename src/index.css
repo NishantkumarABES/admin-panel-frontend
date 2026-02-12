@@ -9,7 +9,8 @@
   color-scheme: light;
 
   /* Primary colors - dark accents for UI elements */
-  --color-primary: #1f2937; /* charcoal/dark gray */
+  --color-primary: #1f2937;
+  /* charcoal/dark gray */
   --color-primary-hover: #111827;
   --color-text: #1f2937;
   --color-text-secondary: #6b7280;
@@ -17,7 +18,7 @@
 
   /* Background colors - white and light gray */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
+  --color-bg-secondary: #f1f5f9;
   --color-bg-tertiary: #f3f4f6;
 
   /* Border colors */
@@ -25,12 +26,18 @@
   --color-border-light: #f3f4f6;
 
   /* Status colors - subtle and meaningful */
-  --color-active: #1f2937; /* dark/neutral */
-  --color-inactive: #9ca3af; /* muted gray */
-  --color-warning: #f59e0b; /* soft amber */
-  --color-error: #dc2626; /* restrained red */
-  --color-success: #059669; /* green */
-  --color-info: #2563eb; /* blue */
+  --color-active: #1f2937;
+  /* dark/neutral */
+  --color-inactive: #9ca3af;
+  /* muted gray */
+  --color-warning: #f59e0b;
+  /* soft amber */
+  --color-error: #dc2626;
+  /* restrained red */
+  --color-success: #059669;
+  /* green */
+  --color-info: #2563eb;
+  /* blue */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -58,7 +65,12 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-text);
   font-weight: 600;
   line-height: 1.3;
@@ -66,15 +78,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 1.875rem; /* 30px */
+  font-size: 1.875rem;
+  /* 30px */
 }
 
 h2 {
-  font-size: 1.5rem; /* 24px */
+  font-size: 1.5rem;
+  /* 24px */
 }
 
 h3 {
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.25rem;
+  /* 20px */
 }
 
 /* Links */
@@ -95,7 +110,7 @@ a:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -132,12 +147,14 @@ a:hover {
 
 /* Control dropdown height */
 .PhoneInputCountrySelect {
-  max-height: 100px; /* Adjust this value as needed */
+  max-height: 100px;
+  /* Adjust this value as needed */
 }
 
 /* Style the dropdown list */
 .PhoneInputCountrySelectDropdown {
-  max-height: 100px; /* Adjust this value as needed */
+  max-height: 100px;
+  /* Adjust this value as needed */
   overflow-y: auto;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -152,4 +169,54 @@ a:hover {
 
 .PhoneInputCountryOption:hover {
   background-color: #f3f4f6;
+}
+
+/* ─── Sidebar Nav Styles ──────────────────────────────── */
+
+.sidebar-nav-active {
+  background: linear-gradient(135deg, #3b82f6, #6366f1) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.sidebar-nav-inactive {
+  color: rgba(203, 213, 225, 0.85) !important;
+  background: transparent;
+}
+
+.sidebar-nav-inactive:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+/* Sidebar custom scrollbar */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+/* ─── Topbar Button Styles ────────────────────────────── */
+
+.topbar-btn {
+  color: rgba(203, 213, 225, 0.75);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.topbar-btn:hover {
+  color: #ffffff;
+  background: rgba(99, 102, 241, 0.15) !important;
 }
