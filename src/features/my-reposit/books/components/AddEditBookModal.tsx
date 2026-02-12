@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Search, ChevronDown, Upload, FileText } from "lucide-react";
-import type { CreateBookDTO, BookType } from "../books.types";
+import type { Book, CreateBookDTO, BookType } from "../books.types";
 import { BOOK_TYPES } from "../books.types";
 import { SPECIALTIES } from "../../../Advertisements/advertisement.types";
 import * as doctorService from "../../../../services/doctor.service";
 import type { DoctorUser } from "../../../doctors/doctor.types";
 
-interface AddBookModalProps {
+interface AddEditBookModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CreateBookDTO) => Promise<void>;
+    book: Book | null;
 }
 
 const initialFormData: Omit<CreateBookDTO, "user_id" | "book_file"> = {
@@ -25,7 +26,9 @@ const initialFormData: Omit<CreateBookDTO, "user_id" | "book_file"> = {
     price: 0,
 };
 
-export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModalProps) {
+export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: AddEditBookModalProps) {
+    const isEditMode = !!book;
+
     const [formData, setFormData] = useState(initialFormData);
     const [bookFile, setBookFile] = useState<File | null>(null);
     const [selectedUser, setSelectedUser] = useState<DoctorUser | null>(null);
@@ -77,20 +80,40 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
         }
     }, [isUserDropdownOpen]);
 
-    // Reset form when modal opens/closes
+    // Reset form when modal opens/closes or book changes
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialFormData);
-            setBookFile(null);
-            setSelectedUser(null);
-            setUserSearchTerm("");
+            if (book) {
+                // Edit mode: pre-populate form with book data
+                setFormData({
+                    title: book.title,
+                    authors: book.authors,
+                    publisher: book.publisher,
+                    edition: book.edition,
+                    publication_year: book.publication_year,
+                    isbn: book.isbn,
+                    speciality: book.speciality || "",
+                    book_type: book.book_type,
+                    description: book.description,
+                    price: book.price,
+                });
+                setBookFile(null);
+                setSelectedUser(null);
+                setUserSearchTerm("");
+            } else {
+                // Add mode: reset form
+                setFormData(initialFormData);
+                setBookFile(null);
+                setSelectedUser(null);
+                setUserSearchTerm("");
+            }
             setErrors({});
         }
-    }, [isOpen]);
+    }, [isOpen, book]);
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
-        if (!selectedUser) newErrors.user_id = "Please select a doctor user";
+        if (!isEditMode && !selectedUser) newErrors.user_id = "Please select a doctor user";
         if (!formData.title.trim()) newErrors.title = "Title is required";
         if (!formData.authors.trim()) newErrors.authors = "Authors is required";
         if (!formData.publisher.trim()) newErrors.publisher = "Publisher is required";
@@ -123,18 +146,19 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
     };
 
     const handleSubmit = async () => {
-        if (!validate() || !selectedUser) return;
+        if (!validate()) return;
+        if (!isEditMode && !selectedUser) return;
 
         try {
             setIsSubmitting(true);
             await onSubmit({
                 ...formData,
-                user_id: selectedUser.id,
+                user_id: isEditMode ? (book!.id) : selectedUser!.id,
                 book_file: bookFile || undefined,
             });
             onClose();
         } catch (error) {
-            console.error("Failed to create book:", error);
+            console.error(`Failed to ${isEditMode ? "update" : "create"} book:`, error);
         } finally {
             setIsSubmitting(false);
         }
@@ -158,7 +182,9 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-                        <h3 className="text-lg font-semibold text-gray-900">Add Book</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {isEditMode ? "Edit Book" : "Add Book"}
+                        </h3>
                         <button
                             onClick={onClose}
                             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -169,84 +195,98 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
 
                     {/* Body */}
                     <div className="p-6 space-y-5">
-                        {/* Doctor User Search */}
-                        <div ref={userDropdownRef}>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Doctor User <span className="text-red-500">*</span>
-                            </label>
-                            {selectedUser ? (
-                                <div className="flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                                    <div>
-                                        <div className="font-medium text-gray-900 text-sm">{selectedUser.full_name}</div>
-                                        <div className="text-xs text-gray-500">{selectedUser.email}</div>
+                        {/* Doctor User Search - only shown in add mode */}
+                        {!isEditMode && (
+                            <div ref={userDropdownRef}>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Doctor User <span className="text-red-500">*</span>
+                                </label>
+                                {selectedUser ? (
+                                    <div className="flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                        <div>
+                                            <div className="font-medium text-gray-900 text-sm">{selectedUser.full_name}</div>
+                                            <div className="text-xs text-gray-500">{selectedUser.email}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedUser(null);
+                                                setUserSearchTerm("");
+                                            }}
+                                            className="p-1 rounded text-gray-400 hover:text-gray-600"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            setSelectedUser(null);
-                                            setUserSearchTerm("");
-                                        }}
-                                        className="p-1 rounded text-gray-400 hover:text-gray-600"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                                        className={`w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between gap-2 bg-white ${errors.user_id ? "border-red-300" : "border-gray-300"
-                                            }`}
-                                    >
-                                        <span className="text-gray-400 text-sm">Search and select a doctor...</span>
-                                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                                    </button>
+                                ) : (
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                                            className={`w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between gap-2 bg-white ${errors.user_id ? "border-red-300" : "border-gray-300"
+                                                }`}
+                                        >
+                                            <span className="text-gray-400 text-sm">Search and select a doctor...</span>
+                                            <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                                        </button>
 
-                                    {isUserDropdownOpen && (
-                                        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                                            <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
-                                                <div className="relative">
-                                                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                    <input
-                                                        type="text"
-                                                        value={userSearchTerm}
-                                                        onChange={(e) => setUserSearchTerm(e.target.value)}
-                                                        placeholder="Search by name or email..."
-                                                        className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                                        autoFocus
-                                                    />
+                                        {isUserDropdownOpen && (
+                                            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                                <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
+                                                    <div className="relative">
+                                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                        <input
+                                                            type="text"
+                                                            value={userSearchTerm}
+                                                            onChange={(e) => setUserSearchTerm(e.target.value)}
+                                                            placeholder="Search by name or email..."
+                                                            className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                                            autoFocus
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="overflow-y-auto max-h-48">
+                                                    {userSearchLoading ? (
+                                                        <div className="px-3 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                                                    ) : userResults.length > 0 ? (
+                                                        userResults.map((doctor) => (
+                                                            <button
+                                                                key={doctor.id}
+                                                                onClick={() => {
+                                                                    setSelectedUser(doctor);
+                                                                    setIsUserDropdownOpen(false);
+                                                                    setUserSearchTerm("");
+                                                                }}
+                                                                className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b border-gray-50 last:border-0"
+                                                            >
+                                                                <div className="font-medium text-gray-900 text-sm">{doctor.full_name}</div>
+                                                                <div className="text-xs text-gray-500">{doctor.email} · {doctor.doctor_profile?.specialization || "—"}</div>
+                                                            </button>
+                                                        ))
+                                                    ) : userSearchTerm ? (
+                                                        <div className="px-3 py-3 text-sm text-gray-500 text-center">No doctors found</div>
+                                                    ) : (
+                                                        <div className="px-3 py-3 text-sm text-gray-500 text-center">Type to search doctors</div>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="overflow-y-auto max-h-48">
-                                                {userSearchLoading ? (
-                                                    <div className="px-3 py-3 text-sm text-gray-500 text-center">Searching...</div>
-                                                ) : userResults.length > 0 ? (
-                                                    userResults.map((doctor) => (
-                                                        <button
-                                                            key={doctor.id}
-                                                            onClick={() => {
-                                                                setSelectedUser(doctor);
-                                                                setIsUserDropdownOpen(false);
-                                                                setUserSearchTerm("");
-                                                            }}
-                                                            className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b border-gray-50 last:border-0"
-                                                        >
-                                                            <div className="font-medium text-gray-900 text-sm">{doctor.full_name}</div>
-                                                            <div className="text-xs text-gray-500">{doctor.email} · {doctor.doctor_profile?.specialization || "—"}</div>
-                                                        </button>
-                                                    ))
-                                                ) : userSearchTerm ? (
-                                                    <div className="px-3 py-3 text-sm text-gray-500 text-center">No doctors found</div>
-                                                ) : (
-                                                    <div className="px-3 py-3 text-sm text-gray-500 text-center">Type to search doctors</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+                                )}
+                                {errors.user_id && <p className="text-xs text-red-500 mt-1">{errors.user_id}</p>}
+                            </div>
+                        )}
+
+                        {/* Uploaded By (read-only, edit mode only) */}
+                        {isEditMode && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Uploaded By
+                                </label>
+                                <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700">
+                                    {book!.uploaded_by}
                                 </div>
-                            )}
-                            {errors.user_id && <p className="text-xs text-red-500 mt-1">{errors.user_id}</p>}
-                        </div>
+                            </div>
+                        )}
 
                         {/* Title */}
                         <div>
@@ -380,7 +420,12 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
 
                         {/* Book File Upload */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Book File</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Book File
+                                {isEditMode && book!.file_url && (
+                                    <span className="text-xs text-gray-500 ml-2">(upload new file to replace)</span>
+                                )}
+                            </label>
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -416,7 +461,9 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
                                     className="w-full px-3 py-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex flex-col items-center gap-2 text-gray-500 hover:text-gray-600"
                                 >
                                     <Upload className="w-6 h-6" />
-                                    <div className="text-sm font-medium">Click to upload book file</div>
+                                    <div className="text-sm font-medium">
+                                        {isEditMode ? "Click to upload new book file" : "Click to upload book file"}
+                                    </div>
                                     <div className="text-xs">PDF, EPUB, or MOBI (max 50MB)</div>
                                 </button>
                             )}
@@ -449,7 +496,10 @@ export default function AddBookModal({ isOpen, onClose, onSubmit }: AddBookModal
                             disabled={isSubmitting}
                             className="px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? "Adding..." : "Add Book"}
+                            {isSubmitting
+                                ? (isEditMode ? "Updating..." : "Adding...")
+                                : (isEditMode ? "Update Book" : "Add Book")
+                            }
                         </button>
                     </div>
                 </div>

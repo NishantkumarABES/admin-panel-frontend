@@ -508,15 +508,71 @@ export default function AddEditEventModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Time *
                 </label>
-                <input
-                  type="time"
-                  value={formData.start_time}
-                  onChange={(e) => {
-                    setFormData({ ...formData, start_time: e.target.value });
-                    if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
-                  }}
-                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_time ? "border-red-500" : "border-gray-300"}`}
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={(() => {
+                      if (!formData.start_time) return "";
+                      const [h] = formData.start_time.split(":");
+                      const hour = parseInt(h, 10);
+                      if (hour === 0) return "12";
+                      if (hour > 12) return String(hour - 12);
+                      return String(hour);
+                    })()}
+                    onChange={(e) => {
+                      const hour = parseInt(e.target.value, 10);
+                      const [, min] = (formData.start_time || "00:00").split(":");
+                      const currentH = parseInt((formData.start_time || "00:00").split(":")[0], 10);
+                      const isPM = currentH >= 12;
+                      let h24 = hour;
+                      if (isPM && hour !== 12) h24 = hour + 12;
+                      if (!isPM && hour === 12) h24 = 0;
+                      const newTime = `${String(h24).padStart(2, "0")}:${min || "00"}`;
+                      setFormData({ ...formData, start_time: newTime });
+                      if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="" disabled>HH</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                      <option key={h} value={String(h)}>{String(h).padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={formData.start_time ? formData.start_time.split(":")[1] : ""}
+                    onChange={(e) => {
+                      const [h] = (formData.start_time || "00:00").split(":");
+                      const newTime = `${h || "00"}:${e.target.value}`;
+                      setFormData({ ...formData, start_time: newTime });
+                      if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="" disabled>MM</option>
+                    {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
+                      <option key={m} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={(() => {
+                      if (!formData.start_time) return "AM";
+                      const hour = parseInt(formData.start_time.split(":")[0], 10);
+                      return hour >= 12 ? "PM" : "AM";
+                    })()}
+                    onChange={(e) => {
+                      const [hStr, min] = (formData.start_time || "12:00").split(":");
+                      let hour = parseInt(hStr, 10);
+                      if (e.target.value === "PM" && hour < 12) hour += 12;
+                      if (e.target.value === "AM" && hour >= 12) hour -= 12;
+                      const newTime = `${String(hour).padStart(2, "0")}:${min || "00"}`;
+                      setFormData({ ...formData, start_time: newTime });
+                      if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.start_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
                 {validationErrors.start_time && (
                   <p className="mt-1 text-xs text-red-600">{validationErrors.start_time}</p>
                 )}
@@ -525,15 +581,71 @@ export default function AddEditEventModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Time *
                 </label>
-                <input
-                  type="time"
-                  value={formData.end_time}
-                  onChange={(e) => {
-                    setFormData({ ...formData, end_time: e.target.value });
-                    if (validationErrors.end_time) setValidationErrors({ ...validationErrors, end_time: "" });
-                  }}
-                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_time ? "border-red-500" : "border-gray-300"}`}
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={(() => {
+                      if (!formData.end_time) return "";
+                      const [h] = formData.end_time.split(":");
+                      const hour = parseInt(h, 10);
+                      if (hour === 0) return "12";
+                      if (hour > 12) return String(hour - 12);
+                      return String(hour);
+                    })()}
+                    onChange={(e) => {
+                      const hour = parseInt(e.target.value, 10);
+                      const [, min] = (formData.end_time || "00:00").split(":");
+                      const currentH = parseInt((formData.end_time || "00:00").split(":")[0], 10);
+                      const isPM = currentH >= 12;
+                      let h24 = hour;
+                      if (isPM && hour !== 12) h24 = hour + 12;
+                      if (!isPM && hour === 12) h24 = 0;
+                      const newTime = `${String(h24).padStart(2, "0")}:${min || "00"}`;
+                      setFormData({ ...formData, end_time: newTime });
+                      if (validationErrors.end_time) setValidationErrors({ ...validationErrors, end_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="" disabled>HH</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                      <option key={h} value={String(h)}>{String(h).padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={formData.end_time ? formData.end_time.split(":")[1] : ""}
+                    onChange={(e) => {
+                      const [h] = (formData.end_time || "00:00").split(":");
+                      const newTime = `${h || "00"}:${e.target.value}`;
+                      setFormData({ ...formData, end_time: newTime });
+                      if (validationErrors.end_time) setValidationErrors({ ...validationErrors, end_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="" disabled>MM</option>
+                    {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
+                      <option key={m} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={(() => {
+                      if (!formData.end_time) return "AM";
+                      const hour = parseInt(formData.end_time.split(":")[0], 10);
+                      return hour >= 12 ? "PM" : "AM";
+                    })()}
+                    onChange={(e) => {
+                      const [hStr, min] = (formData.end_time || "12:00").split(":");
+                      let hour = parseInt(hStr, 10);
+                      if (e.target.value === "PM" && hour < 12) hour += 12;
+                      if (e.target.value === "AM" && hour >= 12) hour -= 12;
+                      const newTime = `${String(hour).padStart(2, "0")}:${min || "00"}`;
+                      setFormData({ ...formData, end_time: newTime });
+                      if (validationErrors.end_time) setValidationErrors({ ...validationErrors, end_time: "" });
+                    }}
+                    className={`w-20 px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.end_time ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
                 {validationErrors.end_time && (
                   <p className="mt-1 text-xs text-red-600">{validationErrors.end_time}</p>
                 )}

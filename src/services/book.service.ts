@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Book, BookFilters, ReviewBookDTO, BookAnalytics, CreateBookDTO } from "../features/my-reposit/books/books.types";
+import type { Book, BookFilters, ReviewBookDTO, BookAnalytics, CreateBookDTO, UpdateBookDTO } from "../features/my-reposit/books/books.types";
 
 interface PaginatedBooks {
   count: number;
@@ -67,6 +67,27 @@ export const createBook = async (data: CreateBookDTO) => {
   }
 
   const response = await api.post("/books/admin/create/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+// Update a book (admin)
+export const updateBook = async (id: string, data: UpdateBookDTO) => {
+  const formData = new FormData();
+  if (data.title !== undefined) formData.append("title", data.title);
+  if (data.authors !== undefined) formData.append("authors", data.authors);
+  if (data.publisher !== undefined) formData.append("publisher", data.publisher);
+  if (data.edition !== undefined) formData.append("edition", data.edition);
+  if (data.publication_year !== undefined) formData.append("publication_year", data.publication_year.toString());
+  if (data.isbn !== undefined) formData.append("isbn", data.isbn);
+  if (data.speciality !== undefined) formData.append("speciality", data.speciality);
+  if (data.book_type !== undefined) formData.append("book_type", data.book_type);
+  if (data.description !== undefined) formData.append("description", data.description);
+  if (data.price !== undefined) formData.append("price", data.price.toString());
+  if (data.book_file) formData.append("book_file", data.book_file);
+
+  const response = await api.patch(`/books/admin/${id}/update/`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
