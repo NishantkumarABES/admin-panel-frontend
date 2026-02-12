@@ -58,7 +58,7 @@ export default function BooksView() {
             setLoading(true);
             const filters = {
                 search: searchTerm || undefined,
-                specialty: specialtyFilter || undefined,
+                speciality: specialtyFilter || undefined,
                 book_type: (bookTypeFilter as BookType) || undefined,
                 status: (statusFilter as BookStatus) || undefined,
                 page: currentPage,
@@ -207,7 +207,7 @@ export default function BooksView() {
 
                         {/* Filters group */}
                         <div className="flex flex-wrap items-center gap-4 min-w-0">
-                            {/* Specialty Filter */}
+                            {/* speciality Filter */}
                             <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-48">
                                 <Filter className="w-5 h-5 text-gray-400 shrink-0" />
                                 <select

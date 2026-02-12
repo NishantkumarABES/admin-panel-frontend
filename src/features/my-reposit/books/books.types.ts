@@ -31,7 +31,7 @@ export interface BookFilters {
     page_size?: number;
     search?: string;
     ordering?: string;
-    specialty?: string;
+    speciality?: string;
     book_type?: BookType;
     status?: BookStatus;
 }
