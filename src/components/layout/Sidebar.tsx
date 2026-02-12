@@ -315,6 +315,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                   const next = new Set(prev);
                   if (next.has("my-reposit")) {
                     next.delete("my-reposit");
+                    // Navigate away so the active highlight is removed
+                    if (location.pathname.startsWith("/my-reposit")) {
+                      navigate("/");
+                    }
                   } else {
                     next.add("my-reposit");
                     next.delete("content");

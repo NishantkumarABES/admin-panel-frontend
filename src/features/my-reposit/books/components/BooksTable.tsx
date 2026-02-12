@@ -79,7 +79,7 @@ export default function BooksTable({
     const handleMoveToReview = async (book: Book) => {
         try {
             setIsSubmitting(true);
-            await bookService.reviewBook(book.id, { status: "in_review" });
+            await bookService.moveBookToInReview(book.id);
             toast.success(`"${book.title}" moved to review`);
             onRefresh();
         } catch (error) {
