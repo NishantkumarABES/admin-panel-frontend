@@ -60,10 +60,12 @@ export const createBook = async (data: CreateBookDTO) => {
   formData.append("isbn", data.isbn);
   formData.append("speciality", data.speciality);
   formData.append("book_type", data.book_type);
+  formData.append("access_level", data.access_level);
+  formData.append("copyright_status", data.copyright_status);
   formData.append("description", data.description);
   formData.append("price", data.price.toString());
   if (data.book_file) {
-    formData.append("book_file", data.book_file);
+    formData.append("file", data.book_file);
   }
 
   const response = await api.post("/books/admin/create/", formData, {
@@ -83,6 +85,8 @@ export const updateBook = async (id: string, data: UpdateBookDTO) => {
   if (data.isbn !== undefined) formData.append("isbn", data.isbn);
   if (data.speciality !== undefined) formData.append("speciality", data.speciality);
   if (data.book_type !== undefined) formData.append("book_type", data.book_type);
+  if (data.access_level !== undefined) formData.append("access_level", data.access_level);
+  if (data.copyright_status !== undefined) formData.append("copyright_status", data.copyright_status);
   if (data.description !== undefined) formData.append("description", data.description);
   if (data.price !== undefined) formData.append("price", data.price.toString());
   if (data.book_file) formData.append("book_file", data.book_file);

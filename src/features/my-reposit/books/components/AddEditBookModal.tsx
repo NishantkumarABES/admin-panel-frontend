@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Search, ChevronDown, Upload, FileText } from "lucide-react";
-import type { Book, CreateBookDTO, BookType } from "../books.types";
-import { BOOK_TYPES } from "../books.types";
+import type { Book, CreateBookDTO, BookType, AccessLevel, CopyrightStatus } from "../books.types";
+import { BOOK_TYPES, ACCESS_LEVELS, COPYRIGHT_STATUSES } from "../books.types";
 import { SPECIALTIES } from "../../../Advertisements/advertisement.types";
 import * as doctorService from "../../../../services/doctor.service";
 import type { DoctorUser } from "../../../doctors/doctor.types";
@@ -22,6 +22,8 @@ const initialFormData: Omit<CreateBookDTO, "user_id" | "book_file"> = {
     isbn: "",
     speciality: "",
     book_type: "textbook" as BookType,
+    access_level: "public" as AccessLevel,
+    copyright_status: "open" as CopyrightStatus,
     description: "",
     price: 0,
 };
@@ -94,6 +96,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                     isbn: book.isbn,
                     speciality: book.speciality || "",
                     book_type: book.book_type,
+                    access_level: book.access_level,
+                    copyright_status: book.copyright_status,
                     description: book.description,
                     price: book.price,
                 });
@@ -118,6 +122,9 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
         if (!formData.authors.trim()) newErrors.authors = "Authors is required";
         if (!formData.publisher.trim()) newErrors.publisher = "Publisher is required";
         if (!formData.speciality) newErrors.speciality = "Specialty is required";
+        if (!formData.book_type) newErrors.book_type = "Book type is required";
+        if (!formData.access_level) newErrors.access_level = "Access level is required";
+        if (!formData.copyright_status) newErrors.copyright_status = "Copyright status is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -401,6 +408,42 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                         <option key={t.value} value={t.value}>{t.label}</option>
                                     ))}
                                 </select>
+                            </div>
+                        </div>
+
+                        {/* Access Level & Copyright Status */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Access Level <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={formData.access_level}
+                                    onChange={(e) => setFormData({ ...formData, access_level: e.target.value as AccessLevel })}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.access_level ? "border-red-300" : "border-gray-300"
+                                        }`}
+                                >
+                                    {ACCESS_LEVELS.map((t) => (
+                                        <option key={t.value} value={t.value}>{t.label}</option>
+                                    ))}
+                                </select>
+                                {errors.access_level && <p className="text-xs text-red-500 mt-1">{errors.access_level}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Copyright Status <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={formData.copyright_status}
+                                    onChange={(e) => setFormData({ ...formData, copyright_status: e.target.value as CopyrightStatus })}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.copyright_status ? "border-red-300" : "border-gray-300"
+                                        }`}
+                                >
+                                    {COPYRIGHT_STATUSES.map((t) => (
+                                        <option key={t.value} value={t.value}>{t.label}</option>
+                                    ))}
+                                </select>
+                                {errors.copyright_status && <p className="text-xs text-red-500 mt-1">{errors.copyright_status}</p>}
                             </div>
                         </div>
 

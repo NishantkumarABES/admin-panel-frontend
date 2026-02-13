@@ -153,7 +153,7 @@ export default function ArticlesTable({
                                             </td>
                                             <td className="px-6 py-4 text-gray-700">{article.authors}</td>
                                             <td className="px-6 py-4 text-gray-700">{article.uploaded_by}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
                                                     {article.article_type?.replace(/_/g, " ")}
                                                 </span>

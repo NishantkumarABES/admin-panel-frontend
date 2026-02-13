@@ -2,6 +2,10 @@ export type BookStatus = "pending" | "approved" | "rejected" | "in_review";
 
 export type BookType = "textbook" | "handbook" | "guideline" | "review";
 
+export type AccessLevel = "public" | "institutional" | "physicians" | "private";
+
+export type CopyrightStatus = "open" | "author" | "institutional" | "publisher" | "fair_use";
+
 export interface Book {
     id: string;
     uploaded_by: string;
@@ -20,6 +24,8 @@ export interface Book {
     status: BookStatus;
     rejection_reason: string | null;
     is_editor_curated: boolean;
+    access_level: AccessLevel;
+    copyright_status: CopyrightStatus;
     price: number;
     file_url: string | null;
     collections: string[];
@@ -60,6 +66,8 @@ export interface CreateBookDTO {
     isbn: string;
     speciality: string;
     book_type: BookType;
+    access_level: AccessLevel;
+    copyright_status: CopyrightStatus;
     description: string;
     price: number;
     book_file?: File;
@@ -74,6 +82,8 @@ export interface UpdateBookDTO {
     isbn?: string;
     speciality?: string;
     book_type?: BookType;
+    access_level?: AccessLevel;
+    copyright_status?: CopyrightStatus;
     description?: string;
     price?: number;
     book_file?: File;
@@ -84,4 +94,19 @@ export const BOOK_TYPES: { value: BookType; label: string }[] = [
     { value: "handbook", label: "Handbook" },
     { value: "guideline", label: "Guideline" },
     { value: "review", label: "Review" },
+];
+
+export const ACCESS_LEVELS: { value: AccessLevel; label: string }[] = [
+    { value: "public", label: "Public" },
+    { value: "institutional", label: "Institutional" },
+    { value: "physicians", label: "Verified Physicians" },
+    { value: "private", label: "Private" },
+];
+
+export const COPYRIGHT_STATUSES: { value: CopyrightStatus; label: string }[] = [
+    { value: "open", label: "Open Access / Public Domain" },
+    { value: "author", label: "Author Owned" },
+    { value: "institutional", label: "Institutional License" },
+    { value: "publisher", label: "Publisher Authorization" },
+    { value: "fair_use", label: "Educational Fair Use" },
 ];
