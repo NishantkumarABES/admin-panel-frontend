@@ -1,8 +1,8 @@
-import { BookOpen, ExternalLink, XCircle } from "lucide-react";
-import type { Book, BookStatus } from "../books.types";
+import { FileText, XCircle } from "lucide-react";
+import type { Article, ArticleStatus, ArticleType } from "../articles.types";
 
-interface BookDetailsModalProps {
-    book: Book | null;
+interface ArticleDetailsModalProps {
+    article: Article | null;
     isOpen: boolean;
     onClose: () => void;
 }
@@ -37,17 +37,17 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
     );
 };
 
-function getStatusBadge(status: BookStatus) {
-    const styles: Record<BookStatus, string> = {
-        pending: "bg-amber-100 text-amber-800",
-        in_review: "bg-blue-100 text-blue-800",
-        approved: "bg-emerald-100 text-emerald-800",
+function getStatusBadge(status: ArticleStatus) {
+    const styles: Record<ArticleStatus, string> = {
+        draft: "bg-amber-100 text-amber-800",
+        review: "bg-blue-100 text-blue-800",
+        published: "bg-emerald-100 text-emerald-800",
         rejected: "bg-red-100 text-red-800",
     };
-    const labels: Record<BookStatus, string> = {
-        pending: "Pending",
-        in_review: "In Review",
-        approved: "Approved",
+    const labels: Record<ArticleStatus, string> = {
+        draft: "Draft",
+        review: "In Review",
+        published: "Published",
         rejected: "Rejected",
     };
     return (
@@ -57,16 +57,22 @@ function getStatusBadge(status: BookStatus) {
     );
 }
 
-function getBookTypeBadge(type: string) {
+function getArticleTypeBadge(type: ArticleType) {
+    const labels: Record<ArticleType, string> = {
+        original_research: "Original Research",
+        review: "Review",
+        case_report: "Case Report",
+        brief_communication: "Brief Communication",
+    };
     return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
-            {type}
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            {labels[type]}
         </span>
     );
 }
 
-export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsModalProps) {
-    if (!book) return null;
+export default function ArticleDetailsModal({ article, isOpen, onClose }: ArticleDetailsModalProps) {
+    if (!article) return null;
 
     const InfoCell = ({ label, value }: { label: string; value: string | number | undefined | null }) => (
         <div>
@@ -76,28 +82,23 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
     );
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Book Details">
+        <Modal isOpen={isOpen} onClose={onClose} title="Article Details">
             <div className="space-y-4">
-                {/* Header with Book Info */}
+                {/* Header with Article Info */}
                 <div className="flex items-start gap-3 pb-4 border-b border-gray-200">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 shrink-0">
-                        <BookOpen className="w-5 h-5 text-gray-500" />
+                        <FileText className="w-5 h-5 text-gray-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-gray-900">
-                            {book.title}
+                            {article.title}
                         </h3>
-                        <p className="text-sm text-gray-600">by {book.authors}</p>
+                        <p className="text-sm text-gray-600">by {article.authors}</p>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
-                        {getStatusBadge(book.status)}
-                        {getBookTypeBadge(book.book_type)}
-                        {book.is_editor_curated && (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                Curated
-                            </span>
-                        )}
-                        {book.is_deleted && (
+                        {getStatusBadge(article.status)}
+                        {getArticleTypeBadge(article.article_type)}
+                        {article.is_deleted && (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 Deleted
                             </span>
@@ -105,19 +106,18 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                     </div>
                 </div>
 
-                {/* Book Information */}
+                {/* Article Information */}
                 <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                        Book Information
+                        Article Information
                     </h4>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3 bg-gray-50 rounded-lg p-3">
-                        <InfoCell label="Uploaded By" value={book.uploaded_by} />
-                        <InfoCell label="Publisher" value={book.publisher} />
-                        <InfoCell label="Edition" value={book.edition} />
-                        <InfoCell label="Publication Year" value={book.publication_year?.toString()} />
-                        <InfoCell label="ISBN" value={book.isbn} />
-                        <InfoCell label="Specialty" value={book.speciality} />
-                        <InfoCell label="Price" value={`₹${book.price}`} />
+                        <InfoCell label="Uploaded By" value={article.uploaded_by} />
+                        <InfoCell label="Institution" value={article.institution} />
+                        <InfoCell label="Article Type" value={article.article_type?.replace(/_/g, " ")} />
+                        <InfoCell label="Specialty" value={article.speciality} />
+                        <InfoCell label="Year" value={article.year?.toString()} />
+                        <InfoCell label="Publication Date" value={article.publication_date ? new Date(article.publication_date).toLocaleDateString("en-IN") : "—"} />
                     </div>
                 </div>
 
@@ -126,70 +126,58 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
                         Statistics
                     </h4>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <div className="bg-gray-50 rounded-lg p-2 text-center">
-                            <div className="text-base font-bold text-gray-900">{book.views}</div>
+                            <div className="text-base font-bold text-gray-900">{article.view_count}</div>
                             <div className="text-xs text-gray-500">Views</div>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-2 text-center">
-                            <div className="text-base font-bold text-gray-900">{book.downloads}</div>
+                            <div className="text-base font-bold text-gray-900">{article.download_count}</div>
                             <div className="text-xs text-gray-500">Downloads</div>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-2 text-center">
-                            <div className="text-base font-bold text-gray-900">{book.rating || "—"}</div>
-                            <div className="text-xs text-gray-500">Rating</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Description */}
-                {book.description && (
+                {/* Abstract */}
+                {article.abstract && (
                     <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                            Description
+                            Abstract
                         </h4>
                         <div className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{book.description}</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{article.abstract}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Content */}
+                {article.content && (
+                    <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                            Content
+                        </h4>
+                        <div className="bg-gray-50 rounded-lg p-3 prose prose-sm max-w-none">
+                            <div dangerouslySetInnerHTML={{ __html: article.content }} />
                         </div>
                     </div>
                 )}
 
                 {/* Rejection Reason */}
-                {book.status === "rejected" && book.rejection_reason && (
+                {article.status === "rejected" && article.rejection_reason && (
                     <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">
                             Rejection Reason
                         </h4>
                         <div className="bg-red-50 rounded-lg p-3 border border-red-100">
-                            <p className="text-sm text-red-700">{book.rejection_reason}</p>
+                            <p className="text-sm text-red-700">{article.rejection_reason}</p>
                         </div>
-                    </div>
-                )}
-
-                {/* Book File */}
-                {book.file_url && (
-                    <div>
-                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                            Book File
-                        </h4>
-                        <a
-                            href={book.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors group"
-                        >
-                            <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
-                            <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
-                                View PDF
-                            </span>
-                        </a>
                     </div>
                 )}
 
                 {/* Metadata */}
                 <div className="text-xs text-gray-400 pt-3 border-t border-gray-200">
-                    <p>Created: {new Date(book.created_at).toLocaleString("en-IN")}</p>
-                    <p>Book ID: {book.id}</p>
+                    <p>Created: {new Date(article.created_at).toLocaleString("en-IN")}</p>
+                    <p>Article ID: {article.id}</p>
                 </div>
             </div>
 
