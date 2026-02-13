@@ -1,0 +1,66 @@
+import { api } from "./api";
+import type { Article, ArticleFilters, ReviewArticleDTO, ArticleAnalytics, CreateArticleDTO, UpdateArticleDTO } from "../features/my-reposit/articles/articles.types";
+
+interface PaginatedArticles {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Article[];
+}
+
+interface ArticleResponse {
+    detail: string;
+    data: PaginatedArticles;
+    success: boolean;
+}
+
+// Get all articles with optional filters
+export const getArticles = async (filters?: ArticleFilters): Promise<PaginatedArticles> => {
+    const params = new URLSearchParams();
+
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.page_size) params.append("page_size", filters.page_size.toString());
+    if (filters?.search) params.append("search", filters.search);
+    if (filters?.ordering) params.append("ordering", filters.ordering);
+    if (filters?.speciality) params.append("speciality", filters.speciality);
+    if (filters?.article_type) params.append("article_type", filters.article_type);
+    if (filters?.status) params.append("status", filters.status);
+
+    const queryString = params.toString();
+
+    const response = await api.get<ArticleResponse>(
+        `/articles/admin/${queryString ? `?${queryString}` : ""}`
+    );
+
+    return response.data.data;
+};
+
+// Review an article (publish or reject)
+export const reviewArticle = async (id: string, data: ReviewArticleDTO) => {
+    const response = await api.patch(`/articles/admin/${id}/review/`, data);
+    return response.data;
+};
+
+// Move article from draft to in review
+export const moveArticleToReview = async (id: string) => {
+    const response = await api.patch(`/articles/admin/${id}/move/`);
+    return response.data;
+};
+
+// Get articles analytics
+export const getArticlesAnalytics = async (): Promise<ArticleAnalytics> => {
+    const response = await api.get<{ data: ArticleAnalytics }>("/analytics/admin/articles/metrics/");
+    return response.data.data;
+};
+
+// Create an article on behalf of a doctor user
+export const createArticle = async (data: CreateArticleDTO) => {
+    const response = await api.post("/articles/admin/create/", data);
+    return response.data;
+};
+
+// Update an article (admin)
+export const updateArticle = async (id: string, data: UpdateArticleDTO) => {
+    const response = await api.patch(`/articles/admin/${id}/update/`, data);
+    return response.data;
+};

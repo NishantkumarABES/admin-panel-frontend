@@ -23,6 +23,7 @@ export interface Book {
     price: number;
     file_url: string | null;
     collections: string[];
+    is_deleted: boolean;
     created_at: string;
 }
 
