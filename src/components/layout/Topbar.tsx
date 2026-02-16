@@ -24,6 +24,7 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/profile": { name: "Profile", description: "Admin User Profile" },
   "/my-reposit/books": { name: "Books", description: "Manage books and view stats" },
   "/my-reposit/articles": { name: "Articles", description: "Manage articles and view stats" },
+  "/my-reposit/jobs": { name: "Jobs", description: "Manage jobs and view stats" },
 };
 
 interface TopbarProps {

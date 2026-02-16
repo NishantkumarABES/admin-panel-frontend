@@ -151,7 +151,14 @@ export default function JobsTable({
                                                         <Briefcase className="w-4.5 h-4.5 text-gray-500" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium text-gray-900">{job.title}</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="font-medium text-gray-900">{job.title}</div>
+                                                            {job.is_deleted && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                    Deleted
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <div className="text-xs text-gray-500 mt-0.5">{job.company_name} · {job.job_location}</div>
                                                     </div>
                                                 </div>
@@ -217,7 +224,7 @@ export default function JobsTable({
                                                     )}
 
                                                     {/* Approve (in_review only) */}
-                                                    {job.status === "in_review" && (
+                                                    {job.status === "in_review" && !job.is_deleted && (
                                                         <button
                                                             onClick={() => setApprovingJob(job)}
                                                             disabled={isSubmitting}
@@ -229,7 +236,7 @@ export default function JobsTable({
                                                     )}
 
                                                     {/* Reject (in_review only) */}
-                                                    {job.status === "in_review" && (
+                                                    {job.status === "in_review" && !job.is_deleted && (
                                                         <button
                                                             onClick={() => setRejectingJob(job)}
                                                             disabled={isSubmitting}
