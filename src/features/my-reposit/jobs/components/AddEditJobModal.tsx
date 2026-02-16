@@ -94,21 +94,21 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
             if (job) {
                 // Edit mode: pre-populate form with job data
                 setFormData({
-                    title: job.title,
-                    company_name: job.company_name,
+                    title: job.title || "",
+                    company_name: job.company_name || "",
                     workplace_type: job.workplace_type,
                     employment_type: job.employment_type,
-                    job_location: job.job_location,
+                    job_location: job.job_location || "",
                     job_function: job.job_function,
                     speciality: job.speciality || "",
                     seniority_level: job.seniority_level,
                     experience: job.experience || "",
-                    job_description: job.job_description,
-                    must_have_skills: job.must_have_skills,
+                    job_description: job.job_description || "",
+                    must_have_skills: job.must_have_skills || "",
                     salary_range: job.salary_range || "",
-                    required_degrees: job.required_degrees,
+                    required_degrees: job.required_degrees || "",
                     application_deadline: job.application_deadline || "",
-                    recruiter_name: job.recruiter_name,
+                    recruiter_name: job.recruiter_name || "",
                     apply_method: job.apply_method,
                     external_apply_link: job.external_apply_link || "",
                     application_email: job.application_email || "",
@@ -157,7 +157,7 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
             setIsSubmitting(true);
             await onSubmit({
                 ...formData,
-                user_id: isEditMode ? (job!.id) : selectedUser!.id,
+                user_id: isEditMode ? (job!.created_by) : selectedUser!.id,
                 // Ensure empty strings are treated as empty for optional fields if needed, or pass as is
             });
             onClose();
@@ -195,7 +195,6 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
                     <div className="p-6 space-y-6">
                         {/* Section: Basic Info */}
                         <div className="space-y-4">
-                            <h4 className="text-sm font-medium text-gray-900 border-b pb-2">Basic Information</h4>
 
                             {/* Doctor User Search - only shown in add mode */}
                             {!isEditMode && (
@@ -360,7 +359,7 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                         {/* Section: Job Details */}
                         <div className="space-y-4">
-                            <h4 className="text-sm font-medium text-gray-900 border-b pb-2">Job Details</h4>
+                            {/* <h4 className="text-sm font-medium text-gray-900 border-b pb-2">Job Details</h4> */}
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
@@ -462,7 +461,7 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                         {/* Section: Application Details */}
                         <div className="space-y-4">
-                            <h4 className="text-sm font-medium text-gray-900 border-b pb-2">Application Details</h4>
+                            {/* <h4 className="text-sm font-medium text-gray-900 border-b pb-2">Application Details</h4> */}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -542,16 +541,18 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+                    <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 sticky bottom-0 bg-white z-10">
                         <button
+                            type="button"
                             onClick={onClose}
                             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
+                            type="button"
                             onClick={handleSubmit}
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || (isEditMode && job?.is_deleted)}
                             className="px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting

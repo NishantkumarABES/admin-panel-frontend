@@ -146,7 +146,14 @@ export default function ArticlesTable({
                                                         <FileText className="w-4.5 h-4.5 text-gray-500" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium text-gray-900 text-wrap">{article.title}</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="font-medium text-gray-900 text-wrap">{article.title}</div>
+                                                            {article.is_deleted && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 shrink-0">
+                                                                    Deleted
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <div className="text-xs text-gray-500 mt-0.5">{article.institution || "—"}</div>
                                                     </div>
                                                 </div>

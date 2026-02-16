@@ -174,7 +174,10 @@ export default function JobDetailsModal({ job, isOpen, onClose }: JobDetailsModa
                             Job Description
                         </h4>
                         <div className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{job.job_description}</p>
+                            <div
+                                className="text-sm text-gray-700 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:font-bold [&>p]:mb-2"
+                                dangerouslySetInnerHTML={{ __html: job.job_description }}
+                            />
                         </div>
                     </div>
                 )}

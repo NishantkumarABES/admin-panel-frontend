@@ -70,7 +70,7 @@ export const createJob = async (data: CreateJobDTO) => {
 
 // Update a job (admin)
 export const updateJob = async (id: string, data: UpdateJobDTO) => {
-    const response = await api.patch(`/jobs/admin/${id}/update/`, data);
+    const response = await api.patch(`/jobs/admin/jobs/${id}/update/`, data);
     return response.data;
 };
 
