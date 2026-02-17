@@ -38,10 +38,14 @@ export default function AddGeneralAdForm({
 
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
+    } else if (formData.title.length > 200) {
+      newErrors.title = "Title must be less than 200 characters";
     }
 
     if (!formData.url.trim()) {
       newErrors.url = "URL is required";
+    } else if (formData.url.length > 2048) {
+      newErrors.url = "URL must be less than 2048 characters";
     } else {
       try {
         new URL(formData.url);

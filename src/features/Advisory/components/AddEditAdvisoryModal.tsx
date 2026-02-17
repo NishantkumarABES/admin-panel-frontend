@@ -28,6 +28,12 @@ const initialFormData: CreateAdvisoryDTO = {
   status: "active",
 };
 
+const MAX_CHARS_BIO = 1000;
+const MAX_CHARS_EMAIL = 254;
+const MAX_CHARS_NAME = 255;
+const MAX_CHARS_PHONE = 15;
+const MAX_EXPERIENCE = 65;
+
 export default function AddEditAdvisoryModal({
   member,
   isOpen,
@@ -171,6 +177,12 @@ export default function AddEditAdvisoryModal({
       doctor.full_name.toLowerCase().includes(doctorSearch.toLowerCase()) ||
       doctor.email.toLowerCase().includes(doctorSearch.toLowerCase()) ||
       doctor.doctor_profile.specialization.toLowerCase().includes(doctorSearch.toLowerCase())
+  );
+
+  const renderCharCounter = (text: string, max: number) => (
+    <div className="text-xs text-right text-gray-500 mt-1">
+      {text.length}/{max}
+    </div>
   );
 
   return (
@@ -342,6 +354,7 @@ export default function AddEditAdvisoryModal({
                 </label>
                 <input
                   type="text"
+                  maxLength={MAX_CHARS_NAME}
                   value={formData.full_name}
                   onChange={(e) =>
                     setFormData({ ...formData, full_name: e.target.value })
@@ -359,6 +372,7 @@ export default function AddEditAdvisoryModal({
                   </label>
                   <input
                     type="email"
+                    maxLength={MAX_CHARS_EMAIL}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -374,6 +388,7 @@ export default function AddEditAdvisoryModal({
                   </label>
                   <input
                     type="tel"
+                    maxLength={MAX_CHARS_PHONE}
                     value={formData.phone}
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
@@ -447,15 +462,19 @@ export default function AddEditAdvisoryModal({
                   <input
                     type="number"
                     value={formData.years_of_experience}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        years_of_experience: parseInt(e.target.value) || 0,
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 0;
+                      if (val <= MAX_EXPERIENCE) {
+                        setFormData({
+                          ...formData,
+                          years_of_experience: val,
+                        });
+                      }
+                    }}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="Enter years"
                     min="1"
+                    max={MAX_EXPERIENCE}
                     required
                   />
                 </div>
@@ -467,6 +486,7 @@ export default function AddEditAdvisoryModal({
                 </label>
                 <textarea
                   value={formData.bio}
+                  maxLength={MAX_CHARS_BIO}
                   onChange={(e) =>
                     setFormData({ ...formData, bio: e.target.value })
                   }
@@ -474,6 +494,7 @@ export default function AddEditAdvisoryModal({
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                   placeholder="Enter a brief bio..."
                 />
+                {renderCharCounter(formData.bio || "", MAX_CHARS_BIO)}
               </div>
 
               <div>

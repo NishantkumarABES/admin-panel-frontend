@@ -146,14 +146,22 @@ export default function AddEditProductModal({
     // Required field validations
     if (!formData.name.trim()) {
       newErrors.name = "Product name is required";
+    } else if (formData.name.length > 50) {
+      newErrors.name = "Product name must be less than 50 characters";
     }
 
     if (!formData.brand?.trim()) {
       newErrors.brand = "Brand is required";
+    } else if (formData.brand.length > 50) {
+      newErrors.brand = "Brand name must be less than 50 characters";
     }
 
     if (!formData.category) {
       newErrors.category = "Category is required";
+    }
+
+    if (formData.description && formData.description.length > 500) {
+      newErrors.description = "Description must be less than 500 characters";
     }
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
@@ -360,15 +368,21 @@ export default function AddEditProductModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="Enter product description"
-                  rows={3}
-                />
+                <div className="relative">
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.description ? "border-red-500" : "border-gray-300"}`}
+                    placeholder="Enter product description"
+                    rows={3}
+                  />
+                  <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                    {formData.description?.length || 0}/500
+                  </div>
+                </div>
+                {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
               </div>
             </div>
           </div>

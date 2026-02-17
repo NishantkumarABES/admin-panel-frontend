@@ -23,6 +23,7 @@ const initialFormData: CreateDoctorDTO = {
   specialty: "",
   licenseNumber: "",
   yearsOfExperience: 0,
+  gender: "male",
 };
 
 export default function AddEditDoctorModal({
@@ -61,6 +62,7 @@ export default function AddEditDoctorModal({
         specialty: doctor.doctor_profile.specialization,
         licenseNumber: doctor.doctor_profile.license_number,
         yearsOfExperience: doctor.doctor_profile.years_of_experience,
+        gender: doctor.gender || "male" as "male" | "female" | "other",
       });
     } else {
       setFormData(initialFormData);
@@ -106,6 +108,18 @@ export default function AddEditDoctorModal({
     // Validate years of experience
     if (formData.yearsOfExperience < 1) {
       setExperienceError("Years of experience must be at least 1");
+      return;
+    }
+
+    // Validate email length
+    if (formData.email.length > 254) {
+      setSubmitError("Email cannot exceed 254 characters");
+      return;
+    }
+
+    // Validate license number length
+    if (formData.licenseNumber.length > 15) {
+      setSubmitError("License Number cannot exceed 15 characters");
       return;
     }
 
@@ -320,6 +334,7 @@ export default function AddEditDoctorModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Phone Number *
                 </label>
+
                 <div className="flex gap-2">
                   <PhoneInput
                     international
@@ -373,7 +388,22 @@ export default function AddEditDoctorModal({
                   />
                 </div>
               </div>
-              <div className="col-span-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender *
+                </label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" | "other" })}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  required
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email *
                 </label>
@@ -386,6 +416,7 @@ export default function AddEditDoctorModal({
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder="Enter email address"
                   required
+                  maxLength={254}
                 />
               </div>
             </div>
@@ -512,6 +543,7 @@ export default function AddEditDoctorModal({
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder="Enter license number"
                   required
+                  maxLength={15}
                 />
               </div>
             </div>

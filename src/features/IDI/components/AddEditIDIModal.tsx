@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, Copy, Check } from "lucide-react";
 import type { IDI, CreateIDIDTO, KeyInteraction, PracticalPearl } from "../idi.types";
 import Modal from "../../../components/common/Modal";
-import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES } from "../idi.types";
+import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES, DRUG_TEMPLATE } from "../idi.types";
 import * as IDIService from "../../../services/idi.service";
 
-type AddMode = "manual" | "ai-extract";
+type AddMode = "manual" | "extract";
 
 interface AddEditIDIModalProps {
   IDI: IDI | null;
@@ -37,6 +37,9 @@ const initialFormData: CreateIDIDTO = {
   status: "draft",
 };
 
+const MAX_CHARS_500 = 500;
+const MAX_CHARS_255 = 255;
+
 export default function AddEditIDIModal({
   IDI,
   isOpen,
@@ -51,6 +54,7 @@ export default function AddEditIDIModal({
   const [paragraph, setParagraph] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     if (IDI) {
@@ -118,6 +122,16 @@ export default function AddEditIDIModal({
     }
   };
 
+  const handleCopyTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(DRUG_TEMPLATE);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy template:", err);
+    }
+  };
+
   // Key Interactions handlers
   const addKeyInteraction = () => {
     setFormData({
@@ -168,6 +182,12 @@ export default function AddEditIDIModal({
 
   const isAddMode = !IDI;
 
+  const renderCharCounter = (text: string, max: number) => (
+    <div className="text-xs text-right text-gray-500 mt-1">
+      {text.length}/{max}
+    </div>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -182,28 +202,28 @@ export default function AddEditIDIModal({
             type="button"
             onClick={() => setAddMode("manual")}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${addMode === "manual"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
           >
             Manual Form
           </button>
           <button
             type="button"
-            onClick={() => setAddMode("ai-extract")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${addMode === "ai-extract"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            onClick={() => setAddMode("extract")}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${addMode === "extract"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
           >
             <Sparkles className="w-4 h-4" />
-            AI Extract
+            Extract
           </button>
         </div>
       )}
 
       {/* AI Extract Panel */}
-      {isAddMode && addMode === "ai-extract" && (
+      {isAddMode && addMode === "extract" && (
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
@@ -211,9 +231,20 @@ export default function AddEditIDIModal({
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Drug Information Paragraph *
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Drug Information Paragraph *
+              </label>
+              <button
+                type="button"
+                onClick={handleCopyTemplate}
+                className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                title="Copy example template"
+              >
+                {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {isCopied ? "Copied!" : "Copy Example"}
+              </button>
+            </div>
             <textarea
               value={paragraph}
               onChange={(e) => setParagraph(e.target.value)}
@@ -273,6 +304,7 @@ export default function AddEditIDIModal({
                 <input
                   type="text"
                   required
+                  maxLength={MAX_CHARS_255}
                   value={formData.drugNameGeneric}
                   onChange={(e) => setFormData({ ...formData, drugNameGeneric: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -329,6 +361,7 @@ export default function AddEditIDIModal({
                 <input
                   type="text"
                   required
+                  maxLength={MAX_CHARS_255}
                   value={formData.brandsInIndia}
                   onChange={(e) => setFormData({ ...formData, brandsInIndia: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -344,6 +377,7 @@ export default function AddEditIDIModal({
                   <input
                     type="text"
                     required
+                    maxLength={MAX_CHARS_255}
                     value={formData.strengthsAvailable}
                     onChange={(e) => setFormData({ ...formData, strengthsAvailable: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -358,6 +392,7 @@ export default function AddEditIDIModal({
                   <input
                     type="text"
                     required
+                    maxLength={MAX_CHARS_255}
                     value={formData.formulationsRoutes}
                     onChange={(e) => setFormData({ ...formData, formulationsRoutes: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -378,12 +413,14 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.coreClinicalRole}
                   onChange={(e) => setFormData({ ...formData, coreClinicalRole: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                   placeholder="e.g., First-line oral agent for type 2 diabetes mellitus"
                 />
+                {renderCharCounter(formData.coreClinicalRole, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -392,12 +429,14 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.preferredClinicalScenarios}
                   onChange={(e) => setFormData({ ...formData, preferredClinicalScenarios: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                   placeholder="e.g., Newly diagnosed T2DM, Prediabetes, PCOS with insulin resistance"
                 />
+                {renderCharCounter(formData.preferredClinicalScenarios, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -406,12 +445,14 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.whereBenefitLimited}
                   onChange={(e) => setFormData({ ...formData, whereBenefitLimited: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                   placeholder="e.g., Type 1 diabetes, Severe renal impairment"
                 />
+                {renderCharCounter(formData.whereBenefitLimited, MAX_CHARS_500)}
               </div>
             </div>
           </div>
@@ -426,11 +467,13 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.usualAdultDose}
                   onChange={(e) => setFormData({ ...formData, usualAdultDose: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                 />
+                {renderCharCounter(formData.usualAdultDose, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -440,10 +483,12 @@ export default function AddEditIDIModal({
                 <input
                   type="text"
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.timingRelativeToMeals}
                   onChange={(e) => setFormData({ ...formData, timingRelativeToMeals: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
+                {renderCharCounter(formData.timingRelativeToMeals, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -452,11 +497,13 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.reviewDurationPlan}
                   onChange={(e) => setFormData({ ...formData, reviewDurationPlan: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                 />
+                {renderCharCounter(formData.reviewDurationPlan, MAX_CHARS_500)}
               </div>
             </div>
           </div>
@@ -471,11 +518,13 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.commonAdverseEffects}
                   onChange={(e) => setFormData({ ...formData, commonAdverseEffects: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                 />
+                {renderCharCounter(formData.commonAdverseEffects, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -484,11 +533,13 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.seriousButUncommonRisks}
                   onChange={(e) => setFormData({ ...formData, seriousButUncommonRisks: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                 />
+                {renderCharCounter(formData.seriousButUncommonRisks, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -497,11 +548,13 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.longTermTherapyCautions}
                   onChange={(e) => setFormData({ ...formData, longTermTherapyCautions: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                 />
+                {renderCharCounter(formData.longTermTherapyCautions, MAX_CHARS_500)}
               </div>
             </div>
           </div>
@@ -536,25 +589,30 @@ export default function AddEditIDIModal({
                   <div className="space-y-3">
                     <input
                       type="text"
+                      maxLength={MAX_CHARS_255}
                       value={interaction.interactionTitle}
                       onChange={(e) => updateKeyInteraction(index, "interactionTitle", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                       placeholder="Interaction Title"
                     />
                     <textarea
+                      maxLength={MAX_CHARS_500}
                       value={interaction.clinicalImpact}
                       onChange={(e) => updateKeyInteraction(index, "clinicalImpact", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                       rows={2}
                       placeholder="Clinical Impact"
                     />
+                    {renderCharCounter(interaction.clinicalImpact, MAX_CHARS_500)}
                     <textarea
+                      maxLength={MAX_CHARS_500}
                       value={interaction.whatToDo}
                       onChange={(e) => updateKeyInteraction(index, "whatToDo", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                       rows={2}
                       placeholder="What to Do"
                     />
+                    {renderCharCounter(interaction.whatToDo, MAX_CHARS_500)}
                   </div>
                 </div>
               ))}
@@ -596,18 +654,21 @@ export default function AddEditIDIModal({
                   <div className="space-y-3">
                     <input
                       type="text"
+                      maxLength={MAX_CHARS_255}
                       value={pearl.pearlTitle}
                       onChange={(e) => updatePracticalPearl(index, "pearlTitle", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                       placeholder="Pearl Title"
                     />
                     <textarea
+                      maxLength={MAX_CHARS_500}
                       value={pearl.pearlContent}
                       onChange={(e) => updatePracticalPearl(index, "pearlContent", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                       rows={2}
                       placeholder="Pearl Content"
                     />
+                    {renderCharCounter(pearl.pearlContent, MAX_CHARS_500)}
                   </div>
                 </div>
               ))}
@@ -629,12 +690,14 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.guidelines}
                   onChange={(e) => setFormData({ ...formData, guidelines: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                   placeholder="e.g., ADA Standards of Care 2024, IDF Global Guideline 2022"
                 />
+                {renderCharCounter(formData.guidelines, MAX_CHARS_500)}
               </div>
 
               <div>
@@ -643,12 +706,14 @@ export default function AddEditIDIModal({
                 </label>
                 <textarea
                   required
+                  maxLength={MAX_CHARS_500}
                   value={formData.landmarkTrials}
                   onChange={(e) => setFormData({ ...formData, landmarkTrials: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={2}
                   placeholder="e.g., UKPDS 34 (1998), DPP (2002)"
                 />
+                {renderCharCounter(formData.landmarkTrials, MAX_CHARS_500)}
               </div>
             </div>
           </div>

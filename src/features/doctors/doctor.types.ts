@@ -84,6 +84,7 @@ export interface CreateDoctorDTO {
   specialty: string;
   licenseNumber: string;
   yearsOfExperience: number;
+  gender: "male" | "female" | "other";
 }
 
 export interface UpdateDoctorDTO extends Partial<CreateDoctorDTO> {
