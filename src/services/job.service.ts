@@ -84,7 +84,7 @@ interface PaginatedApplications {
 }
 
 export const getJobApplications = async (jobId: string, page = 1): Promise<PaginatedApplications> => {
-    const response = await api.get<PaginatedApplications>(`/jobs/admin/${jobId}/applications/?page=${page}`);
+    const response = await api.get<PaginatedApplications>(`/jobs/admin/jobs/${jobId}/applications/?page=${page}`);
     return response.data;
 };
 
