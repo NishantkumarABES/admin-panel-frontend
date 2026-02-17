@@ -37,7 +37,6 @@ export interface JobPost {
     tags: string;
     views: number;
     applications_count: number;
-    application_views_count: number;
     is_deleted: boolean;
     created_at: string;
     updated_at: string;
@@ -118,14 +117,33 @@ export interface JobAnalytics {
 
 export type JobApplicationStatus = "pending" | "approved" | "rejected";
 
+export interface JobApplicationJob {
+    id: string;
+    title: string;
+    company_name: string;
+    workplace_type: WorkplaceType;
+    employment_type: EmploymentType;
+    job_location: string;
+    job_function: JobFunction;
+    speciality: string;
+    seniority_level: SeniorityLevel;
+    salary_range?: string | null;
+    application_deadline?: string | null;
+    views: number;
+    applications_count: number;
+    created_at: string;
+    created_by: string;
+    tags: string;
+    status: JobPostStatus;
+}
+
 export interface JobApplication {
     id: string;
-    job: string;
-    job_title?: string;
+    job: JobApplicationJob;
     applicant: string;
     applicant_name?: string;
     applicant_email?: string;
-    resume: string;
+    resume?: string | null;
     additional_information?: string | null;
     years_of_experience?: string | null;
     current_position?: string | null;
@@ -133,7 +151,7 @@ export interface JobApplication {
     notice_period?: string | null;
     expected_salary?: string | null;
     additional_document?: string | null;
-    status: JobApplicationStatus;
+    status?: JobApplicationStatus;
     created_at: string;
 }
 

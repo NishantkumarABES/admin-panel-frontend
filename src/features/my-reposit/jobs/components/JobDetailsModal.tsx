@@ -151,7 +151,7 @@ export default function JobDetailsModal({ job, isOpen, onClose }: JobDetailsModa
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
                         Statistics
                     </h4>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <div className="bg-gray-50 rounded-lg p-2 text-center">
                             <div className="text-base font-bold text-gray-900">{job.views ?? 0}</div>
                             <div className="text-xs text-gray-500">Views</div>
@@ -159,10 +159,6 @@ export default function JobDetailsModal({ job, isOpen, onClose }: JobDetailsModa
                         <div className="bg-gray-50 rounded-lg p-2 text-center">
                             <div className="text-base font-bold text-gray-900">{job.applications_count ?? 0}</div>
                             <div className="text-xs text-gray-500">Applications</div>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-2 text-center">
-                            <div className="text-base font-bold text-gray-900">{job.application_views_count ?? 0}</div>
-                            <div className="text-xs text-gray-500">App Views</div>
                         </div>
                     </div>
                 </div>

@@ -106,15 +106,17 @@ export default function JobApplicationsModal({ isOpen, onClose, job }: JobApplic
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h4 className="font-medium text-gray-900">
-                                                        {app.applicant_name || "Unknown Applicant"}
+                                                        {app.applicant || app.applicant_name || "Unknown Applicant"}
                                                     </h4>
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize 
-                                                        ${app.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                                                            app.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                                                                app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                                    'bg-gray-100 text-gray-800'}`}>
-                                                        {app.status}
-                                                    </span>
+                                                    {app.status && (
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize 
+                                                            ${app.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                                                                app.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                                                                    app.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                                        'bg-gray-100 text-gray-800'}`}>
+                                                            {app.status}
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-3">
@@ -137,6 +139,9 @@ export default function JobApplicationsModal({ isOpen, onClose, job }: JobApplic
                                                     {app.current_position && (
                                                         <div><span className="text-gray-500">Current Role:</span> {app.current_position}</div>
                                                     )}
+                                                    {app.current_institution && (
+                                                        <div><span className="text-gray-500">Current Institution:</span> {app.current_institution}</div>
+                                                    )}
                                                     {app.expected_salary && (
                                                         <div><span className="text-gray-500">Expected Salary:</span> {app.expected_salary}</div>
                                                     )}
@@ -148,7 +153,10 @@ export default function JobApplicationsModal({ isOpen, onClose, job }: JobApplic
                                                 {app.additional_information && (
                                                     <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md mb-3">
                                                         <div className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">Additional Info</div>
-                                                        {app.additional_information}
+                                                        <div
+                                                            className="prose prose-sm max-w-none"
+                                                            dangerouslySetInnerHTML={{ __html: app.additional_information }}
+                                                        />
                                                     </div>
                                                 )}
                                             </div>
@@ -159,7 +167,7 @@ export default function JobApplicationsModal({ isOpen, onClose, job }: JobApplic
                                                         href={app.resume}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+                                                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium !text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
                                                     >
                                                         <FileText className="w-4 h-4" />
                                                         View Resume
