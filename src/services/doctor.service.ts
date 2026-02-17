@@ -95,6 +95,7 @@ export const createDoctor = async (data: CreateDoctorDTO) => {
   formData.append("full_name", data.fullName);
   formData.append("email", data.email);
   formData.append("phone", data.phone);
+  formData.append("gender", data.gender);
   formData.append("country_code", data.countryCode);
   formData.append("password", systemPassword);
   formData.append("terms_accepted", "true");

@@ -178,6 +178,8 @@ export default function AddEditEventModal({
     // Title is required
     if (!formData.title.trim()) {
       errors.title = "Event title is required";
+    } else if (formData.title.length > 150) {
+      errors.title = "Event title must be less than 150 characters";
     }
 
     // Event type is required (has default, but just in case)
@@ -210,6 +212,20 @@ export default function AddEditEventModal({
       errors.end_date = "End date cannot be before start date";
     }
 
+    // Description validation
+    if (formData.description && formData.description.length > 500) {
+      errors.description = "Description must be less than 500 characters";
+    }
+
+    // Agenda validation
+    if (formData.agenda && formData.agenda.length > 1000) {
+      errors.agenda = "Agenda must be less than 1000 characters";
+    }
+
+    // Venue validation
+    if (formData.venue && formData.venue.length > 255) {
+      errors.venue = "Venue must be less than 255 characters";
+    }
 
     // Event link is always required (official registration website)
     if (!formData.event_link?.trim()) {
@@ -455,11 +471,22 @@ export default function AddEditEventModal({
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => {
+                    setFormData({ ...formData, description: e.target.value });
+                    if (validationErrors.description) setValidationErrors({ ...validationErrors, description: "" });
+                  }}
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.description ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter event description"
                   rows={3}
                 />
+                <div className="flex justify-between items-start mt-1">
+                  {validationErrors.description ? (
+                    <p className="text-xs text-red-600">{validationErrors.description}</p>
+                  ) : <span></span>}
+                  <p className={`text-xs text-right ${formData.description.length > 500 ? "text-red-600" : "text-gray-500"}`}>
+                    {formData.description.trim().split(/\s+/).filter(Boolean).length} words | {formData.description.length}/500
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -686,10 +713,16 @@ export default function AddEditEventModal({
                   <input
                     type="text"
                     value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, venue: e.target.value });
+                      if (validationErrors.venue) setValidationErrors({ ...validationErrors, venue: "" });
+                    }}
+                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.venue ? "border-red-500" : "border-gray-300"}`}
                     placeholder="Enter venue address"
                   />
+                  {validationErrors.venue && (
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.venue}</p>
+                  )}
                 </div>
               )}
               <div className="col-span-2">
@@ -785,11 +818,22 @@ export default function AddEditEventModal({
             </h3>
             <textarea
               value={formData.agenda}
-              onChange={(e) => setFormData({ ...formData, agenda: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              onChange={(e) => {
+                setFormData({ ...formData, agenda: e.target.value });
+                if (validationErrors.agenda) setValidationErrors({ ...validationErrors, agenda: "" });
+              }}
+              className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${validationErrors.agenda ? "border-red-500" : "border-gray-300"}`}
               placeholder="Enter event agenda (e.g., 9:00 AM - Registration, 10:00 AM - Session 1, etc.)"
               rows={5}
             />
+            <div className="flex justify-between items-start mt-1">
+              {validationErrors.agenda ? (
+                <p className="text-xs text-red-600">{validationErrors.agenda}</p>
+              ) : <span></span>}
+              <p className={`text-xs text-right ${formData.agenda.length > 1000 ? "text-red-600" : "text-gray-500"}`}>
+                {formData.agenda.trim().split(/\s+/).filter(Boolean).length} words | {formData.agenda.length}/1000
+              </p>
+            </div>
           </div>
 
           {/* Speakers */}

@@ -262,3 +262,137 @@ export const THERAPEUTIC_CATEGORIES = [
   "Bronchodilator",
   "Cardiovascular"
 ] as const;
+
+
+export const DRUG_TEMPLATE = `DRUG NAME (GENERIC)
+
+Losartan
+
+DRUG CLASS
+
+Angiotensin II Receptor Blocker (ARB)
+
+THERAPEUTIC CATEGORY
+
+Antihypertensive
+
+BRANDS IN INDIA – SINGLE MOLECULE
+
+Losar
+Repace
+Tozaar
+
+STRENGTHS AVAILABLE
+
+25 mg
+50 mg
+100 mg
+
+FORMULATIONS / ROUTES
+
+Oral tablet
+
+CORE CLINICAL ROLE
+
+Blood pressure control and renal protection in diabetic nephropathy.
+
+PREFERRED CLINICAL SCENARIOS
+
+Hypertension with diabetes
+Proteinuric chronic kidney disease
+ACE inhibitor intolerance (cough)
+
+WHERE BENEFIT IS LIMITED / AVOID OVERUSE
+
+Pregnancy
+Bilateral renal artery stenosis
+
+USUAL ADULT DOSE
+
+50 mg once daily; may titrate to 100 mg daily.
+
+TIMING RELATIVE TO MEALS
+
+Can be taken with or without food.
+
+REVIEW / DURATION PLAN
+
+Review blood pressure and renal function after 2–4 weeks.
+
+COMMON ADVERSE EFFECTS
+
+Dizziness
+Hypotension
+Hyperkalemia
+
+SERIOUS BUT UNCOMMON RISKS
+
+Acute kidney injury
+Severe hyperkalemia
+Angioedema (rare)
+
+LONG-TERM THERAPY CAUTIONS
+
+Monitor serum potassium
+Monitor renal function
+Avoid in pregnancy
+
+KEY INTERACTIONS
+
+>> Interaction Title:
+Potassium supplements / Potassium-sparing diuretics
+
+>> Clinical Impact:
+Increased risk of hyperkalemia.
+
+>> What to Do:
+Monitor potassium closely; avoid combination unless necessary.
+
+>> Interaction Title:
+NSAIDs
+
+>> Clinical Impact:
+Reduced antihypertensive effect and increased risk of renal impairment.
+
+>> What to Do:
+Use lowest NSAID dose for shortest duration; monitor renal function.
+
+>> Interaction Title:
+Lithium
+
+>> Clinical Impact:
+May increase lithium levels leading to toxicity.
+
+>> What to Do:
+Monitor lithium levels and adjust dose accordingly.
+
+PRACTICAL PRESCRIBING PEARLS
+
+>> Pearl Title:
+Check potassium early
+
+>> Pearl Content:
+Always check baseline potassium and repeat within 2–4 weeks after initiation.
+
+>> Pearl Title:
+Start low in elderly
+
+>> Pearl Content:
+Begin with 25 mg in elderly or volume-depleted patients to avoid first-dose hypotension.
+
+>> Pearl Title:
+Renal protection benefit
+
+>> Pearl Content:
+Preferred in diabetic nephropathy with proteinuria for renal protective effects.
+
+GUIDELINES (NAME + YEAR)
+
+ACC/AHA Hypertension Guidelines, 2017
+KDIGO CKD Guideline, 2022
+
+LANDMARK TRIALS (NAME + YEAR)
+
+RENAAL Trial, 2001
+LIFE Study, 2002
+`;
