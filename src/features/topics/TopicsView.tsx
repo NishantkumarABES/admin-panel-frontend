@@ -32,6 +32,16 @@ export default function TopicsView() {
   const [pageSize, setPageSize] = useState(5);
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // Keep selectedTopic in sync with latest data from topics array
+  useEffect(() => {
+    if (selectedTopic) {
+      const updated = topics.find((t) => t.id === selectedTopic.id);
+      if (updated) {
+        setSelectedTopic(updated);
+      }
+    }
+  }, [topics]);
+
   // Fetch analytics
   const fetchAnalytics = async () => {
     try {

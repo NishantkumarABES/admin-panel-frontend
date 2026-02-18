@@ -65,7 +65,7 @@ export default function TopicTable({
                     />
 
                     <div className="max-w-xs">
-                      
+
                       {/* Title + Status Row */}
                       <div className="flex items-center gap-2">
                         <div className="font-medium truncate max-w-80">
@@ -76,20 +76,19 @@ export default function TopicTable({
                           <>
                             {!topic.transcription ? (
                               <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-700 whitespace-nowrap">
-                                 pending
+                                pending
                               </span>
                             ) : (
                               <span
-                                className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap ${
-                                  topic.transcription.status === "completed"
+                                className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap ${topic.transcription.status === "completed"
                                     ? "bg-green-100 text-green-700"
                                     : topic.transcription.status === "failed" ||
                                       topic.transcription.status === "blocked"
-                                    ? "bg-red-100 text-red-700"
-                                    : topic.transcription.status === "transcribing"
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
+                                      ? "bg-red-100 text-red-700"
+                                      : topic.transcription.status === "transcribing"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : "bg-blue-100 text-blue-700"
+                                  }`}
                               >
                                 {topic.transcription.status === "completed" && "✓ "}
                                 {topic.transcription.status === "failed" && "✗ "}
@@ -102,9 +101,11 @@ export default function TopicTable({
                         )}
                       </div>
 
-                      {/* Description */}
+                      {/* Description / Video Summary */}
                       <div className="text-xs text-gray-500 truncate">
-                        {stripHtml(topic.description).substring(0, 100)}...
+                        {topic.video_url && topic.transcription?.summary_text
+                          ? topic.transcription.summary_text.substring(0, 100) + "..."
+                          : stripHtml(topic.description).substring(0, 100) + "..."}
                       </div>
 
                     </div>

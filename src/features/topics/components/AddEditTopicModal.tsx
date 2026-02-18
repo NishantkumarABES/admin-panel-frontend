@@ -74,11 +74,15 @@ export default function AddEditTopicModal({
       // Edit mode - go directly to manual mode with pre-filled data
       setMode("manual");
 
-      // Keep description as is - don't auto-fill with AI summary for video topics
-      // The AI-generated summary_text should remain separate in transcription data
+      // For video topics, use summary_text as the description if available
+      const description =
+        topic.video_url && topic.transcription?.summary_text
+          ? topic.transcription.summary_text
+          : topic.description || "";
+
       setFormData({
         title: topic.title || "",
-        description: topic.description || "",
+        description,
         image_url: topic.image || undefined,
         image_file: undefined,
         source_url: topic.source_url || "",
@@ -220,13 +224,8 @@ export default function AddEditTopicModal({
       }
     }
 
-    // Strip HTML before sending to API
-    const submissionData = {
-      ...formData,
-      description: plainDescription,
-    };
-
-    onSubmit(submissionData);
+    // Send raw HTML to API so formatting is preserved in the database
+    onSubmit(formData);
 
     // Clear state without calling cleanup again
     setMode("article_input");
@@ -408,11 +407,9 @@ export default function AddEditTopicModal({
                 <p className="text-xs text-gray-500">
                   AI-generated summary. Feel free to edit as needed.
                 </p>
-                {getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS && (
-                  <p className="text-xs text-red-600 font-medium">
-                    {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
-                  </p>
-                )}
+                <p className={`text-xs font-medium ${getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS ? "text-red-600" : "text-gray-500"}`}>
+                  {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
+                </p>
               </div>
             </div>
 
@@ -575,6 +572,7 @@ export default function AddEditTopicModal({
               />
             </div>
 
+
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -587,73 +585,76 @@ export default function AddEditTopicModal({
                 }
                 editable={true}
               />
-              {getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS && (
-                <p className="text-xs text-red-600 font-medium mt-1.5">
-                  {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
-                </p>
-              )}
-            </div>
-
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-3">
-                Topic Image (Optional but recommended)
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              {imagePreview ? (
-                <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
-                  <img
-                    src={imagePreview}
-                    alt="Uploaded preview"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-sm text-gray-600"
-                >
-                  <Upload className="w-8 h-8 text-gray-400" />
-                  <span>Click to upload image</span>
-                </button>
-              )}
-            </div>
-
-            {/* Source URL (Optional) */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Source URL (Optional)
-              </label>
-              <div className="relative">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="url"
-                  value={formData.source_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, source_url: e.target.value })
-                  }
-                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  placeholder="https://example.com/article-source"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1.5">
-                Add a reference link if this topic is based on an external article.
+              <p className={`text-xs font-medium mt-1.5 ${getPlainTextLength(formData.description || "") > MAX_DESCRIPTION_CHARS ? "text-red-600" : "text-gray-500"}`}>
+                {getPlainTextLength(formData.description || "")}/{MAX_DESCRIPTION_CHARS} characters
               </p>
             </div>
+
+            {/* Image Upload - hidden for video topics */}
+            {!topic?.video_url && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  Topic Image (Optional but recommended)
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                {imagePreview ? (
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={imagePreview}
+                      alt="Uploaded preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full px-4 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-2 text-sm text-gray-600"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <span>Click to upload image</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Source URL (Optional) - hidden for video topics */}
+            {!topic?.video_url && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Source URL (Optional)
+                </label>
+                <div className="relative">
+                  <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="url"
+                    value={formData.source_url}
+                    onChange={(e) =>
+                      setFormData({ ...formData, source_url: e.target.value })
+                    }
+                    readOnly={!!topic}
+                    className={`w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl outline-none transition-all ${topic ? "bg-gray-100 cursor-not-allowed text-gray-500" : "focus:ring-2 focus:ring-blue-500 focus:border-blue-500"}`}
+                    placeholder="https://example.com/article-source"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Add a reference link if this topic is based on an external article.
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-2">
