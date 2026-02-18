@@ -26,32 +26,19 @@ export default function TopicDetailsModal({
   const [isVideoPlayable, setIsVideoPlayable] = useState<boolean | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
 
-  const extractVimeoId = (url: string): string | null => {
-    const match = url.match(/vimeo\.com\/(\d+)/);
-    return match ? match[1] : null;
+  const isValidVideoUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const validateVideoUrl = async (videoUrl: string): Promise<boolean> => {
     try {
-      const vimeoId = extractVimeoId(videoUrl);
-      if (!vimeoId) {
-        setVideoError("Invalid Vimeo URL format");
-        return false;
-      }
-
-      // Check if the video is accessible via Vimeo's oEmbed API
-      const response = await fetch(
-        `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vimeoId}`
-      );
-
-      if (!response.ok) {
-        setVideoError("Video not found or not accessible");
-        return false;
-      }
-
-      const data = await response.json();
-      if (!data || !data.video_id) {
-        setVideoError("Invalid video data");
+      if (!isValidVideoUrl(videoUrl)) {
+        setVideoError("Invalid video URL format");
         return false;
       }
 
@@ -169,7 +156,7 @@ export default function TopicDetailsModal({
     }
   };
 
-  const vimeoId = topic.video_url ? extractVimeoId(topic.video_url) : null;
+  const hasVideoUrl = topic.video_url ? isValidVideoUrl(topic.video_url) : false;
   const hasTranscription = topic.transcription;
   const transcriptionCompleted = hasTranscription?.status === "completed";
 
@@ -209,21 +196,20 @@ export default function TopicDetailsModal({
           <div className="px-6 py-4 overflow-y-auto flex-1">
             <div className="space-y-6">
               {/* Video Player */}
-              {vimeoId && (
-                <div className="w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
-                  <iframe
-                    src={`https://player.vimeo.com/video/${vimeoId}`}
+              {hasVideoUrl && topic.video_url && (
+                <div className="w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-black">
+                  <video
+                    src={topic.video_url}
                     className="w-full h-full"
-                    frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
+                    controls
+                    controlsList="nodownload"
                     title={topic.title}
                   />
                 </div>
               )}
 
               {/* Image (if no video) */}
-              {!vimeoId && topic.image && (
+              {!hasVideoUrl && topic.image && (
                 <div className="w-full h-48 rounded-lg overflow-hidden border border-gray-200">
                   <img
                     src={topic.image}
@@ -249,9 +235,9 @@ export default function TopicDetailsModal({
                   <div
                     className={`text-gray-600 leading-relaxed prose prose-sm max-w-none overflow-hidden transition-all ${isExpanded ? "" : "line-clamp-4"
                       }`}
-                    dangerouslySetInnerHTML={{ __html: topic.description }}
+                    dangerouslySetInnerHTML={{ __html: topic.description || "" }}
                   />
-                  {topic.description.length > 300 && (
+                  {(topic.description?.length ?? 0) > 300 && (
                     <button
                       onClick={() => setIsExpanded(!isExpanded)}
                       className="mt-2 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
