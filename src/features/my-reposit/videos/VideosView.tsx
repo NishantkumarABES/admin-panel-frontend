@@ -63,11 +63,11 @@ export default function VideosView() {
                 page_size: pageSize,
             };
 
-            const response = await videoService.getVideos(filters);
-            setVideos(response.results || []);
-            setTotalCount(response.count);
-            setHasNext(response.next !== null);
-            setHasPrevious(response.previous !== null);
+            const data = await videoService.getVideos(filters);
+            setVideos(data || []);
+            setTotalCount(data.length);
+            setHasNext(false);
+            setHasPrevious(currentPage > 1);
         } catch (error) {
             console.error("Failed to fetch videos:", error);
             toast.error("Failed to fetch videos");
