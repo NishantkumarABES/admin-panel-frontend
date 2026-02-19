@@ -1,21 +1,14 @@
 import { api } from "./api";
 import type { Video, VideoFilters, ReviewVideoDTO, VideoAnalytics, CreateVideoDTO, UpdateVideoDTO } from "../features/my-reposit/videos/videos.types";
 
-interface PaginatedVideos {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: Video[];
-}
-
 interface VideoResponse {
     detail: string;
-    data: PaginatedVideos;
+    data: Video[];
     success: boolean;
 }
 
 // Get all videos with optional filters
-export const getVideos = async (filters?: VideoFilters): Promise<PaginatedVideos> => {
+export const getVideos = async (filters?: VideoFilters): Promise<Video[]> => {
     const params = new URLSearchParams();
 
     if (filters?.page) params.append("page", filters.page.toString());

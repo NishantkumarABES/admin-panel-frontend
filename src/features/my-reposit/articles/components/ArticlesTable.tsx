@@ -311,7 +311,7 @@ export default function ArticlesTable({
             {/* Reject Modal */}
             {rejectingArticle && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={() => { setRejectingArticle(null); setRejectionReason(""); }} />
+                    <div className="fixed inset-0 bg-black/50 transition-opacity" />
                     <div className="flex min-h-full items-center justify-center p-4">
                         <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                             <div className="p-6">

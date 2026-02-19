@@ -152,7 +152,7 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
+            <div className="fixed inset-0 bg-black/50 transition-opacity" />
             <div className="flex min-h-full items-center justify-center p-4">
                 <div
                     className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
