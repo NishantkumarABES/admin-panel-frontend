@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Filter, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, HelpCircle, Users, UserCheck, UserX, UserPlus, Trash2 } from "lucide-react";
 import type { PatientUser } from "./patient.types";
 import { mockPatients } from "./patient.types";
 import { patientService, type PatientAnalytics } from "../../services/patient.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import PatientDetailsModal from "./components/PatientDetailsModal";
-import StatusBadge from "../../components/common/StatusBadge";
-import malePatientPlaceholder from "../../assets/placeholders/male_patient.jpg";
-import femalePatientPlaceholder from "../../assets/placeholders/female_patient.jpg";
-
-
-type SortDirection = "asc" | "desc" | null;
-type PatientSortField = "full_name" | "email" | "phone" | "is_active";
+import PatientTable from "./components/PatientTable";
 
 export default function PatientsView() {
   const [patients, setPatients] = useState<PatientUser[]>([]);
@@ -22,6 +16,8 @@ export default function PatientsView() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   // Sorting state
+  type SortDirection = "asc" | "desc" | null;
+  type PatientSortField = "full_name" | "email" | "phone" | "is_active";
   const [sortField, setSortField] = useState<PatientSortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -32,7 +28,6 @@ export default function PatientsView() {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
-
   // Modal states
   const [selectedPatient, setSelectedPatient] = useState<PatientUser | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -41,7 +36,6 @@ export default function PatientsView() {
   // Handle sort toggle
   const handleSort = (field: PatientSortField) => {
     if (sortField === field) {
-      // Cycle: asc -> desc -> null
       if (sortDirection === "asc") {
         setSortDirection("desc");
       } else if (sortDirection === "desc") {
@@ -55,22 +49,10 @@ export default function PatientsView() {
     setCurrentPage(1);
   };
 
-  // Get sort icon for a field
-  const getSortIcon = (field: PatientSortField) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
-    }
-    if (sortDirection === "asc") {
-      return <ArrowUp className="w-4 h-4 text-gray-900" />;
-    }
-    return <ArrowDown className="w-4 h-4 text-gray-900" />;
-  };
-
   const fetchPatients = async () => {
     try {
       setLoading(true);
 
-      // Build ordering string
       let ordering: string | undefined;
       if (sortField && sortDirection) {
         ordering = sortDirection === "desc" ? `-${sortField}` : sortField;
@@ -84,7 +66,6 @@ export default function PatientsView() {
         ordering,
       };
 
-      // Try to fetch from API, fallback to mock data on error
       try {
         const response = await patientService.getPatients(filters);
         setPatients(response.data.results);
@@ -95,14 +76,12 @@ export default function PatientsView() {
         console.log("Using mock data - API not available");
         let filteredData = [...mockPatients];
 
-        // Apply status filter
         if (statusFilter !== "all") {
           filteredData = filteredData.filter(p =>
             statusFilter === "active" ? p.is_active : !p.is_active
           );
         }
 
-        // Apply search filter
         if (searchTerm) {
           const search = searchTerm.toLowerCase();
           filteredData = filteredData.filter(
@@ -113,7 +92,6 @@ export default function PatientsView() {
           );
         }
 
-        // Apply client-side sorting for mock data
         if (sortField && sortDirection) {
           filteredData.sort((a, b) => {
             let aVal = a[sortField];
@@ -147,7 +125,6 @@ export default function PatientsView() {
       setAnalytics(response.data);
     } catch (error) {
       console.error("Failed to fetch patient analytics:", error);
-      // Fallback to calculated stats if API fails
       setAnalytics(null);
     } finally {
       setAnalyticsLoading(false);
@@ -176,7 +153,6 @@ export default function PatientsView() {
     setIsDetailsModalOpen(true);
   };
 
-
   const handleConfirmDelete = async () => {
     if (!selectedPatient) return;
 
@@ -187,14 +163,13 @@ export default function PatientsView() {
       fetchPatients();
     } catch (error) {
       console.error("Failed to delete patient:", error);
-      // For demo purposes with mock data
       setPatients(prev => prev.filter(p => p.id !== selectedPatient.id));
       setIsDeleteDialogOpen(false);
       setSelectedPatient(null);
     }
   };
 
-  // Use API analytics data if available, or totalCount from pagination, or calculate from current patients
+  // Use API analytics data if available
   const stats = analytics
     ? {
       total: analytics.total_patients,
@@ -220,337 +195,369 @@ export default function PatientsView() {
   // Check if any filters are active
   const hasActiveFilters = searchTerm || statusFilter !== "all";
 
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Build pagination page numbers with ellipsis
+  const getPageNumbers = (): (number | "ellipsis")[] => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages: (number | "ellipsis")[] = [];
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
+    }
+    return pages;
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Total Patients</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="clay-card min-w-0">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+              <Users className="w-5 h-5" style={{ color: "#6b96ff" }} />
+            </div>
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
                 The total number of patient accounts registered in the system.
               </div>
             </div>
           </div>
           {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           )}
+          <div className="text-xs" style={{ color: "#111827" }}>Total Patients</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Active</p>
+
+        <div className="clay-card min-w-0">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(79, 207, 165, 0.08)" }}>
+              <UserCheck className="w-5 h-5" style={{ color: "#4fcfa5" }} />
+            </div>
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
-                Active accounts with recent activity and all required profile fields completed.
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
+                Patients with active accounts, recent activity, and all required profile information completed.
               </div>
             </div>
           </div>
           {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
+            <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.active}</div>
           )}
+          <div className="text-xs" style={{ color: "#111827" }}>Active</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Inactive</p>
+
+        <div className="clay-card min-w-0">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(255, 197, 84, 0.08)" }}>
+              <UserX className="w-5 h-5" style={{ color: "#ffc554" }} />
+            </div>
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
                 Accounts that have been inactive for an extended period of time.
               </div>
             </div>
           </div>
           {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <p className="text-2xl font-bold text-amber-600 mt-1">{stats.inactive}</p>
+            <div className="text-xl font-bold" style={{ color: "#ffc554", marginBottom: "2px" }}>{stats.inactive}</div>
           )}
+          <div className="text-xs" style={{ color: "#111827" }}>Inactive</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Created</p>
+
+        <div className="clay-card min-w-0">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(162, 133, 255, 0.08)" }}>
+              <UserPlus className="w-5 h-5" style={{ color: "#a285ff" }} />
+            </div>
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
-                Newly registered users who have not yet completed all required profile fields.
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
+                Newly registered patients who have not yet completed all required profile fields.
               </div>
             </div>
           </div>
           {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <p className="text-2xl font-bold text-blue-600 mt-1">{stats.created}</p>
+            <div className="text-xl font-bold" style={{ color: "#a285ff", marginBottom: "2px" }}>{stats.created}</div>
           )}
+          <div className="text-xs" style={{ color: "#111827" }}>Created</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Deleted</p>
+
+        <div className="clay-card min-w-0">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(255, 112, 112, 0.08)" }}>
+              <Trash2 className="w-5 h-5" style={{ color: "#ff7070" }} />
+            </div>
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10">
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
                 Accounts that have been permanently deleted by the user.
               </div>
             </div>
           </div>
           {analyticsLoading ? (
-            <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
+            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <p className="text-2xl font-bold text-red-600 mt-1">{stats.deleted}</p>
+            <div className="text-xl font-bold" style={{ color: "#ff7070", marginBottom: "2px" }}>{stats.deleted}</div>
           )}
+          <div className="text-xs" style={{ color: "#111827" }}>Deleted</div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search patients by name, email, or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            />
-          </div>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent appearance-none bg-white"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="created">Created</option>
-                <option value="deleted">Deleted</option>
-              </select>
+      <div className="clay-card min-w-0" style={{ padding: "14px 18px" }}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4 min-w-0">
+          {/* Left side: Search + Filters */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:gap-3 min-w-0 flex-1">
+            {/* Search */}
+            <div className="flex-1 min-w-0 w-full sm:min-w-75 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search patient by name, email, or phone..."
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                style={{
+                  background: "#eff1f5",
+                  border: "none",
+                  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                }}
+              />
             </div>
 
-            {/* Clear Filters */}
-            {hasActiveFilters && (
-              <button
-                onClick={handleClearFilters}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
-              >
-                Clear Filters
-              </button>
-            )}
+            {/* Filters group */}
+            <div className="flex flex-wrap items-center gap-3 min-w-0">
+              {/* Status Filter */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-40">
+                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                  style={{
+                    background: "#eff1f5",
+                    border: "none",
+                    boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="created">Created</option>
+                  <option value="deleted">Deleted</option>
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="clay-btn text-sm whitespace-nowrap"
+                  style={{ padding: "6px 14px", fontSize: "13px" }}
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Patients Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Table */}
+      <div className="clay-card overflow-hidden" style={{ padding: 0 }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-600">Loading patients...</div>
-        ) : patients.length === 0 ? (
-          <div className="p-8 text-center text-gray-600">
-            No patients found. Try adjusting your filters.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                    onClick={() => handleSort("full_name")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Full Name
-                      {getSortIcon("full_name")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                    onClick={() => handleSort("email")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Email
-                      {getSortIcon("email")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                    onClick={() => handleSort("phone")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Phone
-                      {getSortIcon("phone")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                    onClick={() => handleSort("is_active")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Status
-                      {getSortIcon("is_active")}
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Registration Date
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {patients.map((patient) => (
-                  <tr
-                    key={patient.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        {patient && (
-                          <img
-                            src={
-                              patient.image
-                                ? patient.image
-                                : patient.gender === "male"
-                                  ? malePatientPlaceholder
-                                  : femalePatientPlaceholder
-                            }
-                            alt={patient.full_name}
-                            className="w-10 h-10 rounded object-cover"
-                          />
-                        )}
-                        <div className="text-sm font-medium text-gray-900">
-                          {patient.full_name}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">{patient.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">{patient.phone}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={patient.state} size="sm" />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">
-                        {patient.created_at
-                          ? new Date(patient.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                          : "—"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleView(patient)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="View Profile"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {!loading && patients.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          /* Skeleton Loading Rows */
+          <div className="w-full">
+            <div
+              className="px-4 py-3"
+              style={{ background: "#f8f9fb", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+            >
               <div className="flex items-center gap-4">
-                <div className="text-sm text-gray-600">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} patients
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="pageSize" className="text-sm text-gray-600">
-                    Per page:
-                  </label>
-                  <select
-                    id="pageSize"
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={!hasPrevious}
-                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </button>
-                <div className="px-3 py-1.5 text-sm text-gray-600">
-                  Page {currentPage} of {Math.ceil(totalCount / pageSize)}
-                </div>
-                <button
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  disabled={!hasNext}
-                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                <div className="w-8 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-32 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-28 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
+                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse ml-auto" />
               </div>
             </div>
+            {[...Array(pageSize)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 px-4 py-4 animate-pulse"
+                style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 bg-gray-200 rounded-full shrink-0" />
+                {/* Name + email */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="w-36 h-4 bg-gray-200 rounded" />
+                  <div className="w-48 h-3 bg-gray-100 rounded" />
+                </div>
+                {/* Phone */}
+                <div className="w-24 h-3.5 bg-gray-200 rounded" />
+                {/* Age */}
+                <div className="w-10 h-3.5 bg-gray-200 rounded" />
+                {/* Gender */}
+                <div className="w-16 h-6 bg-gray-200 rounded-lg" />
+                {/* Status */}
+                <div className="w-20 h-6 bg-gray-200 rounded-full" />
+                {/* Actions */}
+                <div className="flex gap-1.5">
+                  <div className="w-7 h-7 bg-gray-200 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
+        ) : patients.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500 mb-4">
+              No patients found. Try adjusting your filters.
+            </p>
+          </div>
+        ) : (
+          <>
+            <PatientTable
+              patients={patients}
+              onView={handleView}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            {!loading && patients.length > 0 && (
+              <div
+                className="px-5 py-3"
+                style={{
+                  background: "#eff1f5",
+                  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
+                }}
+              >
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      <div className="text-xs text-gray-600">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} patients
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="pageSize" className="text-xs text-gray-600">
+                          Per page:
+                        </label>
+                        <select
+                          id="pageSize"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="px-2 py-1 rounded-lg text-xs focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          style={{
+                            background: "#ffffff",
+                            border: "none",
+                            boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.5)",
+                          }}
+                        >
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={25}>25</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!hasPrevious}
+                        className="clay-btn text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        style={{ padding: "5px 10px", fontSize: "12px" }}
+                        title="Previous page"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        Prev
+                      </button>
+
+                      {/* Page Number Buttons */}
+                      {getPageNumbers().map((page, idx) =>
+                        page === "ellipsis" ? (
+                          <span key={`ellipsis-${idx}`} className="px-1.5 text-xs text-gray-400 select-none">…</span>
+                        ) : (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className="min-w-[28px] h-7 rounded-lg text-xs font-semibold transition-all"
+                            style={
+                              currentPage === page
+                                ? { background: "#1f2937", color: "white", boxShadow: "2px 2px 5px rgba(0,0,0,0.15)" }
+                                : { background: "#eff1f5", color: "#6b7280", boxShadow: "2px 2px 4px rgba(0,0,0,0.08), -2px -2px 4px rgba(255,255,255,0.6)" }
+                            }
+                            title={`Go to page ${page}`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!hasNext}
+                        className="clay-btn text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        style={{ padding: "5px 10px", fontSize: "12px" }}
+                        title="Next page"
+                      >
+                        Next
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Modals */}
-      {selectedPatient && (
-        <>
-          <PatientDetailsModal
-            isOpen={isDetailsModalOpen}
-            onClose={() => {
-              setIsDetailsModalOpen(false);
-              setSelectedPatient(null);
-            }}
-            patient={selectedPatient}
-          />
+      <PatientDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedPatient(null);
+        }}
+        patient={selectedPatient}
+      />
 
-          <ConfirmDialog
-            isOpen={isDeleteDialogOpen}
-            onClose={() => {
-              setIsDeleteDialogOpen(false);
-              setSelectedPatient(null);
-            }}
-            onConfirm={handleConfirmDelete}
-            title="Delete Patient"
-            message={`Are you sure you want to delete ${selectedPatient.full_name}? This action cannot be undone.`}
-            confirmText="Delete"
-            variant="danger"
-          />
-        </>
-      )}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedPatient(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Patient"
+        message={`Are you sure you want to delete ${selectedPatient?.full_name}? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

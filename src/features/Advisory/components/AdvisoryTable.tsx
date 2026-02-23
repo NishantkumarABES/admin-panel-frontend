@@ -20,17 +20,22 @@ export default function AdvisoryTable({
 }: AdvisoryTableProps) {
   if (members?.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <div className="clay-card" style={{ textAlign: "center", padding: "48px" }}>
         <p className="text-gray-500">No advisory members found</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-w-0">
+    <div className="overflow-hidden min-w-0">
       <div className="overflow-x-auto min-w-0">
-        <table className="w-full table-auto divide-y divide-gray-200 min-w-max">
-          <thead className="bg-gray-50 border-b border-gray-200">
+        <table className="w-full table-auto divide-y divide-gray-100 min-w-max">
+          <thead
+            style={{
+              background: "#f8f9fb",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Name
@@ -52,11 +57,11 @@ export default function AdvisoryTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-100">
             {members?.map((member) => (
               <tr
                 key={member.id}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-gray-50/60 transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
@@ -97,22 +102,49 @@ export default function AdvisoryTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onView(member)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="View Details"
+                      style={{ color: "#6b96ff" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(107, 150, 255, 0.08)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEdit(member)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="Edit Member"
+                      style={{ color: "#a285ff" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(162, 133, 255, 0.08)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onDelete(member)}
-                      className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="Remove Member"
+                      style={{ color: "#ff7070" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255, 112, 112, 0.08)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

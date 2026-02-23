@@ -92,27 +92,41 @@ export default function SettingsView() {
   const currentSetting = settings[activeTab];
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-800">{error}</p>
+        <div
+          className="rounded-xl p-4"
+          style={{
+            background: "rgba(255, 112, 112, 0.06)",
+            boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+          }}
+        >
+          <p className="text-sm" style={{ color: "#c53030" }}>{error}</p>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="clay-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div
+          style={{
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+          }}
+        >
           <nav className="flex -mb-px overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
                   ? 'border-gray-900 text-gray-900'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
+                style={activeTab === tab.id ? {
+                  background: "rgba(0,0,0,0.015)",
+                  boxShadow: "inset 0 -2px 0 #1f2937",
+                } : {}}
               >
                 {tab.icon}
                 {tab.label}

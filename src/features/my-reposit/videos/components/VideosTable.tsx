@@ -22,13 +22,13 @@ interface VideosTableProps {
 
 function getStatusBadge(status: VideoStatus) {
     const styles: Record<VideoStatus, string> = {
-        draft: "bg-amber-100 text-amber-800",
+        pending: "bg-amber-100 text-amber-800",
         review: "bg-blue-100 text-blue-800",
         published: "bg-emerald-100 text-emerald-800",
         rejected: "bg-red-100 text-red-800",
     };
     const labels: Record<VideoStatus, string> = {
-        draft: "Draft",
+        pending: "Pending",
         review: "In Review",
         published: "Published",
         rejected: "Rejected",
@@ -148,9 +148,17 @@ export default function VideosTable({
                                         <tr key={video.id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 shrink-0 mt-0.5">
-                                                        <Video className="w-4.5 h-4.5 text-gray-500" />
-                                                    </div>
+                                                    {video.thumbnail ? (
+                                                        <img
+                                                            src={video.thumbnail}
+                                                            alt={video.title}
+                                                            className="w-9 h-9 rounded-lg object-cover shrink-0 mt-0.5"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 shrink-0 mt-0.5">
+                                                            <Video className="w-4.5 h-4.5 text-gray-500" />
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <div className="font-medium text-gray-900 text-wrap">{video.title}</div>
@@ -188,7 +196,7 @@ export default function VideosTable({
                                                         <Pencil className="w-4 h-4" />
                                                     </button>
                                                     {/* Move to Review (draft only) */}
-                                                    {video.status === "draft" && (
+                                                    {video.status === "pending" && (
                                                         <button
                                                             onClick={() => setMovingToReview(video)}
                                                             disabled={isSubmitting}
@@ -199,7 +207,7 @@ export default function VideosTable({
                                                         </button>
                                                     )}
                                                     {/* Publish (draft or review) */}
-                                                    {(video.status === "draft" || video.status === "review") && (
+                                                    {(video.status === "pending" || video.status === "review") && (
                                                         <button
                                                             onClick={() => setPublishingVideo(video)}
                                                             disabled={isSubmitting}
@@ -210,7 +218,7 @@ export default function VideosTable({
                                                         </button>
                                                     )}
                                                     {/* Reject (draft or review) */}
-                                                    {(video.status === "draft" || video.status === "review") && (
+                                                    {(video.status === "pending" || video.status === "review") && (
                                                         <button
                                                             onClick={() => setRejectingVideo(video)}
                                                             disabled={isSubmitting}

@@ -7,17 +7,12 @@ interface ProductTableProps {
   products: Product[];
   onView: (product: Product) => void;
   onEdit: (product: Product) => void;
-  // onDelete: (product: Product) => void;
 }
 
-export default function ProductTable({
-  products, onView, onEdit,
-}: ProductTableProps) {
-  // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
-  // console.log(BackendBaseURL);
+export default function ProductTable({ products, onView, onEdit }: ProductTableProps) {
   if (products.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <div className="clay-card" style={{ textAlign: "center", padding: "48px" }}>
         <p className="text-gray-500">No products found</p>
       </div>
     );
@@ -34,10 +29,15 @@ export default function ProductTable({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-w-0">
+    <div className="overflow-hidden min-w-0">
       <div className="overflow-x-auto min-w-0">
-        <table className="w-full table-auto divide-y divide-gray-200 min-w-max">
-          <thead className="bg-gray-50 border-b border-gray-200">
+        <table className="w-full table-auto divide-y divide-gray-100 min-w-max">
+          <thead
+            style={{
+              background: "#f8f9fb",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap w-115">
                 Product Name
@@ -65,11 +65,11 @@ export default function ProductTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-100">
             {products.map((product) => (
               <tr
                 key={product.id}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-gray-50/60 transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
@@ -90,31 +90,20 @@ export default function ProductTable({
                     </div>
                   </div>
                 </td>
-                {/* <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 font-mono">
-                    {product.sku}
-                  </div>
-                </td> */}
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {product.category}
-                  </div>
+                  <div className="text-sm text-gray-900">{product.category}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 font-mono">
-                    {product.brand || "-"}
-                  </div>
+                  <div className="text-sm text-gray-900">{product.brand || "—"}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     ₹{parseFloat(product.price).toFixed(2)}
                   </div>
                   <div className="flex items-center gap-1">
-                    {(
-                      <div className="text-xs text-emerald-600">
-                        -{product.discount_percentage}% off
-                      </div>
-                    )}
+                    <div className="text-xs text-emerald-600">
+                      -{product.discount_percentage}% off
+                    </div>
                     <div className="text-xs text-red-500">
                       +{product.tax_percentage}% tax
                     </div>
@@ -142,15 +131,33 @@ export default function ProductTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onView(product)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="View Details"
+                      style={{ color: "#6b96ff" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(107, 150, 255, 0.08)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEdit(product)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="Edit Product"
+                      style={{ color: "#6b7280" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(0, 0, 0, 0.04)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Edit className="w-4 h-4" />
                     </button>

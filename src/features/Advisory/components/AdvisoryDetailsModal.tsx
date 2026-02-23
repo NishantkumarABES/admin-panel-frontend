@@ -27,11 +27,26 @@ export default function AdvisoryDetailsModal({
   }) => {
     if (!value) return null;
     return (
-      <div className="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
-        <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+      <div
+        className="flex items-start gap-3 py-2.5 px-3 rounded-xl transition-colors"
+        style={{
+          background: "rgba(0,0,0,0.015)",
+          boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.5)",
+        }}
+      >
+        <div
+          className="clay-circle shrink-0"
+          style={{
+            width: "28px",
+            height: "28px",
+            background: "rgba(107, 150, 255, 0.06)",
+          }}
+        >
+          <Icon className="w-3.5 h-3.5" style={{ color: "#6b96ff" }} />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="text-xs text-gray-500 mb-0.5">{label}</div>
-          <div className="text-sm text-gray-900">{value}</div>
+          <div className="text-sm text-gray-900 font-medium">{value}</div>
         </div>
       </div>
     );
@@ -54,17 +69,31 @@ export default function AdvisoryDetailsModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Advisory Member Details" size="lg">
       <div className="space-y-4">
         {/* Header with Profile */}
-        <div className="flex items-start gap-3">
-          {member.image && (
+        <div
+          className="flex items-start gap-4 p-4 rounded-2xl"
+          style={{
+            background: "#f8f9fb",
+            boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.05), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+          }}
+        >
+          {member.image ? (
             <img
               src={member.image}
               alt={member.full_name}
-              className="w-16 h-16 rounded-lg object-cover"
+              className="w-16 h-16 rounded-xl object-cover"
+              style={{
+                boxShadow: "3px 3px 6px rgba(0, 0, 0, 0.08), -3px -3px 6px rgba(255, 255, 255, 0.7)",
+              }}
             />
-          )}
-          {!member.image && (
-            <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-500 text-xl font-medium">
+          ) : (
+            <div
+              className="w-16 h-16 rounded-xl flex items-center justify-center"
+              style={{
+                background: "rgba(107, 150, 255, 0.08)",
+                boxShadow: "3px 3px 6px rgba(0, 0, 0, 0.08), -3px -3px 6px rgba(255, 255, 255, 0.7)",
+              }}
+            >
+              <span className="text-xl font-bold" style={{ color: "#6b96ff" }}>
                 {member.full_name.charAt(0)}
               </span>
             </div>
@@ -86,18 +115,26 @@ export default function AdvisoryDetailsModal({
 
         {/* Bio Section */}
         {member.bio && (
-          <div className="border-t border-gray-200 pt-3">
-            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Bio</h4>
-            <p className="text-sm text-gray-700 leading-relaxed">{member.bio}</p>
+          <div className="pt-1">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Bio</h4>
+            <p
+              className="text-sm text-gray-700 leading-relaxed p-3 rounded-xl"
+              style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.5)",
+              }}
+            >
+              {member.bio}
+            </p>
           </div>
         )}
 
         {/* Personal & Professional Information */}
-        <div className="border-t border-gray-200 pt-3">
+        <div className="pt-1">
           <h4 className="text-sm font-semibold text-gray-900 mb-2">
             Information
           </h4>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <InfoRow icon={User} label="Gender" value={formatGender(member.gender)} />
             <InfoRow
               icon={Calendar}
@@ -115,9 +152,9 @@ export default function AdvisoryDetailsModal({
         </div>
 
         {/* Timeline Information */}
-        <div className="border-t border-gray-200 pt-3">
+        <div className="pt-1">
           <h4 className="text-sm font-semibold text-gray-900 mb-2">Timeline</h4>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <InfoRow
               icon={Calendar}
               label="Added to Advisory Panel"
@@ -132,10 +169,11 @@ export default function AdvisoryDetailsModal({
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200">
+      <div className="flex justify-end gap-3 mt-4 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="clay-btn"
+          style={{ padding: "8px 20px", fontSize: "13px" }}
         >
           Close
         </button>

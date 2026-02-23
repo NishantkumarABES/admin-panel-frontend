@@ -1,4 +1,4 @@
-export type VideoStatus = "draft" | "review" | "published" | "rejected";
+export type VideoStatus = "pending" | "review" | "published" | "rejected";
 
 export interface Video {
     id: string;
