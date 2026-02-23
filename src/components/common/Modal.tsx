@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface ModalProps {
@@ -12,7 +11,7 @@ interface ModalProps {
 
 export default function Modal({
   isOpen,
-  onClose,
+  onClose: _onClose,
   title,
   children,
   size = "md",

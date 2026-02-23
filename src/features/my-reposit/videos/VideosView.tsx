@@ -9,7 +9,7 @@ import VideosTable from "./components/VideosTable";
 
 const STATUS_OPTIONS: { value: VideoStatus | ""; label: string }[] = [
     { value: "", label: "All Status" },
-    { value: "draft", label: "Draft" },
+    { value: "pending", label: "Pending" },
     { value: "review", label: "In Review" },
     { value: "published", label: "Published" },
     { value: "rejected", label: "Rejected" },
