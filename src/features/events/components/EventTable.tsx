@@ -8,33 +8,38 @@ interface EventTableProps {
 }
 
 const getStatusBadge = (status: string) => {
-  const statusColors = {
-    upcoming: "bg-blue-100 text-blue-800",
-    ongoing: "bg-emerald-100 text-emerald-800",
-    completed: "bg-gray-100 text-gray-800",
-    // cancelled: "bg-red-100 text-red-800",
+  const statusColors: Record<string, { bg: string; color: string }> = {
+    upcoming: { bg: "rgba(107, 150, 255, 0.1)", color: "#4b6fd4" },
+    ongoing: { bg: "rgba(79, 207, 165, 0.1)", color: "#2ea87e" },
+    completed: { bg: "rgba(107, 114, 128, 0.1)", color: "#4b5563" },
+    cancelled: { bg: "rgba(255, 112, 112, 0.1)", color: "#d94f4f" },
   };
-
+  const s = statusColors[status] || statusColors.completed;
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}`}>
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+      style={{ background: s.bg, color: s.color }}
+    >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 };
 
 const getTypeBadge = (type: string) => {
-  const typeColors = {
-    webinar: "bg-purple-100 text-purple-800",
-    conference: "bg-indigo-100 text-indigo-800",
-    cme: "bg-amber-100 text-amber-800",
-    patient_education: "bg-pink-100 text-pink-800",
-    workshop: "bg-cyan-100 text-cyan-800",
+  const typeColors: Record<string, { bg: string; color: string }> = {
+    webinar: { bg: "rgba(162, 133, 255, 0.1)", color: "#7c56db" },
+    conference: { bg: "rgba(99, 102, 241, 0.1)", color: "#4f46e5" },
+    cme: { bg: "rgba(245, 158, 11, 0.1)", color: "#b45309" },
+    patient_education: { bg: "rgba(236, 72, 153, 0.1)", color: "#be185d" },
+    workshop: { bg: "rgba(6, 182, 212, 0.1)", color: "#0e7490" },
   };
-
+  const t = typeColors[type] || { bg: "rgba(107, 114, 128, 0.1)", color: "#4b5563" };
   const displayName = type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeColors[type as keyof typeof typeColors] || "bg-gray-100 text-gray-800"}`}>
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+      style={{ background: t.bg, color: t.color }}
+    >
       {displayName}
     </span>
   );
@@ -42,11 +47,7 @@ const getTypeBadge = (type: string) => {
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 const formatTime = (timeStr: string) => {
@@ -57,26 +58,31 @@ const formatTime = (timeStr: string) => {
   return `${displayHour}:${minutes} ${ampm}`;
 };
 
-export default function EventTable({
-  events, onView, onEdit,
-}: EventTableProps) {
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+export default function EventTable({ events, onView, onEdit }: EventTableProps) {
 
   if (events.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <div className="p-12 text-center">
         <p className="text-gray-500">No events found</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-w-0">
+    <div className="overflow-hidden min-w-0">
       <div className="overflow-x-auto min-w-0">
-        <table className="w-full table-auto divide-y divide-gray-200 min-w-max">
-          <thead className="bg-gray-50 border-b border-gray-200">
+        <table className="w-full table-auto divide-y divide-gray-100 min-w-max">
+          <thead
+            style={{
+              background: "#f8f9fb",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap w-80">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap w-10">
+                #
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                 Event Details
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
@@ -96,40 +102,29 @@ export default function EventTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {events.map((event) => (
-              <tr
-                key={event.id}
-                className="hover:bg-gray-50 transition-colors"
-              >
+          <tbody className="divide-y divide-gray-100">
+            {events.map((event, index) => (
+              <tr key={event.id} className="hover:bg-gray-50/60 transition-colors">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {index + 1}
+                </td>
                 <td className="px-4 py-4">
-                  <div className="flex items-start gap-3">
-                    {event.images[0] && (
-                      <img
-                        src={BackendBaseURL + event.images[0].image}
-                        alt={event.title}
-                        className="w-12 h-12 rounded object-cover shrink-0"
-                      />
-                    )}
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-gray-900 mb-1">
-                        {event.title}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-xs text-gray-500 mb-1">
-                          {event.specialization}
-                        </div>
-                        {event.is_featured && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Featured
-                          </span>
-                        )}
-                      </div>
-
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-gray-900 mb-1 max-w-[300px] break-words">{event.title}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs text-gray-500">{event.specialization}</div>
+                      {event.is_featured && (
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                          style={{ background: "rgba(245, 158, 11, 0.1)", color: "#b45309" }}
+                        >
+                          Featured
+                        </span>
+                      )}
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">
+                <td className="px-2 py-4 whitespace-nowrap">
                   {getTypeBadge(event.event_type)}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
@@ -150,12 +145,11 @@ export default function EventTable({
                       href={event.event_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                      className="inline-flex items-center gap-1"
+                      style={{ color: "#6b96ff" }}
                     >
-                      <span className="truncate max-w-45">
-                        {event.event_link}
-                      </span>
-                      <ExternalLink className="w-4 h-4" />
+                      <span className="truncate max-w-45 text-sm">{event.event_link}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   ) : (
                     <span className="text-gray-400">—</span>
@@ -168,15 +162,33 @@ export default function EventTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onView(event)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="View Details"
+                      style={{ color: "#6b96ff" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(107, 150, 255, 0.08)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEdit(event)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1.5 rounded-lg transition-all duration-200"
                       title="Edit Event"
+                      style={{ color: "#6b7280" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(0, 0, 0, 0.04)";
+                        e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                     >
                       <Edit className="w-4 h-4" />
                     </button>

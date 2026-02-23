@@ -114,13 +114,13 @@ export default function DashboardView() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-              <div className="h-10 bg-gray-200 rounded mb-4"></div>
-              <div className="h-8 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div key={i} className="clay-card" style={{ padding: "24px" }}>
+              <div className="clay-skeleton" style={{ height: "44px", width: "44px", borderRadius: "50%", marginBottom: "16px" }} />
+              <div className="clay-skeleton" style={{ height: "32px", marginBottom: "8px" }} />
+              <div className="clay-skeleton" style={{ height: "16px", width: "66%" }} />
             </div>
           ))}
         </div>
@@ -130,8 +130,8 @@ export default function DashboardView() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <div className="flex items-center gap-2 text-red-800">
+      <div className="clay-card" style={{ background: "rgba(255, 140, 140, 0.15)" }}>
+        <div className="flex items-center gap-2" style={{ color: "#c53030" }}>
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
         </div>
@@ -145,145 +145,151 @@ export default function DashboardView() {
 
   return (
 
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Stethoscope className="w-6 h-6 text-blue-600" />
+      <div className="dashboard-metrics-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="clay-card">
+          <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+            <div className="clay-circle" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+              <Stethoscope className="w-6 h-6" style={{ color: "#6b96ff" }} />
             </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <TrendingUp className="w-5 h-5" style={{ color: "#4fcfa5" }} />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">
+          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>
             {metrics.doctors.total.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600">Total Doctors</div>
-          <div className="text-xs text-emerald-600 mt-2">
+          <div className="text-xs" style={{ color: "#111827" }}>Total Doctors</div>
+          <div className="text-xs" style={{ color: "#4fcfa5", marginTop: "4px" }}>
             +{metrics.doctors.growth_percent.toFixed(1)}% from last month
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <Users className="w-6 h-6 text-purple-600" />
+        <div className="clay-card">
+          <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
+            <div className="clay-circle" style={{ background: "rgba(162, 133, 255, 0.08)" }}>
+              <Users className="w-6 h-6" style={{ color: "#a285ff" }} />
             </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <TrendingUp className="w-5 h-5" style={{ color: "#4fcfa5" }} />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">
+          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>
             {metrics.patients.total.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600">Total Patients</div>
-          <div className="text-xs text-emerald-600 mt-2">
+          <div className="text-xs" style={{ color: "#111827" }}>Total Patients</div>
+          <div className="text-xs" style={{ color: "#4fcfa5", marginTop: "4px" }}>
             +{metrics.patients.growth_percent.toFixed(1)}% from last month
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-emerald-50 rounded-lg">
-              <BookOpen className="w-6 h-6 text-emerald-600" />
+        <div className="clay-card">
+          <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
+            <div className="clay-circle" style={{ background: "rgba(79, 207, 165, 0.08)" }}>
+              <BookOpen className="w-6 h-6" style={{ color: "#4fcfa5" }} />
             </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <TrendingUp className="w-5 h-5" style={{ color: "#4fcfa5" }} />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">
+          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>
             {metrics.topics.total.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600">Total Topics</div>
-          <div className="text-xs text-emerald-600 mt-2">
+          <div className="text-xs" style={{ color: "#111827" }}>Total Topics</div>
+          <div className="text-xs" style={{ color: "#4fcfa5", marginTop: "4px" }}>
             +{metrics.topics.growth_percent.toFixed(1)}% from last month
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-orange-50 rounded-lg">
-              <Package className="w-6 h-6 text-orange-600" />
+        <div className="clay-card">
+          <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
+            <div className="clay-circle" style={{ background: "rgba(255, 159, 71, 0.08)" }}>
+              <Package className="w-6 h-6" style={{ color: "#ff9f47" }} />
             </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <TrendingUp className="w-5 h-5" style={{ color: "#4fcfa5" }} />
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">
+          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>
             {metrics.products.total.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600">Total Products</div>
-          <div className="text-xs text-emerald-600 mt-2">
+          <div className="text-xs" style={{ color: "#111827" }}>Total Products</div>
+          <div className="text-xs" style={{ color: "#4fcfa5", marginTop: "4px" }}>
             {metrics.products.growth_percent.toFixed(1)}% from last month
           </div>
         </div>
       </div>
 
       {/* Order Analytics Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-orange-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Order Analytics</h2>
+      <div>
+        {/* <div className="flex items-center gap-2" style={{ marginBottom: "20px" }}>
+          <ShoppingCart className="w-5 h-5" style={{ color: "#ff9f47" }} />
+          <h2 className="text-lg font-semibold text-gray-900">Order Analytics</h2>
+        </div> */}
+        {/* Two Column Layout */}
+        {orderAnalyticsLoading ? (
+          <div className="dashboard-charts-grid grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="clay-card">
+                <div className="clay-skeleton" style={{ height: "24px", width: "192px", marginBottom: "16px" }} />
+                <div className="clay-skeleton" style={{ height: "16px", width: "256px", marginBottom: "16px" }} />
+                <div className="clay-skeleton" style={{ height: "256px" }} />
+              </div>
+            ))}
           </div>
-          {/* Two Column Layout */}
-          {orderAnalyticsLoading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {[...Array(2)].map((_, i) => (
-                <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-64 mb-4"></div>
-                  <div className="h-64 bg-gray-200 rounded"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        ) : (
+          <div className="dashboard-charts-grid grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="dashboard-chart-container">
               <TopSellingProductsChart data={topProducts} />
+            </div>
+            <div className="dashboard-chart-container">
               <OrderStatusDistributionChart data={orderStatusData} />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Revenue Over Time - Full Width */}
+        {/* Revenue Over Time - Full Width */}
+        <div style={{ marginTop: "12px" }}>
           {orderAnalyticsLoading ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-64 mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="clay-card-strong">
+              <div className="clay-skeleton" style={{ height: "24px", width: "192px", marginBottom: "16px" }} />
+              <div className="clay-skeleton" style={{ height: "16px", width: "256px", marginBottom: "16px" }} />
+              <div className="clay-skeleton" style={{ height: "256px" }} />
             </div>
           ) : (
-            <RevenueOverTimeChart data={revenueData} />
+            <div className="dashboard-chart-container">
+              <RevenueOverTimeChart data={revenueData} />
+            </div>
           )}
         </div>
       </div>
 
       {/* Pending Actions */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <AlertCircle className="w-5 h-5 text-amber-600" />
+      <div className="clay-card">
+        <div className="flex items-center gap-2" style={{ marginBottom: "10px" }}>
+          <AlertCircle className="w-5 h-5" style={{ color: "#ffc554" }} />
           <h2 className="text-lg font-semibold text-gray-900">Pending Actions</h2>
         </div>
         {pendingActionsLoading ? (
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 animate-pulse">
+              <div key={i} className="clay-inset flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-48 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-64"></div>
+                  <div className="clay-skeleton" style={{ height: "16px", width: "192px", marginBottom: "8px" }} />
+                  <div className="clay-skeleton" style={{ height: "12px", width: "256px" }} />
                 </div>
-                <div className="h-9 w-20 bg-gray-200 rounded-lg"></div>
+                <div className="clay-skeleton" style={{ height: "36px", width: "80px", borderRadius: "16px" }} />
               </div>
             ))}
           </div>
         ) : pendingActions ? (
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {pendingActions.out_of_stock_products > 0 && (
-              <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
+              <div className="clay-inset pending-action-card flex items-center justify-between" style={{ background: "rgba(255, 112, 112, 0.08)" }}>
                 <div>
                   <div className="text-sm font-medium text-gray-900">
                     {pendingActions.out_of_stock_products} Products Out of Stock
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">
+                  <div className="text-xs" style={{ color: "#6b7280", marginTop: "4px" }}>
                     Review and restock products to avoid order issues
                   </div>
                 </div>
                 <Link
                   to="/products"
-                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="clay-btn clay-btn-mobile-full"
                 >
                   Review
                 </Link>
@@ -291,18 +297,18 @@ export default function DashboardView() {
             )}
 
             {pendingActions.unpublished_topics > 0 && (
-              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-100">
+              <div className="clay-inset pending-action-card flex items-center justify-between" style={{ background: "rgba(255, 197, 84, 0.08)" }}>
                 <div>
                   <div className="text-sm font-medium text-gray-900">
                     {pendingActions.unpublished_topics} Unpublished Topics
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">
+                  <div className="text-xs" style={{ color: "#6b7280", marginTop: "4px" }}>
                     Review and publish pending topics
                   </div>
                 </div>
                 <Link
                   to="/topics"
-                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="clay-btn clay-btn-mobile-full"
                 >
                   Review
                 </Link>
@@ -310,18 +316,18 @@ export default function DashboardView() {
             )}
 
             {pendingActions.unpublished_advt > 0 && (
-              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="clay-inset pending-action-card flex items-center justify-between" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
                 <div>
                   <div className="text-sm font-medium text-gray-900">
                     {pendingActions.unpublished_advt} Unpublished Advertisements
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">
+                  <div className="text-xs" style={{ color: "#6b7280", marginTop: "4px" }}>
                     Review and publish pending advertisements
                   </div>
                 </div>
                 <Link
                   to="/advertisements"
-                  className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="clay-btn clay-btn-mobile-full"
                 >
                   Review
                 </Link>
@@ -331,13 +337,13 @@ export default function DashboardView() {
             {pendingActions.out_of_stock_products === 0 &&
               pendingActions.unpublished_topics === 0 &&
               pendingActions.unpublished_advt === 0 && (
-                <div className="text-sm text-gray-500 text-center py-4">
+                <div className="text-sm text-center" style={{ color: "#6b7280", padding: "16px 0" }}>
                   No pending actions at this time
                 </div>
               )}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 text-center py-4">
+          <div className="text-sm text-center" style={{ color: "#6b7280", padding: "16px 0" }}>
             Failed to load pending actions
           </div>
         )}

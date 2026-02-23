@@ -17,6 +17,13 @@ interface ContactTableProps {
   onSave: (type: SettingType, data: UpdateSettingDTO) => Promise<void>;
 }
 
+const clayInputClass = "w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent focus:outline-none";
+const clayInputStyle = {
+  background: "#eff1f5",
+  border: "none",
+  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+};
+
 export default function ContactTable({
   type,
   title,
@@ -29,7 +36,6 @@ export default function ContactTable({
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [originalContactsCount, setOriginalContactsCount] = useState(0);
-  // const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (setting?.content) {
@@ -59,7 +65,6 @@ export default function ContactTable({
 
   const handleEditContact = (index: number) => {
     console.log('Editing contact at index:', index);
-    // setEditingIndex(index);
     setIsEditing(true);
   };
 
@@ -70,7 +75,6 @@ export default function ContactTable({
   };
 
   const handleSave = async () => {
-    // Validate contacts
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i];
       if (!contact.name.trim()) {
@@ -85,7 +89,6 @@ export default function ContactTable({
         setError(`Contact ${i + 1}: Email is required`);
         return;
       }
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(contact.email)) {
         setError(`Contact ${i + 1}: Invalid email format`);
@@ -99,7 +102,6 @@ export default function ContactTable({
       await onSave(type, { content: JSON.stringify(contacts) });
       setOriginalContactsCount(contacts.length);
       setIsEditing(false);
-      // setEditingIndex(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to save changes');
     } finally {
@@ -119,29 +121,26 @@ export default function ContactTable({
       setContacts([]);
     }
     setIsEditing(false);
-    // setEditingIndex(null);
     setError('');
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
+      <div className="p-8 flex items-center justify-center">
+        <div className="clay-skeleton" style={{ width: "40px", height: "40px", borderRadius: "50%" }} />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="pb-4 mb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             {setting?.updatedAt && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Last updated: {new Date(setting.updatedAt).toLocaleString()}
               </p>
             )}
@@ -150,7 +149,11 @@ export default function ContactTable({
             {!isEditing ? (
               <button
                 onClick={handleAddContact}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                }}
               >
                 <Plus className="w-4 h-4" />
                 Add Contact
@@ -160,7 +163,8 @@ export default function ContactTable({
                 <button
                   onClick={handleCancel}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="clay-btn flex items-center gap-2 disabled:opacity-50"
+                  style={{ padding: "8px 16px", fontSize: "13px" }}
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -168,7 +172,11 @@ export default function ContactTable({
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+                  style={{
+                    background: "#1f2937",
+                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                  }}
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
@@ -181,138 +189,184 @@ export default function ContactTable({
 
       {/* Error Message */}
       {error && (
-        <div className="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-800">{error}</p>
+        <div
+          className="mb-4 p-4 rounded-xl flex items-start gap-3"
+          style={{
+            background: "rgba(255, 112, 112, 0.06)",
+            boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+          }}
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "#ff7070" }} />
+          <p className="text-sm" style={{ color: "#c53030" }}>{error}</p>
         </div>
       )}
 
       {/* Table */}
-      <div className="p-6">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
-            <thead className="bg-gray-50">
+      <div className="overflow-x-auto">
+        <table
+          className="min-w-full divide-y divide-gray-100 rounded-xl overflow-hidden"
+          style={{
+            background: "#f8f9fb",
+            boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.03), inset -1px -1px 3px rgba(255, 255, 255, 0.4)",
+          }}
+        >
+          <thead
+            style={{
+              background: "#f0f2f6",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                Sl No
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Phone Number
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Email ID
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Message
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {contacts.length === 0 ? (
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                  Sl No
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone Number
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email ID
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Message
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                  Action
-                </th>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  No contacts available. Click "Add Contact" to create one.
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {contacts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    No contacts available. Click "Add Contact" to create one.
+            ) : (
+              contacts.map((contact, index) => (
+                <tr key={index} className="hover:bg-white/60 transition-colors">
+                  <td className="px-4 py-3 text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={contact.name}
+                        onChange={(e) => handleContactChange(index, 'name', e.target.value)}
+                        className={clayInputClass}
+                        style={clayInputStyle}
+                        placeholder="Enter name"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-900">{contact.name}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        value={contact.phone}
+                        onChange={(e) => handleContactChange(index, 'phone', e.target.value)}
+                        className={clayInputClass}
+                        style={clayInputStyle}
+                        placeholder="Enter phone"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-900">{contact.phone}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={contact.email}
+                        onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                        className={clayInputClass}
+                        style={clayInputStyle}
+                        placeholder="Enter email"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-900">{contact.email}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <textarea
+                        value={contact.message}
+                        onChange={(e) => handleContactChange(index, 'message', e.target.value)}
+                        className={`${clayInputClass} resize-none`}
+                        style={clayInputStyle}
+                        placeholder="Enter message"
+                        rows={2}
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-900">{contact.message}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {!isEditing && (
+                        <button
+                          onClick={() => handleEditContact(index)}
+                          className="p-1.5 rounded-lg transition-all duration-200"
+                          title="Edit contact"
+                          style={{ color: "#6b96ff" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "rgba(107, 150, 255, 0.08)";
+                            e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      {!isEditing && (
+                        <button
+                          onClick={() => handleRemoveContact(index)}
+                          className="p-1.5 rounded-lg transition-all duration-200"
+                          title="Remove contact"
+                          style={{ color: "#ff7070" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "rgba(255, 112, 112, 0.08)";
+                            e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {isEditing && index < originalContactsCount && (
+                        <button
+                          onClick={() => handleRemoveContact(index)}
+                          className="p-1.5 rounded-lg transition-all duration-200"
+                          title="Remove contact"
+                          style={{ color: "#ff7070" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "rgba(255, 112, 112, 0.08)";
+                            e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                contacts.map((contact, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-4 py-3">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={contact.name}
-                          onChange={(e) => handleContactChange(index, 'name', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
-                          placeholder="Enter name"
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-900">{contact.name}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {isEditing ? (
-                        <input
-                          type="tel"
-                          value={contact.phone}
-                          onChange={(e) => handleContactChange(index, 'phone', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
-                          placeholder="Enter phone"
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-900">{contact.phone}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={contact.email}
-                          onChange={(e) => handleContactChange(index, 'email', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
-                          placeholder="Enter email"
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-900">{contact.email}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {isEditing ? (
-                        <textarea
-                          value={contact.message}
-                          onChange={(e) => handleContactChange(index, 'message', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
-                          placeholder="Enter message"
-                          rows={2}
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-900">{contact.message}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {!isEditing && (
-                          <button
-                            onClick={() => handleEditContact(index)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            title="Edit contact"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        )}
-                        {!isEditing && (
-                          <button
-                            onClick={() => handleRemoveContact(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                            title="Remove contact"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        {isEditing && index < originalContactsCount && (
-                          <button
-                            onClick={() => handleRemoveContact(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                            title="Remove contact"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

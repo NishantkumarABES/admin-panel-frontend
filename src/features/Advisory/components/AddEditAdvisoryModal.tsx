@@ -34,6 +34,13 @@ const MAX_CHARS_NAME = 255;
 const MAX_CHARS_PHONE = 15;
 const MAX_EXPERIENCE = 65;
 
+const clayInputClass = "w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent";
+const clayInputStyle = {
+  background: "#eff1f5",
+  border: "none",
+  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+};
+
 export default function AddEditAdvisoryModal({
   member,
   isOpen,
@@ -82,7 +89,6 @@ export default function AddEditAdvisoryModal({
     setDoctorSearch("");
   }, [member, isOpen]);
 
-  // Load doctors when switching to select-doctor mode
   useEffect(() => {
     if (mode === "select-doctor" && !member && doctors.length === 0) {
       fetchDoctors();
@@ -194,17 +200,27 @@ export default function AddEditAdvisoryModal({
     >
       {submitSuccess ? (
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-            <p className="text-sm text-emerald-800">
+          <div
+            className="rounded-xl p-4"
+            style={{
+              background: "rgba(79, 207, 165, 0.08)",
+              boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+            }}
+          >
+            <p className="text-sm" style={{ color: "#2d8a6e" }}>
               Advisory member has been successfully {member ? "updated" : "added"}.
             </p>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+              style={{
+                background: "#1f2937",
+                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+              }}
             >
               Done
             </button>
@@ -213,33 +229,53 @@ export default function AddEditAdvisoryModal({
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {submitError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div
+              className="rounded-xl p-4 flex items-start gap-3"
+              style={{
+                background: "rgba(255, 112, 112, 0.06)",
+                boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+              }}
+            >
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "#ff7070" }} />
               <div className="flex-1">
-                <p className="text-sm text-red-800">{submitError}</p>
+                <p className="text-sm" style={{ color: "#c53030" }}>{submitError}</p>
               </div>
             </div>
           )}
 
           {!member && (
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+            <div
+              className="flex gap-1 p-1 rounded-xl"
+              style={{
+                background: "#eff1f5",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setMode("manual")}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${mode === "manual"
-                  ? "bg-white text-gray-900 shadow"
-                  : "text-gray-600 hover:text-gray-900"
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all ${mode === "manual"
+                  ? "text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
                   }`}
+                style={mode === "manual" ? {
+                  background: "#ffffff",
+                  boxShadow: "3px 3px 6px rgba(0, 0, 0, 0.08), -3px -3px 6px rgba(255, 255, 255, 0.7)",
+                } : {}}
               >
                 Add Manually
               </button>
               <button
                 type="button"
                 onClick={() => setMode("select-doctor")}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${mode === "select-doctor"
-                  ? "bg-white text-gray-900 shadow"
-                  : "text-gray-600 hover:text-gray-900"
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all ${mode === "select-doctor"
+                  ? "text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
                   }`}
+                style={mode === "select-doctor" ? {
+                  background: "#ffffff",
+                  boxShadow: "3px 3px 6px rgba(0, 0, 0, 0.08), -3px -3px 6px rgba(255, 255, 255, 0.7)",
+                } : {}}
               >
                 Select Doctor
               </button>
@@ -258,13 +294,20 @@ export default function AddEditAdvisoryModal({
                     type="text"
                     value={doctorSearch}
                     onChange={(e) => setDoctorSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`${clayInputClass} pl-9`}
+                    style={clayInputStyle}
                     placeholder="Search by name, email, or specialization..."
                   />
                 </div>
               </div>
 
-              <div className="border border-gray-300 rounded-lg max-h-77 overflow-y-auto">
+              <div
+                className="rounded-xl max-h-77 overflow-y-auto"
+                style={{
+                  background: "#f8f9fb",
+                  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
+                }}
+              >
                 {loadingDoctors ? (
                   <div className="p-8 text-center text-gray-500">
                     Loading doctors...
@@ -274,15 +317,18 @@ export default function AddEditAdvisoryModal({
                     No doctors found
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-gray-100">
                     {filteredDoctors.map((doctor) => (
                       <div
                         key={doctor.id}
                         onClick={() => setSelectedDoctor(doctor)}
-                        className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${selectedDoctor?.id === doctor.id
-                          ? "bg-gray-100"
-                          : ""
+                        className={`p-3 cursor-pointer transition-all ${selectedDoctor?.id === doctor.id
+                          ? "bg-white/70"
+                          : "hover:bg-white/40"
                           }`}
+                        style={selectedDoctor?.id === doctor.id ? {
+                          boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+                        } : {}}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -321,18 +367,32 @@ export default function AddEditAdvisoryModal({
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="w-32 h-32 rounded-lg object-cover"
+                      className="w-32 h-32 rounded-xl object-cover"
+                      style={{
+                        boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.08), -4px -4px 8px rgba(255, 255, 255, 0.7)",
+                      }}
                     />
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      className="absolute -top-2 -right-2 p-1 text-white rounded-full"
+                      style={{
+                        background: "#ff7070",
+                        boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.12)",
+                      }}
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-xl cursor-pointer transition-all hover:bg-gray-100/50"
+                    style={{
+                      background: "#f8f9fb",
+                      border: "2px dashed rgba(0,0,0,0.12)",
+                      boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
+                    }}
+                  >
                     <Upload className="w-8 h-8 text-gray-400 mb-2" />
                     <span className="text-sm text-gray-500">
                       Click to upload image
@@ -359,7 +419,8 @@ export default function AddEditAdvisoryModal({
                   onChange={(e) =>
                     setFormData({ ...formData, full_name: e.target.value })
                   }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className={clayInputClass}
+                  style={clayInputStyle}
                   placeholder="Enter full name"
                   required
                 />
@@ -377,7 +438,8 @@ export default function AddEditAdvisoryModal({
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                     placeholder="Enter email"
                     required
                   />
@@ -393,14 +455,14 @@ export default function AddEditAdvisoryModal({
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                     placeholder="Enter phone number"
                     required
                   />
                 </div>
               </div>
 
-              {/* Gender Field */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -411,7 +473,8 @@ export default function AddEditAdvisoryModal({
                     onChange={(e) =>
                       setFormData({ ...formData, gender: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -429,7 +492,8 @@ export default function AddEditAdvisoryModal({
                     onChange={(e) =>
                       setFormData({ ...formData, date_of_birth: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                   />
                 </div>
               </div>
@@ -444,7 +508,8 @@ export default function AddEditAdvisoryModal({
                     onChange={(e) =>
                       setFormData({ ...formData, specialization: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                     required
                   >
                     <option value="">Select Specialization</option>
@@ -471,7 +536,8 @@ export default function AddEditAdvisoryModal({
                         });
                       }
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={clayInputClass}
+                    style={clayInputStyle}
                     placeholder="Enter years"
                     min="1"
                     max={MAX_EXPERIENCE}
@@ -491,7 +557,8 @@ export default function AddEditAdvisoryModal({
                     setFormData({ ...formData, bio: e.target.value })
                   }
                   rows={4}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                  className={`${clayInputClass} resize-none`}
+                  style={clayInputStyle}
                   placeholder="Enter a brief bio..."
                 />
                 {renderCharCounter(formData.bio || "", MAX_CHARS_BIO)}
@@ -509,7 +576,8 @@ export default function AddEditAdvisoryModal({
                       status: e.target.value as "active" | "inactive",
                     })
                   }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className={clayInputClass}
+                  style={clayInputStyle}
                   required
                 >
                   <option value="active">Active</option>
@@ -519,12 +587,13 @@ export default function AddEditAdvisoryModal({
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="clay-btn disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ padding: "8px 20px", fontSize: "13px" }}
             >
               Cancel
             </button>
@@ -534,7 +603,11 @@ export default function AddEditAdvisoryModal({
                 isSubmitting ||
                 (mode === "select-doctor" && !selectedDoctor && !member)
               }
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{
+                background: "#1f2937",
+                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+              }}
             >
               {isSubmitting ? (
                 <>

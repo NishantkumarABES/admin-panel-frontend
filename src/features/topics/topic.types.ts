@@ -30,6 +30,8 @@ export interface Topic {
   image: string;
   source_url: string | null;
   video_url: string | null;
+  thumbnail: string | null;
+  duration_seconds: number | null;
   publishing_time: string;
   publish_status: boolean;
   author_name: string | null;
@@ -100,6 +102,8 @@ export const mockTopics: Topic[] = [
     image: "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=400",
     source_url: "https://example.com/heart-health",
     video_url: null,
+    thumbnail: null,
+    duration_seconds: null,
     publishing_time: "2024-01-15T10:00:00Z",
     publish_status: true,
     author_name: "Dr. Alice Johnson",
@@ -114,6 +118,8 @@ export const mockTopics: Topic[] = [
     image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400",
     source_url: "https://example.com/brain-health",
     video_url: null,
+    thumbnail: null,
+    duration_seconds: null,
     publishing_time: "2024-01-20T14:00:00Z",
     publish_status: true,
     author_name: "Dr. Brian Smith",
@@ -128,6 +134,8 @@ export const mockTopics: Topic[] = [
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
     source_url: "https://example.com/lifestyle",
     video_url: "https://www.youtube.com/watch?v=example",
+    thumbnail: null,
+    duration_seconds: null,
     publishing_time: "2024-02-01T10:00:00Z",
     publish_status: false,
     author_name: "Admin User",

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Upload, X, ChevronDown } from "lucide-react";
-import Modal from "../../../components/common/Modal";
+import { Upload, X, ChevronDown, AlertCircle } from "lucide-react";
 import type { CreateGeneralAdDTO } from "../advertisement.types";
 import { SPECIALTIES, USER_TYPES } from "../advertisement.types";
 import type { UserType } from "../advertisement.types";
@@ -12,6 +11,18 @@ interface AddGeneralAdFormProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+const insetStyle = {
+  background: "#eff1f5",
+  border: "none",
+  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+};
+
+const insetErrorStyle = {
+  background: "#eff1f5",
+  border: "1px solid rgba(255, 112, 112, 0.6)",
+  boxShadow: "inset 2px 2px 5px rgba(255, 80, 80, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.4)",
+};
 
 export default function AddGeneralAdForm({
   isOpen,
@@ -30,6 +41,7 @@ export default function AddGeneralAdForm({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const allowedExtensions = ["jpg", "jpeg", "png"];
 
@@ -91,7 +103,6 @@ export default function AddGeneralAdForm({
     setImage(file);
     setErrors(prev => ({ ...prev, image: "" }));
 
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -123,14 +134,16 @@ export default function AddGeneralAdForm({
 
       await advertisementService.createGeneralAd(createData);
 
-      // Reset form
-      setFormData({ title: "", url: "", status: "enabled", target_user: "doctor" });
-      setSelectedSpecialties([]);
-      setImage(null);
-      setImagePreview(null);
-      setErrors({});
-
-      onSuccess();
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setFormData({ title: "", url: "", status: "enabled", target_user: "doctor" });
+        setSelectedSpecialties([]);
+        setImage(null);
+        setImagePreview(null);
+        setErrors({});
+        setSubmitSuccess(false);
+        onSuccess();
+      }, 1500);
     } catch (error: any) {
       console.error("Failed to create advertisement:", error);
       setErrors({
@@ -148,241 +161,316 @@ export default function AddGeneralAdForm({
       setImage(null);
       setImagePreview(null);
       setErrors({});
+      setSubmitSuccess(false);
       onClose();
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Add General Advertisement" size="md">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.title ? "border-red-500" : "border-gray-300"
-              }`}
-            placeholder="Enter advertisement title"
-            disabled={isSubmitting}
-          />
-          {errors.title && (
-            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-          )}
-        </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 transition-opacity" />
 
-        {/* URL */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            URL <span className="text-red-500">*</span>
-          </label>
+      {/* Modal container */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="relative bg-white rounded-[18px] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Sticky Header */}
+          <div
+            className="flex items-center justify-between px-6 py-4 sticky top-0 bg-white z-10"
+            style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <h2 className="text-lg font-semibold text-gray-900">Add General Advertisement</h2>
+          </div>
 
-          <input
-            type="url"
-            value={formData.url}
-            onChange={(e) => {
-              setFormData({ ...formData, url: e.target.value });
-              if (errors.url) setErrors({ ...errors, url: "" });
-            }}
-            onBlur={() => {
-              if (!formData.url) {
-                setErrors({ ...errors, url: "URL is required" });
-              } else if (!isValidUrl(formData.url)) {
-                setErrors({ ...errors, url: "Enter a valid URL (example: https://domain.com)" });
-              }
-            }}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent ${errors.url ? "border-red-500" : "border-gray-300"
-              }`}
-            placeholder="https://example.com"
-            disabled={isSubmitting}
-          />
-          {errors.url && (
-            <p className="text-red-500 text-xs mt-1">{errors.url}</p>
-          )}
-        </div>
-        {/* Specialties Multi-Select */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Specialties <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
-              className={`w-full px-3 py-2 border rounded-lg text-left focus:ring-2 focus:ring-gray-900 focus:border-transparent flex items-center justify-between ${errors.specialties ? "border-red-500" : "border-gray-300"
-                }`}
-              disabled={isSubmitting}
-            >
-              <span className="text-sm text-gray-700">
-                {selectedSpecialties.length === 0
-                  ? "Select specialties"
-                  : `${selectedSpecialties.length} selected`}
-              </span>
-              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isSpecialtyDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {isSpecialtyDropdownOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {SPECIALTIES.map((specialty) => (
-                  <label
-                    key={specialty}
-                    className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedSpecialties.includes(specialty)}
-                      onChange={() => handleSpecialtyToggle(specialty)}
-                      className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
-                      disabled={isSubmitting}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{specialty}</span>
-                  </label>
-                ))}
+          {/* Scrollable Body */}
+          <div className="px-6 py-4">
+            {/* Success State */}
+            {submitSuccess ? (
+              <div className="rounded-xl p-4" style={{ background: "rgba(79, 207, 165, 0.08)", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)" }}>
+                <p className="text-sm text-emerald-800">
+                  Advertisement <span className="font-semibold">{formData.title}</span> has been successfully created.
+                </p>
               </div>
+            ) : (
+              <form id="add-ad-form" onSubmit={handleSubmit} className="space-y-4">
+                {/* Error Message */}
+                {errors.submit && (
+                  <div
+                    className="flex items-start gap-3 rounded-xl p-4"
+                    style={{
+                      background: "rgba(255, 112, 112, 0.07)",
+                      boxShadow: "inset 2px 2px 5px rgba(255,80,80,0.06), inset -2px -2px 5px rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{errors.submit}</p>
+                  </div>
+                )}
+
+                {/* Basic Details */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Basic Details</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => {
+                          setFormData({ ...formData, title: e.target.value });
+                          if (errors.title) setErrors({ ...errors, title: "" });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        style={errors.title ? insetErrorStyle : insetStyle}
+                        placeholder="Enter advertisement title"
+                        disabled={isSubmitting}
+                      />
+                      {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">URL *</label>
+                      <input
+                        type="url"
+                        value={formData.url}
+                        onChange={(e) => {
+                          setFormData({ ...formData, url: e.target.value });
+                          if (errors.url) setErrors({ ...errors, url: "" });
+                        }}
+                        onBlur={() => {
+                          if (!formData.url) {
+                            setErrors({ ...errors, url: "URL is required" });
+                          } else if (!isValidUrl(formData.url)) {
+                            setErrors({ ...errors, url: "Enter a valid URL (example: https://domain.com)" });
+                          }
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        style={errors.url ? insetErrorStyle : insetStyle}
+                        placeholder="https://example.com"
+                        disabled={isSubmitting}
+                      />
+                      {errors.url && <p className="text-xs text-red-500 mt-1">{errors.url}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Status *</label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as "enabled" | "disabled" })}
+                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        style={insetStyle}
+                        disabled={isSubmitting}
+                      >
+                        <option value="enabled">Enable</option>
+                        <option value="disabled">Disable</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Target User *</label>
+                      <select
+                        value={formData.target_user}
+                        onChange={(e) => setFormData({ ...formData, target_user: e.target.value as UserType })}
+                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        style={insetStyle}
+                        disabled={isSubmitting}
+                      >
+                        {USER_TYPES.map((type) => (
+                          <option key={type.value} value={type.value}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Specialties */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Specialties *</h3>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+                      className="w-full px-3 py-2 text-sm rounded-xl flex items-center justify-between gap-2 focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                      style={errors.specialties ? insetErrorStyle : insetStyle}
+                      disabled={isSubmitting}
+                    >
+                      <span className={selectedSpecialties.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                        {selectedSpecialties.length === 0
+                          ? "Select specialties"
+                          : `${selectedSpecialties.length} selected`}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isSpecialtyDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {isSpecialtyDropdownOpen && (
+                      <div
+                        className="absolute z-50 w-full mt-1 bg-white rounded-xl overflow-hidden"
+                        style={{ boxShadow: "6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.7)" }}
+                      >
+                        <div className="max-h-48 overflow-y-auto">
+                          {SPECIALTIES.map((specialty) => (
+                            <label
+                              key={specialty}
+                              className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedSpecialties.includes(specialty)}
+                                onChange={() => handleSpecialtyToggle(specialty)}
+                                className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                                disabled={isSubmitting}
+                              />
+                              <span className="ml-2 text-sm text-gray-700">{specialty}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedSpecialties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedSpecialties.map((specialty) => (
+                        <span
+                          key={specialty}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg"
+                          style={{
+                            background: "rgba(107,150,255,0.10)",
+                            color: "#4b6fd4",
+                          }}
+                        >
+                          {specialty}
+                          <button
+                            type="button"
+                            onClick={() => handleSpecialtyToggle(specialty)}
+                            className="hover:text-red-600"
+                            disabled={isSubmitting}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {errors.specialties && <p className="text-xs text-red-500 mt-1">{errors.specialties}</p>}
+                </div>
+
+                {/* Image Upload */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">Advertisement Image *</h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Supported formats: {allowedExtensions.join(", ").toUpperCase()}
+                  </p>
+
+                  {!imagePreview ? (
+                    <div className="space-y-3">
+                      <input
+                        type="file"
+                        accept={allowedExtensions.map(ext => `.${ext}`).join(",")}
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                        disabled={isSubmitting}
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="w-full px-4 py-3 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700 cursor-pointer"
+                        style={{
+                          background: "#eff1f5",
+                          border: errors.image ? "2px dashed rgba(255,112,112,0.5)" : "2px dashed rgba(0,0,0,0.12)",
+                          boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.5)",
+                        }}
+                      >
+                        <Upload className="w-6 h-6" />
+                        Click to upload image
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-xl"
+                        style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        disabled={isSubmitting}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {errors.image && <p className="text-xs text-red-500 mt-1">{errors.image}</p>}
+                </div>
+              </form>
             )}
           </div>
 
-          {selectedSpecialties.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedSpecialties.map((specialty) => (
-                <span
-                  key={specialty}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                >
-                  {specialty}
-                  <button
-                    type="button"
-                    onClick={() => handleSpecialtyToggle(specialty)}
-                    className="hover:text-red-600"
-                    disabled={isSubmitting}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {errors.specialties && (
-            <p className="text-red-500 text-xs mt-1">{errors.specialties}</p>
-          )}
-        </div>
-
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image <span className="text-red-500">*</span>
-          </label>
-          <p className="text-xs text-gray-500 mb-2">
-            Supported formats: {allowedExtensions.join(", ").toUpperCase()}
-          </p>
-
-          {!imagePreview ? (
-            <div className="relative">
-              <input
-                type="file"
-                accept={allowedExtensions.map(ext => `.${ext}`).join(",")}
-                onChange={handleImageChange}
-                className="hidden"
-                id="image-upload"
-                disabled={isSubmitting}
-              />
-              <label
-                htmlFor="image-upload"
-                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${errors.image ? "border-red-500" : "border-gray-300"
-                  }`}
-              >
-                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-600">Click to upload image</p>
-              </label>
-            </div>
-          ) : (
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-48 object-cover rounded-lg border border-gray-200"
-              />
+          {/* Sticky Footer */}
+          <div
+            className="flex items-center justify-end gap-3 px-6 py-4 sticky bottom-0 bg-white"
+            style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            {submitSuccess ? (
               <button
                 type="button"
-                onClick={handleRemoveImage}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                disabled={isSubmitting}
+                onClick={handleClose}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                }}
               >
-                <X className="w-4 h-4" />
+                Done
               </button>
-            </div>
-          )}
-
-          {errors.image && (
-            <p className="text-red-500 text-xs mt-1">{errors.image}</p>
-          )}
-        </div>
-
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as "enabled" | "disabled" })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            disabled={isSubmitting}
-          >
-            <option value="enabled">Enable</option>
-            <option value="disabled">Disable</option>
-          </select>
-        </div>
-
-        {/* User Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Target User <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={formData.target_user}
-            onChange={(e) => setFormData({ ...formData, target_user: e.target.value as UserType })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            disabled={isSubmitting}
-          >
-            {USER_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Submit Error */}
-        {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{errors.submit}</p>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                  className="clay-btn disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontSize: "13px", padding: "6px 16px" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="add-ad-form"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: "#1f2937",
+                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <span>Create Advertisement</span>
+                  )}
+                </button>
+              </>
+            )}
           </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creating..." : "Create Advertisement"}
-          </button>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </div>
   );
 }

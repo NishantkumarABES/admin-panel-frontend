@@ -1,8 +1,6 @@
-import { Calendar, TrendingUp, IndianRupee, ShoppingCart, AlertCircle } from "lucide-react";
+import { Tag, Calendar, Hash, IndianRupee, BarChart2, FileText } from "lucide-react";
 import type { Coupon } from "../coupon.types";
 import Modal from "../../../components/common/Modal";
-import StatusBadge from "../../../components/common/StatusBadge";
-
 
 interface CouponDetailsModalProps {
   coupon: Coupon | null;
@@ -10,18 +8,22 @@ interface CouponDetailsModalProps {
   onClose: () => void;
 }
 
-export default function CouponDetailsModal({
-  coupon,
-  isOpen,
-  onClose,
-}: CouponDetailsModalProps) {
-
+export default function CouponDetailsModal({ coupon, isOpen, onClose }: CouponDetailsModalProps) {
   if (!coupon) return null;
 
-  const InfoRow = ({
-    icon: Icon,
-    label,
-    value,
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric", month: "long", day: "numeric",
+    });
+  };
+
+  const isExpired = new Date(coupon.valid_until) < new Date();
+  const isNotYetValid = new Date(coupon.valid_from) > new Date();
+  const isMaxUsesReached = coupon.max_uses ? coupon.current_uses >= coupon.max_uses : false;
+  const usagePercent = coupon.max_uses ? Math.min((coupon.current_uses / coupon.max_uses) * 100, 100) : null;
+
+  const InfoItem = ({
+    icon: Icon, label, value,
   }: {
     icon: React.ElementType;
     label: string;
@@ -29,157 +31,138 @@ export default function CouponDetailsModal({
   }) => {
     if (!value && value !== 0) return null;
     return (
-      <div className="flex items-start gap-2 py-2">
+      <div className="flex items-start gap-2">
         <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           <div className="text-xs text-gray-500">{label}</div>
-          <div className="text-sm text-gray-900 font-medium">{value}</div>
+          <div className="text-sm text-gray-900">{value}</div>
         </div>
       </div>
     );
   };
 
-  const isExpired = new Date(coupon.valid_until) < new Date();
-  const isNotYetValid = new Date(coupon.valid_from) > new Date();
-  const usagePercentage = coupon.max_uses
-    ? (coupon.current_uses / coupon.max_uses) * 100
-    : 0;
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Coupon Details" size="md">
-      <div className="space-y-4">
-        {/* Header with Coupon Info */}
-        <div className="pb-4 border-b border-gray-200">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-mono font-bold text-gray-900">
-              {coupon.code}
-            </h3>
-            <StatusBadge
-              status={coupon.is_active && !isExpired ? "active" : "inactive"}
-              size="sm"
-            />
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center w-10 h-10 rounded-lg"
+            style={{ background: "rgba(162, 133, 255, 0.10)", boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
+          >
+            <Tag className="w-5 h-5" style={{ color: "#a285ff" }} />
           </div>
-          {coupon.description && (
-            <p className="text-sm text-gray-600 mb-2">{coupon.description}</p>
-          )}
-          <div className="flex items-center gap-2 flex-wrap">
-            {isExpired && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                Expired
-              </span>
-            )}
-            {isNotYetValid && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                Not Yet Valid
-              </span>
-            )}
-            {coupon.max_uses && coupon.current_uses >= coupon.max_uses && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                Max Uses Reached
-              </span>
-            )}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 font-mono">{coupon.code}</h3>
+            <p className="text-xs text-gray-500">
+              {coupon.discount_type === "percentage" ? "Percentage Discount" : "Fixed Amount Discount"}
+            </p>
           </div>
         </div>
-
-        {/* Two Column Grid Layout */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Left Column - Discount Information */}
-          <div className="space-y-1">
-            <h4 className="text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
-              Discount
-            </h4>
-            <InfoRow
-              icon={TrendingUp}
-              label="Type"
-              value={
-                <span className="capitalize">
-                  {coupon.discount_type}
-                </span>
-              }
-            />
-            <InfoRow
-              icon={IndianRupee}
-              label="Value"
-              value={
-                <span className="font-semibold text-emerald-600">
-                  {coupon.discount_type === "percentage"
-                    ? `${coupon.discount_value}%`
-                    : `₹${parseFloat(coupon.discount_value).toFixed(2)}`}
-                </span>
-              }
-            />
-            {coupon.min_purchase_amount && (
-              <InfoRow
-                icon={ShoppingCart}
-                label="Min Purchase"
-                value={`₹${parseFloat(coupon.min_purchase_amount).toFixed(2)}`}
-              />
-            )}
-            {coupon.max_discount_amount && coupon.discount_type === "percentage" && (
-              <InfoRow
-                icon={AlertCircle}
-                label="Max Discount"
-                value={`₹${parseFloat(coupon.max_discount_amount).toFixed(2)}`}
-              />
-            )}
-          </div>
-
-          {/* Right Column - Validity & Usage */}
-          <div className="space-y-1">
-            <h4 className="text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
-              Validity & Usage
-            </h4>
-            <InfoRow
-              icon={Calendar}
-              label="Valid From"
-              value={new Date(coupon.valid_from).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            />
-            <InfoRow
-              icon={Calendar}
-              label="Valid Until"
-              value={
-                <span className={isExpired ? "text-red-600" : ""}>
-                  {new Date(coupon.valid_until).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-              }
-            />
-            <div className="pt-2">
-              <div className="text-xs text-gray-500 mb-1">Usage</div>
-              <div className="text-sm text-gray-900 font-medium">
-                {coupon.current_uses} / {coupon.max_uses || "∞"}
-              </div>
-              {coupon.max_uses && (
-                <div className="mt-1.5">
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${usagePercentage >= 100
-                        ? "bg-red-500"
-                        : usagePercentage >= 75
-                          ? "bg-amber-500"
-                          : "bg-emerald-500"
-                        }`}
-                      style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="flex items-center gap-1.5">
+          {isExpired && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "rgba(255,112,112,0.12)", color: "#dc2626" }}>
+              Expired
+            </span>
+          )}
+          {isNotYetValid && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "rgba(255,197,84,0.12)", color: "#b45309" }}>
+              Not Yet Valid
+            </span>
+          )}
+          {isMaxUsesReached && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "rgba(0,0,0,0.07)", color: "#6b7280" }}>
+              Max Uses Reached
+            </span>
+          )}
+          <span
+            className="px-2.5 py-0.5 rounded-full text-xs font-medium ml-1"
+            style={
+              coupon.is_active
+                ? { background: "rgba(79,207,165,0.12)", color: "#16a34a" }
+                : { background: "rgba(0,0,0,0.05)", color: "#6b7280" }
+            }
+          >
+            {coupon.is_active ? "Active" : "Inactive"}
+          </span>
         </div>
       </div>
 
-      <div className="flex justify-end mt-4 pt-4 border-t border-gray-200">
+      {/* Info Grid — Neumorphic Inset Panel */}
+      <div
+        className="grid grid-cols-2 gap-x-6 gap-y-3 py-4 px-3 rounded-xl my-3"
+        style={{
+          background: "#f8f9fb",
+          boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+        }}
+      >
+        <InfoItem
+          icon={IndianRupee}
+          label="Discount Value"
+          value={
+            <span className="font-semibold" style={{ color: "#4fcfa5" }}>
+              {coupon.discount_type === "percentage" ? `${coupon.discount_value}%` : `₹${coupon.discount_value}`}
+            </span>
+          }
+        />
+        <InfoItem icon={Hash} label="Max Uses" value={coupon.max_uses ? coupon.max_uses : "Unlimited"} />
+        <InfoItem icon={Calendar} label="Valid From" value={formatDate(coupon.valid_from)} />
+        <InfoItem icon={Calendar} label="Valid Until" value={formatDate(coupon.valid_until)} />
+        {coupon.min_purchase_amount && (
+          <InfoItem icon={IndianRupee} label="Min Purchase Amount" value={`₹${coupon.min_purchase_amount}`} />
+        )}
+        {coupon.max_discount_amount && (
+          <InfoItem icon={IndianRupee} label="Max Discount Amount" value={`₹${coupon.max_discount_amount}`} />
+        )}
+        {coupon.description && (
+          <div className="col-span-2 flex items-start gap-2">
+            <FileText className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+            <div>
+              <div className="text-xs text-gray-500">Description</div>
+              <div className="text-sm text-gray-900">{coupon.description}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Usage Progress */}
+      <div className="py-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart2 className="w-4 h-4 text-gray-400" />
+          <div className="text-xs text-gray-500">Usage</div>
+          <span className="ml-auto text-sm font-medium text-gray-900">
+            {coupon.current_uses} {coupon.max_uses ? `/ ${coupon.max_uses}` : "uses"}
+          </span>
+        </div>
+        {usagePercent !== null && (
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.06)" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${usagePercent}%`,
+                background: usagePercent >= 100
+                  ? "#ff7070"
+                  : usagePercent >= 75
+                    ? "#ffc554"
+                    : "#4fcfa5",
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div
+        className="flex items-center justify-between pt-4 mt-2"
+        style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+      >
+        <div className="text-xs text-gray-500 space-x-4">
+          <span>Created: {new Date(coupon.created_at).toLocaleDateString()}</span>
+        </div>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="clay-btn"
+          style={{ fontSize: "13px", padding: "6px 16px" }}
         >
           Close
         </button>

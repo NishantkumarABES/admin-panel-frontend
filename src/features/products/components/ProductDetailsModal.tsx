@@ -1,6 +1,5 @@
-import { Package, Tag, IndianRupee, FileText, Box } from "lucide-react"; // pill
+import { Package, Tag, IndianRupee, FileText, Box } from "lucide-react";
 import type { Product } from "../product.types";
-import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
 import productPlaceholder from "../../../assets/placeholders/product.png";
 
@@ -13,10 +12,9 @@ interface ProductDetailsModalProps {
 export default function ProductDetailsModal({
   product, isOpen, onClose,
 }: ProductDetailsModalProps) {
+  if (!isOpen || !product) return null;
 
-  if (!product) return null;
-  // const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
-  const InfoRow = ({
+  const InfoItem = ({
     icon: Icon, label, value,
   }: {
     icon: React.ElementType;
@@ -25,9 +23,9 @@ export default function ProductDetailsModal({
   }) => {
     if (!value && value !== 0) return null;
     return (
-      <div className="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
+      <div className="flex items-start gap-2">
         <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           <div className="text-xs text-gray-500">{label}</div>
           <div className="text-sm text-gray-900">{value}</div>
         </div>
@@ -46,154 +44,155 @@ export default function ProductDetailsModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Product Details" size="lg">
-      <div className="space-y-4">
-        {/* Header with Product Info */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-200">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {product.name}
-            </h3>
-            <p className="text-xs text-gray-500">Product ID: {product.id}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <StatusBadge status={product.is_active ? "active" : "inactive"} size="sm" />
-            {product.stock_quantity === 0 && (
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-                Out of Stock
-              </span>
-            )}
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            {/* Product Information */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Product Information
-              </h4>
-              <div>
-                <InfoRow icon={Tag} label="SKU" value={product.sku} />
-                <InfoRow icon={Package} label="Category" value={product.category} />
-                <InfoRow
-                  icon={FileText}
-                  label="Description"
-                  value={product.description || "No description available"}
-                />
-              </div>
-            </div>
-
-            {/* Stock & Requirements */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Stock & Requirements
-              </h4>
-              <div>
-                <InfoRow
-                  icon={Box}
-                  label="Stock Quantity"
-                  value={
-                    <span className={`font-medium ${product.stock_quantity === 0
-                      ? "text-red-600"
-                      : product.stock_quantity < 50
-                        ? "text-amber-600"
-                        : "text-gray-900"
-                      }`}>
-                      {product.stock_quantity} units
-                    </span>
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
-            {/* Pricing Information */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Pricing Information
-              </h4>
-              <div>
-                <InfoRow
-                  icon={IndianRupee}
-                  label="Base Price"
-                  value={`₹${parseFloat(product.price).toFixed(2)}`}
-                />
-                {parseFloat(product.discount_percentage) > 0 && (
-                  <InfoRow
-                    icon={IndianRupee}
-                    label="Discount"
-                    value={
-                      <span className="font-medium text-emerald-600">
-                        {product.discount_percentage}% off
-                      </span>
-                    }
-                  />
-                )}
-                <InfoRow
-                  icon={IndianRupee}
-                  label="Tax Percentage"
-                  value={
-                    <span className="font-medium text-red-600">
-                      {product.tax_percentage}%
-                    </span>
-                  }
-                />
-                <InfoRow
-                  icon={IndianRupee}
-                  label="Total Price (incl. discount & tax)"
-                  value={
-                    <span className="font-semibold text-emerald-600">
-                      ₹{calculateTotalPrice()}
-                    </span>
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Images - Full Width */}
-        <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-2">
-            Product Images
-          </h4>
-          <div className="grid grid-cols-3 gap-2">
-            {product.images && product.images.length > 0 ? (
-              product.images.map((image) => (
-                <div key={image.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                  <img
-                    src={image.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                <img
-                  src={productPlaceholder}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+      {/* Modal container */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="relative bg-white rounded-[18px] w-full max-w-lg max-h-[90vh] flex flex-col"
+          style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
+          onClick={(e) => e.stopPropagation()}
         >
-          Close
-        </button>
+          {/* Sticky Header */}
+          <div
+            className="flex items-center justify-between px-6 py-4 shrink-0"
+            style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <h2 className="text-lg font-semibold text-gray-900">Product Details</h2>
+          </div>
+
+          {/* Scrollable Body */}
+          <div className="overflow-y-auto flex-1 px-6 py-4">
+            {/* Header: image + name + status */}
+            <div className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+              <div className="flex items-center gap-3">
+                <img
+                  src={product.images?.[0]?.image || productPlaceholder}
+                  alt={product.name}
+                  className="w-10 h-10 rounded-lg object-cover"
+                />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+                  <p className="text-xs text-gray-500">SKU: {product.sku}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusBadge status={product.is_active ? "active" : "inactive"} size="sm" />
+                {product.stock_quantity === 0 && (
+                  <StatusBadge status="outofstock" size="sm" />
+                )}
+              </div>
+            </div>
+
+            {/* Content Grid — Inset Panel */}
+            <div
+              className="grid grid-cols-2 gap-x-6 gap-y-3 py-4 px-3 rounded-xl my-3"
+              style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+              }}
+            >
+              <InfoItem icon={Package} label="Category" value={product.category} />
+              <InfoItem
+                icon={Box}
+                label="Stock Quantity"
+                value={
+                  <span className={`font-medium ${product.stock_quantity === 0
+                    ? "text-red-600"
+                    : product.stock_quantity < 50
+                      ? "text-amber-600"
+                      : "text-gray-900"
+                    }`}>
+                    {product.stock_quantity} units
+                  </span>
+                }
+              />
+
+              <InfoItem
+                icon={IndianRupee}
+                label="Base Price"
+                value={`₹${parseFloat(product.price).toFixed(2)}`}
+              />
+              <InfoItem
+                icon={IndianRupee}
+                label="Unit Price (after discount & tax)"
+                value={
+                  <span className="font-semibold" style={{ color: "#4fcfa5" }}>
+                    ₹{calculateTotalPrice()}
+                  </span>
+                }
+              />
+              {parseFloat(product.discount_percentage) > 0 && (
+                <InfoItem
+                  icon={Tag}
+                  label="Discount"
+                  value={
+                    <span className="font-medium text-emerald-600">
+                      {product.discount_percentage}% off
+                    </span>
+                  }
+                />
+              )}
+              <InfoItem
+                icon={IndianRupee}
+                label="Tax Percentage"
+                value={
+                  <span className="font-medium text-red-500">
+                    {product.tax_percentage}%
+                  </span>
+                }
+              />
+
+              {product.description && (
+                <div className="col-span-2 flex items-start gap-2">
+                  <FileText className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs text-gray-500">Description</div>
+                    <div className="text-sm text-gray-900">{product.description}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Product Images */}
+            {product.images && product.images.length > 0 && (
+              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "12px" }}>
+                <div className="text-xs text-gray-500 mb-2">Product Images</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {product.images.map((image) => (
+                    <div
+                      key={image.id}
+                      className="aspect-square rounded-lg overflow-hidden"
+                      style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
+                    >
+                      <img src={image.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Footer */}
+          <div
+            className="flex items-center justify-between px-6 py-4 shrink-0"
+            style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <div className="text-xs text-gray-500">
+              Product ID: {product.id}
+            </div>
+            <button
+              onClick={onClose}
+              className="clay-btn"
+              style={{ fontSize: "13px", padding: "6px 16px" }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 }

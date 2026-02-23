@@ -4,8 +4,8 @@ import type { DoctorUser, CreateDoctorDTO } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 import { SPECIALTIES } from "../doctor.types";
 import { ChevronDown, Search, Copy, Check, Eye, EyeOff, AlertCircle } from "lucide-react";
-import PhoneInput, { parsePhoneNumber } from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
 
 
 interface AddEditDoctorModalProps {
@@ -40,6 +40,8 @@ export default function AddEditDoctorModal({
   const triggerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  const phoneContainerRef = useRef<HTMLDivElement>(null);
+  const [phoneDropdownStyle, setPhoneDropdownStyle] = useState<React.CSSProperties>({});
 
   // Submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +89,11 @@ export default function AddEditDoctorModal({
       const clickedInsidePortal =
         portalRef.current && portalRef.current.contains(target);
 
-      if (!clickedInsideTrigger && !clickedInsidePortal) {
+      // Also ignore clicks on the trigger button itself — let its onClick handle toggling
+      const clickedOnTrigger =
+        triggerRef.current && triggerRef.current.contains(target);
+
+      if (!clickedInsideTrigger && !clickedInsidePortal && !clickedOnTrigger) {
         setIsSpecialtyDropdownOpen(false);
       }
     };
@@ -193,12 +199,12 @@ export default function AddEditDoctorModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={doctor ? "Edit Doctor" : "Add Doctor"}
-      size="lg"
+      size="md"
     >
       {/* Success State - Show password for new doctors */}
       {submitSuccess && !doctor && generatedPassword ? (
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <div className="clay-inset" style={{ background: "rgba(79, 207, 165, 0.08)" }}>
             <p className="text-sm text-emerald-800">
               Doctor account has been successfully created for <span className="font-semibold">{formData.fullName}</span>.
               The account is currently <span className="font-semibold">inactive</span> and will be activated when the doctor logs in for the first time.
@@ -259,7 +265,7 @@ export default function AddEditDoctorModal({
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="clay-inset" style={{ background: "rgba(255, 197, 84, 0.08)" }}>
             <p className="text-sm text-amber-800">
               <span className="font-semibold">Important:</span> Please share these credentials securely with the doctor.
               An invitation email will be sent automatically. The doctor's account will become active upon first login.
@@ -267,11 +273,15 @@ export default function AddEditDoctorModal({
             </p>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+              style={{
+                background: "#1f2937",
+                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+              }}
             >
               Done
             </button>
@@ -280,17 +290,21 @@ export default function AddEditDoctorModal({
       ) : submitSuccess && doctor ? (
         /* Success State - Doctor updated */
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <div className="clay-inset" style={{ background: "rgba(79, 207, 165, 0.08)" }}>
             <p className="text-sm text-emerald-800">
               Doctor <span className="font-semibold">{formData.fullName}</span> has been successfully updated.
             </p>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+              style={{
+                background: "#1f2937",
+                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+              }}
             >
               Done
             </button>
@@ -301,7 +315,7 @@ export default function AddEditDoctorModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Error Message */}
           {submitError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <div className="clay-inset flex items-start gap-3" style={{ background: "rgba(255, 112, 112, 0.08)" }}>
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-red-800">{submitError}</p>
@@ -310,98 +324,100 @@ export default function AddEditDoctorModal({
           )}
 
           {/* Personal Details */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+          <div
+            className="rounded-xl px-4 py-3"
+            style={{
+              background: "#f8f9fb",
+              boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+            }}
+          >
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
               Personal Details
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="Enter full name"
-                  required
-                />
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex gap-3">
+                <div className="flex-[2]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender *
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" | "other" })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    required
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Phone Number *
                 </label>
-
-                <div className="flex gap-2">
+                {/* Wrapper onClick fires when the flag/country button is clicked, computing its fixed position before the library opens the dropdown */}
+                <div
+                  ref={phoneContainerRef}
+                  onClick={() => {
+                    const btn = phoneContainerRef.current?.querySelector(
+                      ".react-international-phone-country-selector-button"
+                    );
+                    if (btn) {
+                      const rect = btn.getBoundingClientRect();
+                      setPhoneDropdownStyle({
+                        position: "fixed",
+                        top: rect.bottom + 4,
+                        left: rect.left,
+                        zIndex: 99999,
+                        minWidth: 240,
+                      });
+                    }
+                  }}
+                >
                   <PhoneInput
-                    international
-                    defaultCountry="IN"
-                    countrySelectProps={{ unicodeFlags: true }}
+                    defaultCountry="in"
                     value={formData.countryCode + formData.phone}
-                    onChange={(value) => {
-                      if (value) {
-                        // Parse country code and phone number
-                        const parsed = parsePhoneNumber(value);
-                        if (parsed) {
-                          setFormData({
-                            ...formData,
-                            countryCode: '+' + parsed.countryCallingCode,
-                            phone: parsed.nationalNumber,
-                          });
-                        }
-                      } else {
-                        setFormData({ ...formData, countryCode: '', phone: '' });
-                      }
+                    onChange={(_phone, phoneData) => {
+                      const dialCode = phoneData.country?.dialCode
+                        ? `+${phoneData.country.dialCode}`
+                        : formData.countryCode;
+                      const national = _phone.startsWith(dialCode)
+                        ? _phone.slice(dialCode.length).trim()
+                        : _phone;
+                      setFormData({
+                        ...formData,
+                        countryCode: dialCode,
+                        phone: national,
+                      });
                     }}
-                    limitMaxLength
-                    numberInputProps={{
-                      maxLength: 15,
-                      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
-                        const input = e.currentTarget;
-                        const digitsOnly = input.value.replace(/\D/g, '');
-                        // Allow: backspace, delete, tab, escape, enter, navigation keys
-                        if (
-                          e.key === 'Backspace' ||
-                          e.key === 'Delete' ||
-                          e.key === 'Tab' ||
-                          e.key === 'Escape' ||
-                          e.key === 'Enter' ||
-                          e.key === 'ArrowLeft' ||
-                          e.key === 'ArrowRight' ||
-                          e.key === 'Home' ||
-                          e.key === 'End'
-                        ) {
-                          return;
-                        }
-                        // Block input if already at 10 digits and trying to add more
-                        if (digitsOnly.length >= 12 && /^\d$/.test(e.key)) {
-                          e.preventDefault();
-                        }
+                    inputProps={{
+                      required: true,
+                      placeholder: "Enter phone number",
+                    }}
+                    style={{ width: "100%" }}
+                    countrySelectorStyleProps={{
+                      dropdownStyleProps: {
+                        style: phoneDropdownStyle,
                       },
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Enter phone number"
-                    required
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender *
-                </label>
-                <select
-                  value={formData.gender}
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value as "male" | "female" | "other" })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -423,11 +439,17 @@ export default function AddEditDoctorModal({
           </div>
 
           {/* Professional Details */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+          <div
+            className="rounded-xl px-4 py-3"
+            style={{
+              background: "#f8f9fb",
+              boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+            }}
+          >
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
               Professional Details
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Specialty *
@@ -435,7 +457,12 @@ export default function AddEditDoctorModal({
                 <div className="relative" ref={dropdownRef}>
                   <div
                     ref={triggerRef}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent bg-white cursor-pointer"
+                    className="w-full px-3 py-2 text-sm rounded-xl cursor-pointer"
+                    style={{
+                      background: "#eff1f5",
+                      border: "none",
+                      boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                    }}
                     onClick={() => {
                       if (!isSpecialtyDropdownOpen && triggerRef.current) {
                         const rect = triggerRef.current.getBoundingClientRect();
@@ -459,20 +486,26 @@ export default function AddEditDoctorModal({
                   {isSpecialtyDropdownOpen && createPortal(
                     <div
                       ref={containerRef}
-                      className="fixed bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden"
+                      className="fixed bg-white rounded-xl max-h-48 overflow-hidden"
                       style={{
                         top: dropdownPosition.top,
                         left: dropdownPosition.left,
                         width: dropdownPosition.width,
                         zIndex: 9999,
+                        boxShadow: "6px 6px 12px rgba(0, 0, 0, 0.08), -6px -6px 12px rgba(255, 255, 255, 0.7)",
                       }}
                     >
-                      <div className="p-2 border-b border-gray-200">
+                      <div className="p-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
                             type="text"
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            style={{
+                              background: "#eff1f5",
+                              border: "none",
+                              boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+                            }}
                             placeholder="Search specialties..."
                             value={specialtySearch}
                             onChange={(e) => setSpecialtySearch(e.target.value)}
@@ -480,12 +513,12 @@ export default function AddEditDoctorModal({
                           />
                         </div>
                       </div>
-                      <div className="max-h-48 overflow-y-auto">
+                      <div className="max-h-36 overflow-y-auto">
                         {filteredSpecialties.length > 0 ? (
                           filteredSpecialties.map((specialty) => (
                             <div
                               key={specialty}
-                              className={`px-3 py-1.5 text-xs cursor-pointer hover:bg-gray-100 ${formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
+                              className={`px-3 py-1.5 text-xs cursor-pointer hover:bg-gray-50 transition-colors ${formData.specialty === specialty ? "bg-gray-50 font-medium" : ""
                                 }`}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -549,20 +582,28 @@ export default function AddEditDoctorModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          {/* Action Buttons — sticky footer */}
+          <div
+            className="flex justify-end gap-3 pt-4 mt-4 sticky bottom-0 bg-white pb-1 -mb-1"
+            style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+          >
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="clay-btn disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontSize: "13px", padding: "6px 16px" }}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || doctor?.state === "deleted"}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{
+                background: "#1f2937",
+                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+              }}
             >
               {isSubmitting ? (
                 <>

@@ -37,18 +37,39 @@ export default function Modal({
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col ${className}`}
+          className={`relative bg-white rounded-[18px] w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col ${className}`}
+          style={{
+            boxShadow:
+              "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div
+            className="flex items-center justify-between px-6 py-4"
+            style={{
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-            <button
+            {/* <button
               onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-all duration-200"
+              style={{
+                background: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+                e.currentTarget.style.boxShadow =
+                  "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             >
               <X className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
           {/* Content */}

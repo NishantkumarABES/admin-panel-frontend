@@ -1,4 +1,4 @@
-import { Mail, Phone, Briefcase, FileText, Building2, MapPin, Star, IndianRupee, Clock, Award } from "lucide-react";
+import { Mail, Phone, Briefcase, FileText, Building2, MapPin, Star, IndianRupee, Clock, Award, User } from "lucide-react";
 import type { DoctorUser } from "../doctor.types";
 import Modal from "../../../components/common/Modal";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -44,9 +44,9 @@ export default function DoctorDetailsModal({
   const profile = doctor.doctor_profile;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Doctor Details" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Doctor Details" size="md">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+      <div className="flex items-center justify-between pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="flex items-center gap-3">
 
           <img
@@ -83,7 +83,13 @@ export default function DoctorDetailsModal({
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-4">
+      <div
+        className="grid grid-cols-2 gap-x-6 gap-y-3 py-4 px-3 rounded-xl my-3"
+        style={{
+          background: "#f8f9fb",
+          boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+        }}
+      >
         {/* Contact */}
         <InfoItem icon={Mail} label="Email" value={doctor.email} />
         <InfoItem
@@ -91,6 +97,7 @@ export default function DoctorDetailsModal({
           label="Phone"
           value={doctor.phone ? `${doctor.country_code} ${doctor.phone}` : null}
         />
+        <InfoItem icon={User} label="Gender" value={doctor.gender ? doctor.gender.charAt(0).toUpperCase() + doctor.gender.slice(1) : null} />
 
         {/* Professional */}
         <InfoItem icon={FileText} label="License" value={profile?.license_number} />
@@ -133,7 +140,7 @@ export default function DoctorDetailsModal({
 
       {/* Bio */}
       {profile?.bio && (
-        <div className="pt-3 border-t border-gray-200">
+        <div className="pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
           <div className="text-xs text-gray-500 mb-1">Bio</div>
           <p className="text-sm text-gray-700 leading-relaxed">{profile.bio}</p>
         </div>
@@ -143,7 +150,7 @@ export default function DoctorDetailsModal({
 
 
 
-      <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
 
         {/* Left side timestamps */}
         <div className="text-xs text-gray-500 space-x-4">
@@ -154,7 +161,8 @@ export default function DoctorDetailsModal({
         {/* Right side button */}
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="clay-btn"
+          style={{ fontSize: "13px", padding: "6px 16px" }}
         >
           Close
         </button>

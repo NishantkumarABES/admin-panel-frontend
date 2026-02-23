@@ -55,23 +55,21 @@ export default function SettingEditor({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
+      <div className="p-8 flex items-center justify-center">
+        <div className="clay-skeleton" style={{ width: "40px", height: "40px", borderRadius: "50%" }} />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="pb-4 mb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             {setting?.updatedAt && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Last updated: {new Date(setting.updatedAt).toLocaleString()}
               </p>
             )}
@@ -80,7 +78,11 @@ export default function SettingEditor({
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                }}
               >
                 <Edit className="w-4 h-4" />
                 Edit
@@ -90,14 +92,19 @@ export default function SettingEditor({
                 <button
                   onClick={handleCancel}
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="clay-btn disabled:opacity-50"
+                  style={{ padding: "8px 16px", fontSize: "13px" }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+                  style={{
+                    background: "#1f2937",
+                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                  }}
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
@@ -110,14 +117,20 @@ export default function SettingEditor({
 
       {/* Error Message */}
       {error && (
-        <div className="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-800">{error}</p>
+        <div
+          className="mb-4 p-4 rounded-xl flex items-start gap-3"
+          style={{
+            background: "rgba(255, 112, 112, 0.06)",
+            boxShadow: "inset 2px 2px 4px rgba(0, 0, 0, 0.04), inset -2px -2px 4px rgba(255, 255, 255, 0.5)",
+          }}
+        >
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#ff7070" }} />
+          <p className="text-sm" style={{ color: "#c53030" }}>{error}</p>
         </div>
       )}
 
       {/* Editor */}
-      <div className="p-6">
+      <div>
         {isEditing ? (
           <RichTextEditor
             content={content}
@@ -125,7 +138,13 @@ export default function SettingEditor({
             editable={true}
           />
         ) : (
-          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[400px]">
+          <div
+            className="rounded-xl p-4 min-h-[400px]"
+            style={{
+              background: "#f8f9fb",
+              boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
+            }}
+          >
             {content ? (
               <div
                 className="prose prose-sm max-w-none"
