@@ -88,8 +88,8 @@ export const mockGeneralAds: GeneralAdvertisement[] = [
 
 
 
+// "Multispecialty",
 export const SPECIALTIES = [
-  "Multispecialty",
   "General Medicine",
   "General Surgery",
   "Cardiology",

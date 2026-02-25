@@ -229,11 +229,10 @@ export const archiveIDI = async (id: string) => {
 
 export const getIDIAnalytics = async () => {
   return api.get<{
-    total_drugs: number;
-    published_drugs: number;
-    draft_drugs: number;
-    archived_drugs: number;
-  }>("/admin/idi/analytics/");
+    total_idi: number;
+    published_idi: number;
+    draft_idi: number;
+  }>("/analytics/admin/idi/metrics/");
 };
 
 // AI Extract: send a paragraph and get structured IDI data back

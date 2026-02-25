@@ -62,7 +62,13 @@ export const updateProduct = async (productData: UpdateProductDTO): Promise<{ da
     const formData = new FormData();
     Object.entries(productData).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
-            value.forEach(file => formData.append("images", file));
+            // Only send images field if there are actual new files to upload
+            if (value.length > 0) {
+                value.forEach(file => formData.append("images", file));
+            }
+        } else if (key === "deleted_image_ids" && Array.isArray(value)) {
+            // Send each deleted image ID separately so Django receives a list
+            value.forEach(id => formData.append("deleted_image_ids", id));
         } else if (value !== undefined && value !== null) {
             formData.append(key, String(value));
         }

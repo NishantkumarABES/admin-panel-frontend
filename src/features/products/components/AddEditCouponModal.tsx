@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, X } from "lucide-react";
 import type { Coupon, CreateCouponDTO, UpdateCouponDTO } from "../coupon.types";
+import Modal from "../../../components/common/Modal";
 
 interface AddEditCouponModalProps {
   coupon?: Coupon | null;
@@ -22,18 +23,6 @@ const initialFormData: CreateCouponDTO = {
   valid_until: "",
 };
 
-const insetStyle = {
-  background: "#eff1f5",
-  border: "none",
-  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
-};
-
-const insetErrorStyle = {
-  background: "#eff1f5",
-  border: "1px solid rgba(255, 112, 112, 0.6)",
-  boxShadow: "inset 2px 2px 5px rgba(255, 80, 80, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.4)",
-};
-
 export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }: AddEditCouponModalProps) {
   const isEditMode = !!coupon;
 
@@ -42,6 +31,30 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Add scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   useEffect(() => {
     if (coupon) {
@@ -136,109 +149,169 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={handleClose} />
-
-      {/* Modal container */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className="relative bg-white rounded-[18px] w-full max-w-xl max-h-[90vh] overflow-y-auto"
-          style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
-          onClick={(e) => e.stopPropagation()}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEditMode ? `Edit Coupon: ${coupon?.code}` : "Create Coupon"}
+      size="sm"
+    >
+      <div className="flex flex-col h-full">
+        {/* Close Button - Top Right with Click Animation */}
+        <button
+          type="button"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 z-10 active:scale-95 active:shadow-inner"
+          style={{
+            background: "#f8f9fb",
+            boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.6)"
+          }}
         >
-          {/* Sticky Header */}
-          <div
-            className="flex items-center justify-between px-6 py-4 sticky top-0 bg-white z-10"
-            style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-          >
-            <h2 className="text-lg font-semibold text-gray-900">
-              {isEditMode ? `Edit Coupon: ${coupon?.code}` : "Create Coupon"}
-            </h2>
-          </div>
+          <X className="w-5 h-5 text-gray-600" />
+        </button>
 
-          {/* Scrollable Body */}
-          <div className="px-6 py-4">
-            {/* Success State */}
-            {submitSuccess ? (
-              <div
-                className="rounded-xl p-4"
-                style={{
-                  background: "rgba(79, 207, 165, 0.08)",
-                  boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)",
-                }}
-              >
-                <p className="text-sm text-emerald-800">
-                  Coupon <span className="font-semibold">{formData.code}</span> has been successfully{" "}
-                  {isEditMode ? "updated" : "created"}.
+        {/* Success State */}
+        {submitSuccess ? (
+          <div className="space-y-4 max-h-[calc(80vh-140px)] overflow-y-auto pr-2 custom-scrollbar" style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 transparent'
+          }}>
+            <div className="flex items-center gap-3 p-4 rounded-xl" style={{
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              boxShadow: "4px 4px 12px rgba(16, 185, 129, 0.2), -2px -2px 8px rgba(255, 255, 255, 0.1)"
+            }}>
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-base">
+                  Coupon {isEditMode ? "Updated" : "Created"} Successfully!
+                </h3>
+                <p className="text-white/90 text-xs mt-0.5">
+                  <span className="font-medium">{formData.code}</span> has been {isEditMode ? "updated" : "created"}.
                 </p>
               </div>
-            ) : (
-              <form id="add-edit-coupon-form" onSubmit={handleSubmit} className="space-y-4">
-                {/* Error Message */}
-                {submitError && (
-                  <div
-                    className="flex items-start gap-3 rounded-xl p-4"
+            </div>
+
+            {/* Close Button - Fixed at Bottom */}
+            <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+              borderTop: "1px solid rgba(0,0,0,0.06)",
+              marginLeft: "-2px",
+              marginRight: "-2px",
+              paddingLeft: "2px",
+              paddingRight: "2px"
+            }}>
+              <button
+                onClick={handleClose}
+                className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Scrollable Form Content */
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar" style={{
+              maxHeight: 'calc(80vh - 140px)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 transparent'
+            }}>
+              {/* Error Message */}
+              {submitError && (
+                <div className="flex items-start gap-3 p-3 rounded-xl" style={{
+                  background: "#fee",
+                  border: "1px solid #fcc"
+                }}>
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{submitError}</p>
+                </div>
+              )}
+
+              {/* Coupon Details Section */}
+              <div className="rounded-xl px-5 py-4" style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)"
+              }}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  Coupon Details
+                </h3>
+
+                {/* Coupon Code */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Coupon Code *
+                  </label>
+                  <input
+                    type="text"
+                    name="code"
+                    value={formData.code}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all uppercase"
                     style={{
-                      background: "rgba(255, 112, 112, 0.07)",
-                      boxShadow: "inset 2px 2px 5px rgba(255,80,80,0.06), inset -2px -2px 5px rgba(255,255,255,0.5)",
+                      background: "#ffffff",
+                      border: errors.code ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                      boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                  >
-                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700">{submitError}</p>
-                  </div>
-                )}
+                    placeholder="e.g., SAVE20"
+                  />
+                  {errors.code && (
+                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.code}
+                    </p>
+                  )}
+                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Coupon Code */}
-                  <div className="md:col-span-2">
-                    <label htmlFor="code" className="block text-xs font-medium text-gray-600 mb-1">
-                      Coupon Code <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="code"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent uppercase"
-                      style={errors.code ? insetErrorStyle : insetStyle}
-                      placeholder="e.g., SAVE20"
-                    />
-                    {errors.code && <p className="text-xs text-red-500 mt-1">{errors.code}</p>}
-                  </div>
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    rows={2}
+                  />
+                </div>
+              </div>
 
-                  {/* Description */}
-                  <div className="md:col-span-2">
-                    <label htmlFor="description" className="block text-xs font-medium text-gray-600 mb-1">
-                      Description (Optional)
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description || ""}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={insetStyle}
-                      rows={2}
-                    />
-                  </div>
+              {/* Discount Configuration Section */}
+              <div className="rounded-xl px-5 py-4" style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)"
+              }}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  Discount Configuration
+                </h3>
 
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Discount Type */}
                   <div>
-                    <label htmlFor="discount_type" className="block text-xs font-medium text-gray-600 mb-1">
-                      Discount Type <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Discount Type *
                     </label>
                     <select
-                      id="discount_type"
                       name="discount_type"
                       value={formData.discount_type}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                     >
                       <option value="percentage">Percentage (%)</option>
                       <option value="fixed">Fixed Amount (₹)</option>
@@ -247,209 +320,267 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
 
                   {/* Discount Value */}
                   <div>
-                    <label htmlFor="discount_value" className="block text-xs font-medium text-gray-600 mb-1">
-                      Discount Value <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Discount Value *
                     </label>
                     <input
                       type="number"
-                      id="discount_value"
                       name="discount_value"
                       value={formData.discount_value}
                       onChange={handleChange}
                       step="0.01"
                       min="0"
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={errors.discount_value ? insetErrorStyle : insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.discount_value ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                       placeholder={formData.discount_type === "percentage" ? "e.g., 20" : "e.g., 100"}
                     />
-                    {errors.discount_value && <p className="text-xs text-red-500 mt-1">{errors.discount_value}</p>}
+                    {errors.discount_value && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.discount_value}
+                      </p>
+                    )}
                   </div>
+                </div>
 
+                {/* Max Discount Amount (percentage only) */}
+                {formData.discount_type === "percentage" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Max Discount Amount
+                    </label>
+                    <input
+                      type="number"
+                      name="max_discount_amount"
+                      value={formData.max_discount_amount || ""}
+                      onChange={handleChange}
+                      step="0.01"
+                      min="0"
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.max_discount_amount ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
+                      placeholder="No maximum"
+                    />
+                    {errors.max_discount_amount && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.max_discount_amount}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Validity Period Section */}
+              <div className="rounded-xl px-5 py-4" style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)"
+              }}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  Validity Period
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
                   {/* Valid From */}
                   <div>
-                    <label htmlFor="valid_from" className="block text-xs font-medium text-gray-600 mb-1">
-                      Valid From <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Valid From *
                     </label>
                     <input
                       type="date"
-                      id="valid_from"
                       name="valid_from"
                       value={formData.valid_from}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                     />
                   </div>
 
                   {/* Valid Until */}
                   <div>
-                    <label htmlFor="valid_until" className="block text-xs font-medium text-gray-600 mb-1">
-                      Valid Until <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Valid Until *
                     </label>
                     <input
                       type="date"
-                      id="valid_until"
                       name="valid_until"
                       value={formData.valid_until}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={errors.valid_until ? insetErrorStyle : insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.valid_until ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                     />
-                    {errors.valid_until && <p className="text-xs text-red-500 mt-1">{errors.valid_until}</p>}
+                    {errors.valid_until && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.valid_until}
+                      </p>
+                    )}
                   </div>
+                </div>
+              </div>
 
+              {/* Usage Limits Section */}
+              <div className="rounded-xl px-5 py-4" style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)"
+              }}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  Usage Limits
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
                   {/* Max Uses */}
                   <div>
-                    <label htmlFor="max_uses" className="block text-xs font-medium text-gray-600 mb-1">Max Uses (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Max Uses
+                    </label>
                     <input
                       type="number"
-                      id="max_uses"
                       name="max_uses"
                       value={formData.max_uses || ""}
                       onChange={handleChange}
                       min="0"
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={errors.max_uses ? insetErrorStyle : insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.max_uses ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                       placeholder="Unlimited"
                     />
-                    {errors.max_uses && <p className="text-xs text-red-500 mt-1">{errors.max_uses}</p>}
+                    {errors.max_uses && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.max_uses}
+                      </p>
+                    )}
                   </div>
 
                   {/* Min Purchase Amount */}
                   <div>
-                    <label htmlFor="min_purchase_amount" className="block text-xs font-medium text-gray-600 mb-1">Min Purchase Amount (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Min Purchase (₹)
+                    </label>
                     <input
                       type="number"
-                      id="min_purchase_amount"
                       name="min_purchase_amount"
                       value={formData.min_purchase_amount || ""}
                       onChange={handleChange}
                       step="0.01"
                       min="0"
-                      className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      style={errors.min_purchase_amount ? insetErrorStyle : insetStyle}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.min_purchase_amount ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
                       placeholder="No minimum"
                     />
-                    {errors.min_purchase_amount && <p className="text-xs text-red-500 mt-1">{errors.min_purchase_amount}</p>}
-                  </div>
-
-                  {/* Max Discount Amount (percentage only) */}
-                  {formData.discount_type === "percentage" && (
-                    <div className="md:col-span-2">
-                      <label htmlFor="max_discount_amount" className="block text-xs font-medium text-gray-600 mb-1">Max Discount Amount (Optional)</label>
-                      <input
-                        type="number"
-                        id="max_discount_amount"
-                        name="max_discount_amount"
-                        value={formData.max_discount_amount || ""}
-                        onChange={handleChange}
-                        step="0.01"
-                        min="0"
-                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                        style={errors.max_discount_amount ? insetErrorStyle : insetStyle}
-                        placeholder="No maximum"
-                      />
-                      {errors.max_discount_amount && <p className="text-xs text-red-500 mt-1">{errors.max_discount_amount}</p>}
-                    </div>
-                  )}
-
-                  {/* Active Status Toggle */}
-                  <div className="md:col-span-2">
-                    <label htmlFor="is_active" className="block text-xs font-medium text-gray-600 mb-2">Active Status</label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={formData.is_active}
-                        onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 ${formData.is_active ? "bg-emerald-500" : "bg-gray-300"}`}
-                      >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.is_active ? "translate-x-6" : "translate-x-1"}`} />
-                      </button>
-                      <span className={`text-sm font-medium ${formData.is_active ? "text-emerald-600" : "text-gray-500"}`}>
-                        {formData.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formData.is_active
-                        ? "This coupon is active and can be used by customers."
-                        : "This coupon is inactive and cannot be used by customers."}
-                    </p>
+                    {errors.min_purchase_amount && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.min_purchase_amount}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 {/* Current Usage (edit mode) */}
                 {isEditMode && coupon && (
-                  <div
-                    className="rounded-xl p-4"
-                    style={{
-                      background: "rgba(107, 150, 255, 0.06)",
-                      boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)",
-                    }}
-                  >
-                    <div className="text-xs font-semibold text-gray-700 mb-1">Current Usage</div>
-                    <div className="text-sm text-gray-600">
+                  <div className="mt-4 flex items-start gap-2 p-3 rounded-lg" style={{
+                    background: "#fef3c7",
+                    border: "1px solid #fbbf24"
+                  }}>
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-800">
                       This coupon has been used {coupon.current_uses} time{coupon.current_uses !== 1 ? "s" : ""}
                       {coupon.max_uses ? ` out of ${coupon.max_uses} maximum uses` : ""}.
-                    </div>
+                    </p>
                   </div>
                 )}
-              </form>
-            )}
-          </div>
+              </div>
 
-          {/* Sticky Footer */}
-          <div
-            className="flex items-center justify-end gap-3 px-6 py-4 sticky bottom-0 bg-white"
-            style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
-          >
-            {submitSuccess ? (
+              {/* Status Section */}
+              <div className="rounded-xl px-5 py-4" style={{
+                background: "#f8f9fb",
+                boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)"
+              }}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  Status
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Active Status
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={formData.is_active}
+                      onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 ${formData.is_active ? "bg-emerald-500" : "bg-gray-300"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.is_active ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                    <span className={`text-sm font-medium ${formData.is_active ? "text-emerald-600" : "text-gray-500"}`}>
+                      {formData.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    {formData.is_active
+                      ? "This coupon is active and can be used by customers."
+                      : "This coupon is inactive and cannot be used by customers."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button - Fixed Footer at Bottom */}
+            <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+              borderTop: "1px solid rgba(0,0,0,0.06)",
+              marginLeft: "-2px",
+              marginRight: "-2px",
+              paddingLeft: "2px",
+              paddingRight: "2px"
+            }}>
               <button
-                type="button"
-                onClick={handleClose}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
                   background: "#1f2937",
-                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
                 }}
               >
-                Done
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>{isEditMode ? "Updating..." : "Creating..."}</span>
+                  </>
+                ) : (
+                  <span>{isEditMode ? "Update Coupon" : "Create Coupon"}</span>
+                )}
               </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={isSubmitting}
-                  className="clay-btn disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontSize: "13px", padding: "6px 16px" }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  form="add-edit-coupon-form"
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    background: "#1f2937",
-                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-                  }}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>{isEditMode ? "Updating..." : "Creating..."}</span>
-                    </>
-                  ) : (
-                    <span>{isEditMode ? "Update Coupon" : "Create Coupon"}</span>
-                  )}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+            </div>
+          </form>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }
