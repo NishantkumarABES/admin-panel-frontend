@@ -55,6 +55,7 @@ export interface CreateProductDTO {
   for_patients: boolean;
   for_doctors: boolean;
   images?: File[];
+  deleted_image_ids?: string[];
 }
 
 export interface UpdateProductDTO extends Partial<CreateProductDTO> {

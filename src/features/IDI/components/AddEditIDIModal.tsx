@@ -48,6 +48,7 @@ export default function AddEditIDIModal({
 }: AddEditIDIModalProps) {
   const [formData, setFormData] = useState<CreateIDIDTO>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // AI Extract state
   const [addMode, setAddMode] = useState<AddMode>("manual");
@@ -88,10 +89,13 @@ export default function AddEditIDIModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onSubmit(formData);
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail || error?.message || "Failed to save drug. Please try again.";
+      setSubmitError(detail);
       console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
@@ -103,6 +107,7 @@ export default function AddEditIDIModal({
     setAddMode("manual");
     setParagraph("");
     setExtractError(null);
+    setSubmitError(null);
     onClose();
   };
 
@@ -734,6 +739,12 @@ export default function AddEditIDIModal({
           </div>
 
           {/* Form Actions */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-700">{submitError}</p>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"

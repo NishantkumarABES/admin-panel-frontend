@@ -399,6 +399,18 @@ export default function AddEditTopicModal({
             <h2 className="text-lg font-semibold text-gray-900">
               {topic ? "Edit Topic" : "Add New Topic"}
             </h2>
+            {/* Close Button - Top Right with Click Animation */}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 active:scale-95 active:shadow-inner"
+              style={{
+                background: "#f8f9fb",
+                boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.6)"
+              }}
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
 
           {/* Scrollable Body */}

@@ -112,6 +112,7 @@ export default function IDIView() {
     try {
       if (selectedIDI) { await IDIService.updateIDI({ ...data, id: selectedIDI.id }); } else { await IDIService.createIDI(data); }
       fetchIDI();
+      fetchAnalytics();
     } catch (error) { console.error("Failed to save IDI:", error); throw error; }
   };
 
@@ -120,6 +121,7 @@ export default function IDIView() {
     try {
       await IDIService.deleteIDI(selectedIDI.id);
       fetchIDI();
+      fetchAnalytics();
     } catch (error) { console.error("Failed to delete IDI:", error); }
   };
 
@@ -128,11 +130,23 @@ export default function IDIView() {
   const getDrugClassDisplayLabel = () => drugClassFilter === "all" ? "All Drug Classes" : drugClassFilter;
   const getTherapeuticCategoryDisplayLabel = () => therapeuticCategoryFilter === "all" ? "All Categories" : therapeuticCategoryFilter;
 
-  const stats = {
-    total: totalCount || IDIList.length,
-    published: IDIList.filter(c => c.status === "published").length,
-    draft: IDIList.filter(c => c.status === "draft").length,
+  const [stats, setStats] = useState({ total: 0, published: 0, draft: 0 });
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await IDIService.getIDIAnalytics();
+      const data = response.data;
+      setStats({
+        total: data.total_idi,
+        published: data.published_idi,
+        draft: data.draft_idi
+      });
+    } catch (error) {
+      console.error("Failed to fetch IDI analytics:", error);
+    }
   };
+
+  useEffect(() => { fetchAnalytics(); }, []);
 
   const handleClearFilters = () => { setSearchTerm(""); setStatusFilter("all"); setDrugClassFilter("all"); setTherapeuticCategoryFilter("all"); };
   const hasActiveFilters = searchTerm || statusFilter !== "all" || drugClassFilter !== "all" || therapeuticCategoryFilter !== "all";

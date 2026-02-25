@@ -124,9 +124,9 @@ export default function DoctorTable({
                         src={
                           doctor.doctor_profile?.profile_photo
                             ? doctor.doctor_profile.profile_photo
-                            : doctor.gender?.toLowerCase() === "male"
-                              ? maleDoctorPlaceholder
-                              : femaleDoctorPlaceholder
+                            : doctor.gender?.toLowerCase() === "female"
+                              ? femaleDoctorPlaceholder
+                              : maleDoctorPlaceholder
                         }
                         alt={doctor.full_name}
                         className="w-10 h-10 rounded object-cover"
