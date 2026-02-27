@@ -1,7 +1,7 @@
 import { Eye, RefreshCw } from "lucide-react";
 import type { Order } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
-import { PAYMENT_METHOD_LABELS } from "../order.types";
+// import { PAYMENT_METHOD_LABELS } from "../order.types";
 
 interface OrdersTableProps {
   orders: Order[];
