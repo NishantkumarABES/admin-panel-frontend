@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus, HelpCircle, Briefcase, CheckCircle, Clock, FileEdit, XCircle, Lock, AlertTriangle } from "lucide-react";
 import type { JobPost, JobAnalytics, CreateJobDTO, JobPostStatus, JobFunction } from "./jobs.types";
 import { JOB_FUNCTIONS, JOB_STATUS_OPTIONS } from "./jobs.types";
 import { SPECIALTIES } from "../../Advertisements/advertisement.types";
@@ -156,114 +156,79 @@ export default function JobsView() {
         setSpecialtyFilter("");
     };
 
+    const statCards = [
+        { label: "Total Jobs", value: analytics?.total_jobs || 0, icon: Briefcase, color: "#6b96ff", bg: "rgba(107, 150, 255, 0.08)", tooltip: "The total number of job postings in the system." },
+        { label: "Published", value: analytics?.published_jobs || 0, icon: CheckCircle, color: "#4fcfa5", bg: "rgba(79, 207, 165, 0.08)", tooltip: "Jobs that have been reviewed and published for applicants." },
+        { label: "In Review", value: analytics?.in_review_jobs || 0, icon: Clock, color: "#6b96ff", bg: "rgba(107, 150, 255, 0.08)", tooltip: "Jobs currently under admin review before publishing." },
+        { label: "Draft", value: analytics?.draft_jobs || 0, icon: FileEdit, color: "#4fcfa5", bg: "rgba(79, 207, 165, 0.08)", tooltip: "Jobs saved as drafts, not yet submitted for review." },
+        { label: "Rejected", value: analytics?.rejected_jobs || 0, icon: XCircle, color: "#ff7070", bg: "rgba(255, 112, 112, 0.08)", tooltip: "Jobs that have been rejected after review." },
+        { label: "Closed", value: analytics?.closed_jobs || 0, icon: Lock, color: "#ffc554", bg: "rgba(255, 197, 84, 0.08)", tooltip: "Jobs that have been closed and are no longer accepting applications." },
+        { label: "Expired", value: analytics?.expired_jobs || 0, icon: AlertTriangle, color: "#a285ff", bg: "rgba(162, 133, 255, 0.08)", tooltip: "Jobs that have passed their expiry date." },
+    ];
+
     return (
-        <div className="space-y-6 min-w-0 max-w-full">
-            {/* Analytics Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Total Jobs</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-gray-900 mt-1">
-                            {analytics?.total_jobs || 0}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+                {statCards.map((stat) => (
+                    <div key={stat.label} className="clay-card min-w-0">
+                        <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
+                            <div className="clay-circle" style={{ background: stat.bg }}>
+                                <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                            </div>
+                            <div className="group relative">
+                                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                                <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
+                                    {stat.tooltip}
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Published</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-emerald-600 mt-1">
-                            {analytics?.published_jobs || 0}
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">In Review</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-blue-600 mt-1">
-                            {analytics?.in_review_jobs || 0}
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Draft</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-teal-600 mt-1">
-                            {analytics?.draft_jobs || 0}
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Rejected</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-red-600 mt-1">
-                            {analytics?.rejected_jobs || 0}
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Closed</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-gray-600 mt-1">
-                            {analytics?.closed_jobs || 0}
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                    <div className="text-sm text-gray-600 mb-1">Expired</div>
-                    {analyticsLoading ? (
-                        <div className="h-8 bg-gray-200 rounded animate-pulse mt-1"></div>
-                    ) : (
-                        <div className="text-2xl font-bold text-purple-600 mt-1">
-                            {analytics?.expired_jobs || 0}
-                        </div>
-                    )}
-                </div>
+                        {analyticsLoading ? (
+                            <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
+                        ) : (
+                            <div className="text-xl font-bold" style={{ color: stat.color, marginBottom: "2px" }}>{stat.value}</div>
+                        )}
+                        <div className="text-xs" style={{ color: "#111827" }}>{stat.label}</div>
+                    </div>
+                ))}
             </div>
 
             {/* Filters and Actions */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 min-w-0">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 min-w-0">
+            <div className="clay-card min-w-0" style={{ padding: "14px 18px" }}>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4 min-w-0">
                     {/* Left side: Search + Filters */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4 min-w-0 flex-1">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:gap-3 min-w-0 flex-1">
                         {/* Search */}
                         <div className="flex-1 min-w-0 w-full sm:min-w-75 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search by title, company..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                className="w-full pl-9 pr-4 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                style={{
+                                    background: "#eff1f5",
+                                    border: "none",
+                                    boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                }}
                             />
                         </div>
 
                         {/* Filters group */}
-                        <div className="flex flex-wrap items-center gap-4 min-w-0">
+                        <div className="flex flex-wrap items-center gap-3 min-w-0">
                             {/* Specialty Filter */}
                             <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-48">
-                                <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+                                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
                                 <select
                                     value={specialtyFilter}
                                     onChange={(e) => setSpecialtyFilter(e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    style={{
+                                        background: "#eff1f5",
+                                        border: "none",
+                                        boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                    }}
                                 >
                                     <option value="">All Specialties</option>
                                     {SPECIALTIES.map((s) => (
@@ -277,7 +242,12 @@ export default function JobsView() {
                                 <select
                                     value={functionFilter}
                                     onChange={(e) => setFunctionFilter(e.target.value as JobFunction | "")}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    style={{
+                                        background: "#eff1f5",
+                                        border: "none",
+                                        boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                    }}
                                 >
                                     <option value="">All Functions</option>
                                     {JOB_FUNCTIONS.map((opt) => (
@@ -291,7 +261,12 @@ export default function JobsView() {
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value as JobPostStatus | "")}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
+                                    style={{
+                                        background: "#eff1f5",
+                                        border: "none",
+                                        boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                    }}
                                 >
                                     {JOB_STATUS_OPTIONS.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -303,7 +278,8 @@ export default function JobsView() {
                             {hasActiveFilters && (
                                 <button
                                     onClick={handleClearFilters}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                                    className="clay-btn text-sm whitespace-nowrap"
+                                    style={{ padding: "6px 14px", fontSize: "13px" }}
                                 >
                                     Clear Filters
                                 </button>
@@ -315,7 +291,11 @@ export default function JobsView() {
                     <div className="flex justify-end lg:justify-normal shrink-0">
                         <button
                             onClick={handleOpenAddModal}
-                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap shrink-0"
+                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
+                            style={{
+                                background: "#1f2937",
+                                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                            }}
                         >
                             <Plus className="w-4 h-4" />
                             Post Job

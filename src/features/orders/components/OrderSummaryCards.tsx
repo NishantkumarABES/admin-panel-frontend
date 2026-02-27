@@ -1,4 +1,4 @@
-import { Package, Clock, Truck, CheckCircle, XCircle, DollarSign, HelpCircle } from "lucide-react";
+import { Package, Clock, Truck, CheckCircle, XCircle, CreditCard, RotateCcw } from "lucide-react";
 import type { OrderAnalytics } from "../order.types";
 
 interface OrderSummaryCardsProps {
@@ -6,8 +6,19 @@ interface OrderSummaryCardsProps {
   loading: boolean;
 }
 
+interface StatCard {
+  label: string;
+  value: number;
+  icon: React.ComponentType<any>;
+  iconColor: string;
+  iconBg: string;
+  valueColor?: string;
+  valueStyle?: React.CSSProperties;
+}
+
 export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCardsProps) {
-  const cards = [
+
+  const statusCards: StatCard[] = [
     {
       label: "Total Orders",
       value: analytics?.total_orders ?? 0,
@@ -15,17 +26,22 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
       iconColor: "#6b96ff",
       iconBg: "rgba(107, 150, 255, 0.08)",
       valueColor: "text-gray-900",
-      tooltip: "Total number of orders placed in the system.",
     },
     {
-      label: "Pending Payments",
+      label: "Paid",
+      value: analytics?.paid_orders ?? 0,
+      icon: CreditCard,
+      iconColor: "#4fcfa5",
+      iconBg: "rgba(79, 207, 165, 0.08)",
+      valueStyle: { color: "#4fcfa5" },
+    },
+    {
+      label: "Pending",
       value: analytics?.pending_payments ?? 0,
       icon: Clock,
       iconColor: "#ffc554",
       iconBg: "rgba(255, 197, 84, 0.08)",
-      valueColor: undefined,
       valueStyle: { color: "#ffc554" },
-      tooltip: "Orders awaiting payment confirmation.",
     },
     {
       label: "Processing",
@@ -33,9 +49,7 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
       icon: Truck,
       iconColor: "#a285ff",
       iconBg: "rgba(162, 133, 255, 0.08)",
-      valueColor: undefined,
       valueStyle: { color: "#a285ff" },
-      tooltip: "Orders currently being processed or shipped.",
     },
     {
       label: "Delivered",
@@ -43,9 +57,7 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
       icon: CheckCircle,
       iconColor: "#4fcfa5",
       iconBg: "rgba(79, 207, 165, 0.08)",
-      valueColor: undefined,
       valueStyle: { color: "#4fcfa5" },
-      tooltip: "Orders successfully delivered to customers.",
     },
     {
       label: "Cancelled",
@@ -53,57 +65,50 @@ export default function OrderSummaryCards({ analytics, loading }: OrderSummaryCa
       icon: XCircle,
       iconColor: "#ff7070",
       iconBg: "rgba(255, 112, 112, 0.08)",
-      valueColor: undefined,
       valueStyle: { color: "#ff7070" },
-      tooltip: "Orders that have been cancelled.",
     },
     {
-      label: "Total Revenue",
-      value: analytics?.total_revenue ?? 0,
-      icon: DollarSign,
-      iconColor: "#4fcfa5",
-      iconBg: "rgba(79, 207, 165, 0.08)",
-      valueColor: undefined,
-      valueStyle: { color: "#4fcfa5" },
-      isRevenue: true,
-      tooltip: "Total revenue generated from all delivered orders.",
+      label: "Refunded",
+      value: analytics?.refunded_orders ?? 0,
+      icon: RotateCcw,
+      iconColor: "#8b95a3",
+      iconBg: "rgba(139, 149, 163, 0.08)",
+      valueStyle: { color: "#8b95a3" },
     },
   ];
 
+  const totalOrders = analytics?.total_orders ?? 0;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {cards.map((card) => {
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      {statusCards.map((card) => {
         const Icon = card.icon;
+        const pct = totalOrders > 0 && card.label !== "Total Orders"
+          ? ((card.value / totalOrders) * 100).toFixed(1)
+          : null;
+
         return (
-          <div key={card.label} className="clay-card min-w-0">
-            <div className="flex items-center justify-between" style={{ marginBottom: "10px" }}>
-              <div className="clay-circle" style={{ background: card.iconBg }}>
-                <Icon className="w-5 h-5" style={{ color: card.iconColor }} />
-              </div>
-              <div className="group relative">
-                <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-52 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
-                  {card.tooltip}
-                </div>
-              </div>
+          <div key={card.label} className="clay-card min-w-0 h-30 flex flex-col justify-end" style={{ position: "relative" }}>
+            <div className="clay-circle" style={{ background: card.iconBg, position: "absolute", top: "12px", right: "12px" }}>
+              <Icon className="w-5 h-5" style={{ color: card.iconColor }} />
             </div>
-            {loading ? (
-              <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
-            ) : (
-              <div
-                className={`text-xl font-bold ${card.valueColor ?? ""}`}
-                style={{ ...(card.valueStyle ?? {}), marginBottom: "2px" }}
-              >
-                {card.isRevenue
-                  ? `₹${(card.value as number).toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}`
-                  : card.value}
+            <div style={{ marginTop: "4px" }}>
+              {loading ? (
+                <div className="clay-skeleton" style={{ height: "32px", marginBottom: "6px", width: "60%" }} />
+              ) : (
+                <div
+                  className={`text-2xl font-bold ${card.valueColor ?? ""}`}
+                  style={{ ...(card.valueStyle ?? {}), marginBottom: "2px" }}
+                >
+                  {card.value.toLocaleString()}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs" style={{ color: "#111827" }}>{card.label}</span>
+                {pct !== null && !loading && (
+                  <span className="text-xs font-medium" style={{ color: "#9ca3af" }}>({pct}%)</span>
+                )}
               </div>
-            )}
-            <div className="text-xs" style={{ color: "#111827" }}>
-              {card.label}
             </div>
           </div>
         );

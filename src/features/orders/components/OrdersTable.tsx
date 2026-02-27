@@ -29,13 +29,16 @@ export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTa
   };
 
   return (
-    <div className="overflow-hidden min-w-0">
-      <div className="overflow-x-auto min-w-0">
+    <div className="overflow-hidden min-w-0 flex-1" style={{ overflowY: "auto" }}>
+      <div className="overflow-x-auto min-w-0 h-full">
         <table className="w-full table-auto divide-y divide-gray-100 min-w-max">
           <thead
             style={{
               background: "#f8f9fb",
               borderBottom: "1px solid rgba(0,0,0,0.06)",
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
             }}
           >
             <tr>
@@ -88,7 +91,7 @@ export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTa
 
                 {/* Payment */}
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
-                  {PAYMENT_METHOD_LABELS[order.payment_method]}
+                  {order.payment_method}
                 </td>
 
                 {/* Amount */}

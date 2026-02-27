@@ -56,7 +56,7 @@ export const getOrderById = (id: string) => {
 
 // Get order analytics
 export const getOrderAnalytics = () => {
-  return api.get<OrderAnalytics>("/commerce/admin/orders/analytics/");
+  return api.get<OrderAnalytics>("/analytics/admin/orders/metrics/");
 };
 
 // Create a new order (admin manual creation)

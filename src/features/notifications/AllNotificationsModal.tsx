@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, ChevronLeft, ChevronRight, Check, Clock } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Check, Clock, X } from "lucide-react";
 import Modal from "../../components/common/Modal";
 import { notificationService } from "../../services/notification.service";
 import type { Notification } from "./notification.types";
@@ -54,97 +54,153 @@ export default function AllNotificationsModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="All Notifications" size="lg">
-            <div className="space-y-4">
+        <Modal isOpen={isOpen} onClose={onClose} title="All Notifications" size="md">
+            <div className="flex flex-col h-full">
+                {/* Close Button - Top Right */}
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 z-10 active:scale-95 active:shadow-inner"
+                    style={{
+                        background: "#f8f9fb",
+                        boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.6)"
+                    }}
+                >
+                    <X className="w-5 h-5 text-gray-600" />
+                </button>
+
                 {/* Header with count */}
-                <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-                    <span className="text-sm text-gray-600">
+                <div
+                    className="flex items-center gap-2 pb-3 mb-4"
+                    style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+                >
+                    <span className="text-xs font-medium" style={{ color: "#6b7280" }}>
                         {totalCount} notification{totalCount !== 1 ? "s" : ""}
                     </span>
                 </div>
 
                 {/* Notifications list */}
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                ) : notifications.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No notifications yet</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {notifications.map((notification) => (
-                            <div
-                                key={notification.id}
-                                className={`p-4 rounded-lg border transition-colors ${notification.is_read
-                                        ? "bg-gray-50 border-gray-200"
-                                        : "bg-blue-50 border-blue-200"
-                                    }`}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div
-                                        className={`p-2 rounded-full shrink-0 ${notification.is_read
-                                                ? "bg-gray-200"
-                                                : "bg-blue-100"
-                                            }`}
-                                    >
-                                        {notification.is_read ? (
-                                            <Check className="w-4 h-4 text-gray-600" />
-                                        ) : (
-                                            <Bell className="w-4 h-4 text-blue-600" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <h4
-                                                className={`font-medium truncate ${notification.is_read
-                                                        ? "text-gray-700"
-                                                        : "text-gray-900"
-                                                    }`}
-                                            >
-                                                {notification.title}
-                                            </h4>
-                                            {!notification.is_read && (
-                                                <span className="shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                                            {notification.message}
-                                        </p>
-                                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
-                                            <Clock className="w-3 h-3" />
-                                            <span>{formatDate(notification.created_at)}</span>
+                <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar" style={{
+                    maxHeight: 'calc(80vh - 200px)',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#cbd5e1 transparent'
+                }}>
+                    {isLoading ? (
+                        <div className="space-y-3">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="clay-inset animate-pulse" style={{ padding: "14px" }}>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                                        <div className="flex-1 space-y-2">
+                                            <div className="w-3/4 h-4 bg-gray-200 rounded" />
+                                            <div className="w-full h-3 bg-gray-100 rounded" />
+                                            <div className="w-24 h-3 bg-gray-100 rounded" />
                                         </div>
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+                    ) : notifications.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="clay-circle mx-auto" style={{
+                                width: "56px",
+                                height: "56px",
+                                background: "rgba(107, 150, 255, 0.06)",
+                                marginBottom: "12px",
+                            }}>
+                                <Bell className="w-7 h-7" style={{ color: "#b0b8c9" }} />
                             </div>
-                        ))}
-                    </div>
-                )}
+                            <p className="text-sm" style={{ color: "#9ca3af" }}>No notifications yet</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {notifications.map((notification) => (
+                                <div
+                                    key={notification.id}
+                                    className="clay-inset transition-all"
+                                    style={{
+                                        padding: "14px",
+                                        background: notification.is_read ? "#eff1f5" : "rgba(107, 150, 255, 0.06)",
+                                        boxShadow: notification.is_read
+                                            ? "inset 2px 2px 5px rgba(0, 0, 0, 0.05), inset -2px -2px 5px rgba(255, 255, 255, 0.5)"
+                                            : "inset 2px 2px 5px rgba(107, 150, 255, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                    }}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div
+                                            className="clay-circle shrink-0"
+                                            style={{
+                                                width: "32px",
+                                                height: "32px",
+                                                background: notification.is_read
+                                                    ? "rgba(0, 0, 0, 0.03)"
+                                                    : "rgba(107, 150, 255, 0.10)",
+                                            }}
+                                        >
+                                            {notification.is_read ? (
+                                                <Check className="w-4 h-4" style={{ color: "#9ca3af" }} />
+                                            ) : (
+                                                <Bell className="w-4 h-4" style={{ color: "#6b96ff" }} />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <h4
+                                                    className={`text-sm font-medium truncate ${notification.is_read
+                                                        ? "text-gray-600"
+                                                        : "text-gray-900"
+                                                        }`}
+                                                >
+                                                    {notification.title}
+                                                </h4>
+                                                {!notification.is_read && (
+                                                    <span
+                                                        className="shrink-0 w-2 h-2 rounded-full"
+                                                        style={{ background: "#6b96ff" }}
+                                                    />
+                                                )}
+                                            </div>
+                                            <p className="text-xs mt-1 line-clamp-2" style={{ color: "#6b7280" }}>
+                                                {notification.message}
+                                            </p>
+                                            <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: "#9ca3af" }}>
+                                                <Clock className="w-3 h-3" />
+                                                <span>{formatDate(notification.created_at)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div
+                        className="flex items-center justify-between pt-4 mt-4"
+                        style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+                    >
                         <button
                             onClick={() => fetchNotifications(currentPage - 1)}
                             disabled={currentPage === 1 || isLoading}
-                            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="clay-btn text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            style={{ padding: "6px 12px", fontSize: "12px" }}
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="w-3.5 h-3.5" />
                             Previous
                         </button>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs" style={{ color: "#6b7280" }}>
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
                             onClick={() => fetchNotifications(currentPage + 1)}
                             disabled={currentPage === totalPages || isLoading}
-                            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="clay-btn text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            style={{ padding: "6px 12px", fontSize: "12px" }}
                         >
                             Next
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 )}

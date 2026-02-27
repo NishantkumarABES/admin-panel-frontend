@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -53,6 +54,13 @@ export default function RichTextEditor({
       onChange(editor.getHTML());
     },
   });
+
+  // Sync editor content when the prop changes (e.g. switching tabs)
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;
@@ -267,7 +275,7 @@ export default function RichTextEditor({
 
       <div
         onClick={() => editor.commands.focus()}
-        className={`prose prose-sm max-w-none p-4 min-h-[400px] cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
+        className={`prose prose-sm max-w-none p-4 min-h-[400px] max-h-[500px] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
         style={{
           background: editable ? "#ffffff" : "#f8f9fb",
         }}

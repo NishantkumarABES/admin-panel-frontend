@@ -170,6 +170,33 @@ a:hover {
 }
 
 
+/* ─── TipTap / ProseMirror editor list styles ────────── */
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.ProseMirror ul li,
+.ProseMirror ol li {
+  margin: 0.25em 0;
+}
+
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
 /* ─── react-international-phone overrides ────────────── */
 
 .react-international-phone-input-container {
@@ -424,6 +451,109 @@ a:hover {
   100% {
     background-position: -200% 0;
   }
+}
+
+/* ─── Profile Page Animations ────────────────────────── */
+
+@keyframes profileGradient {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes successPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.profile-animate-in {
+  animation: fadeSlideUp 0.5s ease-out both;
+}
+
+.profile-animate-delay-1 { animation-delay: 0.05s; }
+.profile-animate-delay-2 { animation-delay: 0.1s; }
+.profile-animate-delay-3 { animation-delay: 0.15s; }
+.profile-animate-delay-4 { animation-delay: 0.2s; }
+
+.profile-gradient-banner {
+  background: linear-gradient(270deg, #6b96ff, #a285ff, #4fcfa5, #6b96ff);
+  background-size: 300% 300%;
+  animation: profileGradient 12s ease infinite;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar-wrapper:hover {
+  transform: scale(1.06);
+}
+
+.profile-avatar-wrapper:hover .profile-avatar-glow {
+  opacity: 1;
+}
+
+.profile-avatar-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(107, 150, 255, 0.25), rgba(162, 133, 255, 0.25));
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.profile-action-row {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.profile-action-row:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    6px 6px 14px rgba(0, 0, 0, 0.09),
+    -6px -6px 14px rgba(255, 255, 255, 0.75);
+}
+
+.profile-action-row:active {
+  transform: translateY(0);
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.06),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+}
+
+.profile-strength-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #eff1f5;
+  overflow: hidden;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.profile-strength-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+.profile-success-anim {
+  animation: successPop 0.5s ease-out both;
 }
 
 /* ─── Mobile Responsive Claymorphism ─────────────────── */

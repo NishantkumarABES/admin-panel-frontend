@@ -75,6 +75,9 @@ export interface OrderAnalytics {
   processing_orders: number;
   delivered_orders: number;
   cancelled_orders: number;
+  paid_orders?: number;
+  refunded_orders?: number;
+  refund_amount?: number;
   total_revenue: number;
 }
 

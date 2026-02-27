@@ -46,8 +46,9 @@ export default function TopSellingProductsChart({ data }: TopSellingProductsChar
         return null;
     };
 
-    // Truncate product names for chart display
-    const chartData = data.map((item, index) => ({
+    // Sort by units sold (descending) and truncate product names for chart display
+    const sortedData = [...data].sort((a, b) => b.quantity_sold - a.quantity_sold);
+    const chartData = sortedData.map((item, index) => ({
         ...item,
         shortName: item.name.length > 15 ? item.name.substring(0, 15) + '...' : item.name,
         rank: index + 1
@@ -59,7 +60,7 @@ export default function TopSellingProductsChart({ data }: TopSellingProductsChar
                 <h3 className="font-semibold text-gray-900" style={{ fontSize: "18px" }}>Top Selling Products</h3>
                 <TrendingUp className="w-5 h-5" style={{ color: "#4fcfa5" }} />
             </div>
-            <p className="text-sm" style={{ color: "#6b7280", marginBottom: "16px" }}>Best performing products by revenue</p>
+            <p className="text-sm" style={{ color: "#6b7280", marginBottom: "16px" }}>Products sorted by units sold, showing revenue</p>
 
             <div className="grid grid-cols-2 gap-4" style={{ marginBottom: "16px" }}>
                 <div className="clay-inset" style={{ background: "rgba(79, 207, 165, 0.08)" }}>

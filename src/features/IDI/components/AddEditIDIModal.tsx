@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Sparkles, Loader2, Copy, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Sparkles, Loader2, Copy, Check, X, AlertCircle, ChevronDown, Search } from "lucide-react";
 import type { IDI, CreateIDIDTO, KeyInteraction, PracticalPearl } from "../idi.types";
 import Modal from "../../../components/common/Modal";
 import { DRUG_CLASSES, THERAPEUTIC_CATEGORIES, DRUG_TEMPLATE } from "../idi.types";
@@ -40,6 +40,17 @@ const initialFormData: CreateIDIDTO = {
 const MAX_CHARS_500 = 500;
 const MAX_CHARS_255 = 255;
 
+const inputStyle = (hasError = false) => ({
+  background: "#ffffff",
+  border: hasError ? "1px solid #ef4444" : "1px solid #e5e7eb",
+  boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+});
+
+const sectionStyle = {
+  background: "#f8f9fb",
+  boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+};
+
 export default function AddEditIDIModal({
   IDI,
   isOpen,
@@ -49,6 +60,7 @@ export default function AddEditIDIModal({
   const [formData, setFormData] = useState<CreateIDIDTO>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   // AI Extract state
   const [addMode, setAddMode] = useState<AddMode>("manual");
@@ -56,6 +68,58 @@ export default function AddEditIDIModal({
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  // Searchable dropdown state
+  const [drugClassSearch, setDrugClassSearch] = useState("");
+  const [isDrugClassDropdownOpen, setIsDrugClassDropdownOpen] = useState(false);
+  const [therapeuticCategorySearch, setTherapeuticCategorySearch] = useState("");
+  const [isTherapeuticCategoryDropdownOpen, setIsTherapeuticCategoryDropdownOpen] = useState(false);
+  const drugClassDropdownRef = useRef<HTMLDivElement>(null);
+  const therapeuticCategoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Add scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
+
+  // Click outside handlers for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (drugClassDropdownRef.current && !drugClassDropdownRef.current.contains(event.target as Node)) {
+        setIsDrugClassDropdownOpen(false);
+      }
+      if (therapeuticCategoryDropdownRef.current && !therapeuticCategoryDropdownRef.current.contains(event.target as Node)) {
+        setIsTherapeuticCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredDrugClasses = DRUG_CLASSES.filter((cls) =>
+    cls.toLowerCase().includes(drugClassSearch.toLowerCase())
+  );
+
+  const filteredTherapeuticCategories = THERAPEUTIC_CATEGORIES.filter((cat) =>
+    cat.toLowerCase().includes(therapeuticCategorySearch.toLowerCase())
+  );
 
   useEffect(() => {
     if (IDI) {
@@ -84,6 +148,8 @@ export default function AddEditIDIModal({
     } else {
       setFormData(initialFormData);
     }
+    setSubmitSuccess(false);
+    setSubmitError(null);
   }, [IDI, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +158,8 @@ export default function AddEditIDIModal({
     setSubmitError(null);
     try {
       await onSubmit(formData);
-      handleClose();
+      setSubmitSuccess(true);
+      setTimeout(() => { handleClose(); }, 1500);
     } catch (error: any) {
       const detail = error?.response?.data?.detail || error?.message || "Failed to save drug. Please try again.";
       setSubmitError(detail);
@@ -108,7 +175,24 @@ export default function AddEditIDIModal({
     setParagraph("");
     setExtractError(null);
     setSubmitError(null);
+    setSubmitSuccess(false);
+    setDrugClassSearch("");
+    setIsDrugClassDropdownOpen(false);
+    setTherapeuticCategorySearch("");
+    setIsTherapeuticCategoryDropdownOpen(false);
     onClose();
+  };
+
+  const handleDrugClassSelect = (cls: string) => {
+    setFormData({ ...formData, drugClass: cls });
+    setDrugClassSearch("");
+    setIsDrugClassDropdownOpen(false);
+  };
+
+  const handleTherapeuticCategorySelect = (cat: string) => {
+    setFormData({ ...formData, therapeuticCategory: cat });
+    setTherapeuticCategorySearch("");
+    setIsTherapeuticCategoryDropdownOpen(false);
   };
 
   const handleExtract = async () => {
@@ -198,572 +282,711 @@ export default function AddEditIDIModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={IDI ? "Edit Drug Information" : "Add New Drug"}
-      size="xl"
+      size="lg"
     >
-      {/* Tab Switcher — only in Add mode */}
-      {isAddMode && (
-        <div className="flex border-b border-gray-200 mb-6">
-          <button
-            type="button"
-            onClick={() => setAddMode("manual")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${addMode === "manual"
-              ? "border-gray-900 text-gray-900"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            Manual Form
-          </button>
-          <button
-            type="button"
-            onClick={() => setAddMode("extract")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${addMode === "extract"
-              ? "border-gray-900 text-gray-900"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-          >
-            <Sparkles className="w-4 h-4" />
-            Extract
-          </button>
-        </div>
-      )}
+      <div className="flex flex-col h-full">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 z-10 active:scale-95 active:shadow-inner"
+          style={{
+            background: "#f8f9fb",
+            boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.6)"
+          }}
+        >
+          <X className="w-5 h-5 text-gray-600" />
+        </button>
 
-      {/* AI Extract Panel */}
-      {isAddMode && addMode === "extract" && (
-        <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
-              Paste a paragraph containing drug information below. The AI will extract and structure the data into the form fields for you to review.
-            </p>
-          </div>
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Drug Information Paragraph *
-              </label>
+        {/* Success State */}
+        {submitSuccess ? (
+          <div className="space-y-4">
+            <div className="rounded-xl p-4" style={{ background: "rgba(79, 207, 165, 0.08)", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)" }}>
+              <p className="text-sm text-emerald-800">
+                Drug <span className="font-semibold">{formData.drugNameGeneric}</span> has been successfully{" "}
+                {IDI ? "updated" : "added"}.
+              </p>
+            </div>
+
+            <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+              borderTop: "1px solid rgba(0,0,0,0.06)",
+              marginLeft: "-2px", marginRight: "-2px",
+              paddingLeft: "2px", paddingRight: "2px"
+            }}>
               <button
-                type="button"
-                onClick={handleCopyTemplate}
-                className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                title="Copy example template"
+                onClick={handleClose}
+                className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                }}
               >
-                {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {isCopied ? "Copied!" : "Copy Example"}
+                Done
               </button>
             </div>
-            <textarea
-              value={paragraph}
-              onChange={(e) => setParagraph(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              rows={8}
-              placeholder="Paste the drug information paragraph here..."
-              disabled={isExtracting}
-            />
           </div>
-          {extractError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-700">{extractError}</p>
-            </div>
-          )}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              disabled={isExtracting}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleExtract}
-              disabled={isExtracting || !paragraph.trim()}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isExtracting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Extracting...
-                </>
-              ) : (
-                <>
+        ) : (
+          <>
+            {/* Tab Switcher — only in Add mode */}
+            {isAddMode && (
+              <div className="flex mb-5 rounded-xl p-1" style={{ background: "#f1f3f7", boxShadow: "inset 1px 1px 3px rgba(0,0,0,0.06)" }}>
+                <button
+                  type="button"
+                  onClick={() => setAddMode("manual")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${addMode === "manual"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                  Manual Form
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddMode("extract")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${addMode === "extract"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
                   <Sparkles className="w-4 h-4" />
-                  Extract & Fill Form
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Manual Form — shown always in edit mode, or in add mode when "manual" tab is active */}
-      {(!isAddMode || addMode === "manual") && (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Drug Information */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Basic Drug Information</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Drug Name (Generic) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={MAX_CHARS_255}
-                  value={formData.drugNameGeneric}
-                  onChange={(e) => setFormData({ ...formData, drugNameGeneric: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="e.g., Metformin"
-                />
+                  Extract
+                </button>
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Drug Class *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.drugClass}
-                    onChange={(e) => setFormData({ ...formData, drugClass: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="e.g., Biguanide"
-                    list="drugClasses"
-                  />
-                  <datalist id="drugClasses">
-                    {DRUG_CLASSES.map((cls) => (
-                      <option key={cls} value={cls} />
-                    ))}
-                  </datalist>
+            {/* AI Extract Panel */}
+            {isAddMode && addMode === "extract" && (
+              <div className="flex flex-col h-full">
+                <div className="flex-1 space-y-5">
+                  <div className="rounded-xl p-4" style={{ background: "rgba(107, 150, 255, 0.06)", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)" }}>
+                    <p className="text-sm text-blue-800">
+                      Paste a paragraph containing drug information below.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                      <label className="text-sm font-semibold text-gray-900">
+                        Drug Information Paragraph *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleCopyTemplate}
+                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        title="Copy example template"
+                      >
+                        {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {isCopied ? "Copied!" : "Copy Example"}
+                      </button>
+                    </div>
+                    <textarea
+                      value={paragraph}
+                      onChange={(e) => setParagraph(e.target.value)}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={inputStyle()}
+                      rows={12}
+                      placeholder="Paste the drug information paragraph here..."
+                      disabled={isExtracting}
+                    />
+                  </div>
+
+                  {extractError && (
+                    <div className="flex items-start gap-3 p-3 rounded-xl" style={{
+                      background: "#fee", border: "1px solid #fcc"
+                    }}>
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{extractError}</p>
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Therapeutic Category *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.therapeuticCategory}
-                    onChange={(e) => setFormData({ ...formData, therapeuticCategory: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="e.g., Antidiabetic"
-                    list="therapeuticCategories"
-                  />
-                  <datalist id="therapeuticCategories">
-                    {THERAPEUTIC_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat} />
-                    ))}
-                  </datalist>
+                <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+                  borderTop: "1px solid rgba(0,0,0,0.06)",
+                  marginLeft: "-2px", marginRight: "-2px",
+                  paddingLeft: "2px", paddingRight: "2px"
+                }}>
+                  <button
+                    type="button"
+                    onClick={handleExtract}
+                    disabled={isExtracting || !paragraph.trim()}
+                    className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{
+                      background: "#1f2937",
+                      boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                    }}
+                  >
+                    {isExtracting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Extracting...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Extract & Fill Form
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Brands in India (Single Molecule) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={MAX_CHARS_255}
-                  value={formData.brandsInIndia}
-                  onChange={(e) => setFormData({ ...formData, brandsInIndia: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="e.g., Glycomet, Glucophage, Obimet"
-                />
-              </div>
+            {/* Manual Form */}
+            {(!isAddMode || addMode === "manual") && (
+              <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                <div className="flex-1 space-y-5">
+                  {/* Submit Error */}
+                  {submitError && (
+                    <div className="flex items-start gap-3 p-3 rounded-xl" style={{
+                      background: "#fee", border: "1px solid #fcc"
+                    }}>
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{submitError}</p>
+                    </div>
+                  )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Strengths Available *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={MAX_CHARS_255}
-                    value={formData.strengthsAvailable}
-                    onChange={(e) => setFormData({ ...formData, strengthsAvailable: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="e.g., 500 mg, 850 mg, 1000 mg"
-                  />
-                </div>
+                  {/* Basic Drug Information */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Basic Drug Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Drug Name (Generic) *</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={MAX_CHARS_255}
+                          value={formData.drugNameGeneric}
+                          onChange={(e) => setFormData({ ...formData, drugNameGeneric: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          placeholder="e.g., Metformin"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Formulations / Routes *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={MAX_CHARS_255}
-                    value={formData.formulationsRoutes}
-                    onChange={(e) => setFormData({ ...formData, formulationsRoutes: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="e.g., Oral tablet, Extended-release"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Drug Class Searchable Dropdown */}
+                        <div className="relative" ref={drugClassDropdownRef}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Drug Class *</label>
+                          <button
+                            type="button"
+                            className="w-full px-4 py-2.5 text-sm rounded-xl flex items-center justify-between gap-2 focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                            style={inputStyle()}
+                            onClick={() => setIsDrugClassDropdownOpen(!isDrugClassDropdownOpen)}
+                          >
+                            <span className={formData.drugClass ? "text-gray-900" : "text-gray-500"}>
+                              {formData.drugClass || "Select Drug Class"}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDrugClassDropdownOpen ? "rotate-180" : ""}`} />
+                          </button>
 
-          {/* Clinical Information */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Clinical Information</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Core Clinical Role *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.coreClinicalRole}
-                  onChange={(e) => setFormData({ ...formData, coreClinicalRole: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                  placeholder="e.g., First-line oral agent for type 2 diabetes mellitus"
-                />
-                {renderCharCounter(formData.coreClinicalRole, MAX_CHARS_500)}
-              </div>
+                          {isDrugClassDropdownOpen && (
+                            <div
+                              className="absolute z-50 w-full mt-1 bg-white rounded-xl overflow-hidden"
+                              style={{ boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)", border: "1px solid #e5e7eb" }}
+                            >
+                              <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                <div className="relative">
+                                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                  <input
+                                    type="text"
+                                    className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                                    style={inputStyle()}
+                                    placeholder="Search drug classes..."
+                                    value={drugClassSearch}
+                                    onChange={(e) => setDrugClassSearch(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+                              <div className="max-h-48 overflow-y-auto">
+                                {filteredDrugClasses.length > 0 ? (
+                                  filteredDrugClasses.map((cls) => (
+                                    <div
+                                      key={cls}
+                                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 ${formData.drugClass === cls ? "bg-gray-50 font-medium" : ""}`}
+                                      onClick={() => handleDrugClassSelect(cls)}
+                                    >
+                                      {cls}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-gray-500 text-center">No drug classes found</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Clinical Scenarios *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.preferredClinicalScenarios}
-                  onChange={(e) => setFormData({ ...formData, preferredClinicalScenarios: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                  placeholder="e.g., Newly diagnosed T2DM, Prediabetes, PCOS with insulin resistance"
-                />
-                {renderCharCounter(formData.preferredClinicalScenarios, MAX_CHARS_500)}
-              </div>
+                        {/* Therapeutic Category Searchable Dropdown */}
+                        <div className="relative" ref={therapeuticCategoryDropdownRef}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Therapeutic Category *</label>
+                          <button
+                            type="button"
+                            className="w-full px-4 py-2.5 text-sm rounded-xl flex items-center justify-between gap-2 focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                            style={inputStyle()}
+                            onClick={() => setIsTherapeuticCategoryDropdownOpen(!isTherapeuticCategoryDropdownOpen)}
+                          >
+                            <span className={formData.therapeuticCategory ? "text-gray-900" : "text-gray-500"}>
+                              {formData.therapeuticCategory || "Select Therapeutic Category"}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isTherapeuticCategoryDropdownOpen ? "rotate-180" : ""}`} />
+                          </button>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Where Benefit is Limited / Avoid Overuse *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.whereBenefitLimited}
-                  onChange={(e) => setFormData({ ...formData, whereBenefitLimited: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                  placeholder="e.g., Type 1 diabetes, Severe renal impairment"
-                />
-                {renderCharCounter(formData.whereBenefitLimited, MAX_CHARS_500)}
-              </div>
-            </div>
-          </div>
+                          {isTherapeuticCategoryDropdownOpen && (
+                            <div
+                              className="absolute z-50 w-full mt-1 bg-white rounded-xl overflow-hidden"
+                              style={{ boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)", border: "1px solid #e5e7eb" }}
+                            >
+                              <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                <div className="relative">
+                                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                  <input
+                                    type="text"
+                                    className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                                    style={inputStyle()}
+                                    placeholder="Search categories..."
+                                    value={therapeuticCategorySearch}
+                                    onChange={(e) => setTherapeuticCategorySearch(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+                              <div className="max-h-48 overflow-y-auto">
+                                {filteredTherapeuticCategories.length > 0 ? (
+                                  filteredTherapeuticCategories.map((cat) => (
+                                    <div
+                                      key={cat}
+                                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 ${formData.therapeuticCategory === cat ? "bg-gray-50 font-medium" : ""}`}
+                                      onClick={() => handleTherapeuticCategorySelect(cat)}
+                                    >
+                                      {cat}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-gray-500 text-center">No categories found</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-          {/* Dosing Information */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Dosing Information</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Usual Adult Dose *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.usualAdultDose}
-                  onChange={(e) => setFormData({ ...formData, usualAdultDose: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                />
-                {renderCharCounter(formData.usualAdultDose, MAX_CHARS_500)}
-              </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Brands in India (Single Molecule) *</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={MAX_CHARS_255}
+                          value={formData.brandsInIndia}
+                          onChange={(e) => setFormData({ ...formData, brandsInIndia: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          placeholder="e.g., Glycomet, Glucophage, Obimet"
+                        />
+                      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Timing Relative to Meals *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.timingRelativeToMeals}
-                  onChange={(e) => setFormData({ ...formData, timingRelativeToMeals: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-                {renderCharCounter(formData.timingRelativeToMeals, MAX_CHARS_500)}
-              </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Strengths Available *</label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={MAX_CHARS_255}
+                            value={formData.strengthsAvailable}
+                            onChange={(e) => setFormData({ ...formData, strengthsAvailable: e.target.value })}
+                            className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                            style={inputStyle()}
+                            placeholder="e.g., 500 mg, 850 mg, 1000 mg"
+                          />
+                        </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Review / Duration Plan *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.reviewDurationPlan}
-                  onChange={(e) => setFormData({ ...formData, reviewDurationPlan: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                />
-                {renderCharCounter(formData.reviewDurationPlan, MAX_CHARS_500)}
-              </div>
-            </div>
-          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Formulations / Routes *</label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={MAX_CHARS_255}
+                            value={formData.formulationsRoutes}
+                            onChange={(e) => setFormData({ ...formData, formulationsRoutes: e.target.value })}
+                            className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                            style={inputStyle()}
+                            placeholder="e.g., Oral tablet, Extended-release"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Safety Information */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Safety Information</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Common Adverse Effects *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.commonAdverseEffects}
-                  onChange={(e) => setFormData({ ...formData, commonAdverseEffects: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                />
-                {renderCharCounter(formData.commonAdverseEffects, MAX_CHARS_500)}
-              </div>
+                  {/* Clinical Information */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Clinical Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Core Clinical Role *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.coreClinicalRole}
+                          onChange={(e) => setFormData({ ...formData, coreClinicalRole: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                          placeholder="e.g., First-line oral agent for type 2 diabetes mellitus"
+                        />
+                        {renderCharCounter(formData.coreClinicalRole, MAX_CHARS_500)}
+                      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Serious But Uncommon Risks *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.seriousButUncommonRisks}
-                  onChange={(e) => setFormData({ ...formData, seriousButUncommonRisks: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                />
-                {renderCharCounter(formData.seriousButUncommonRisks, MAX_CHARS_500)}
-              </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Clinical Scenarios *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.preferredClinicalScenarios}
+                          onChange={(e) => setFormData({ ...formData, preferredClinicalScenarios: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                          placeholder="e.g., Newly diagnosed T2DM, Prediabetes, PCOS with insulin resistance"
+                        />
+                        {renderCharCounter(formData.preferredClinicalScenarios, MAX_CHARS_500)}
+                      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Long-Term Therapy Cautions *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.longTermTherapyCautions}
-                  onChange={(e) => setFormData({ ...formData, longTermTherapyCautions: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                />
-                {renderCharCounter(formData.longTermTherapyCautions, MAX_CHARS_500)}
-              </div>
-            </div>
-          </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Where Benefit is Limited / Avoid Overuse *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.whereBenefitLimited}
+                          onChange={(e) => setFormData({ ...formData, whereBenefitLimited: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                          placeholder="e.g., Type 1 diabetes, Severe renal impairment"
+                        />
+                        {renderCharCounter(formData.whereBenefitLimited, MAX_CHARS_500)}
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Key Interactions */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">Key Interactions</h3>
-              <button
-                type="button"
-                onClick={addKeyInteraction}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Interaction
-              </button>
-            </div>
+                  {/* Dosing Information */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Dosing Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Usual Adult Dose *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.usualAdultDose}
+                          onChange={(e) => setFormData({ ...formData, usualAdultDose: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                        />
+                        {renderCharCounter(formData.usualAdultDose, MAX_CHARS_500)}
+                      </div>
 
-            <div className="space-y-4">
-              {formData.keyInteractions.map((interaction, index) => (
-                <div key={index} className="p-3 bg-white border border-gray-300 rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-gray-700">Interaction {index + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeKeyInteraction(index)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Timing Relative to Meals *</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.timingRelativeToMeals}
+                          onChange={(e) => setFormData({ ...formData, timingRelativeToMeals: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                        />
+                        {renderCharCounter(formData.timingRelativeToMeals, MAX_CHARS_500)}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Review / Duration Plan *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.reviewDurationPlan}
+                          onChange={(e) => setFormData({ ...formData, reviewDurationPlan: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                        />
+                        {renderCharCounter(formData.reviewDurationPlan, MAX_CHARS_500)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Safety Information */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Safety Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Common Adverse Effects *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.commonAdverseEffects}
+                          onChange={(e) => setFormData({ ...formData, commonAdverseEffects: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                        />
+                        {renderCharCounter(formData.commonAdverseEffects, MAX_CHARS_500)}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Serious But Uncommon Risks *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.seriousButUncommonRisks}
+                          onChange={(e) => setFormData({ ...formData, seriousButUncommonRisks: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                        />
+                        {renderCharCounter(formData.seriousButUncommonRisks, MAX_CHARS_500)}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Long-Term Therapy Cautions *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.longTermTherapyCautions}
+                          onChange={(e) => setFormData({ ...formData, longTermTherapyCautions: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                        />
+                        {renderCharCounter(formData.longTermTherapyCautions, MAX_CHARS_500)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Interactions */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <div className="flex items-center justify-between mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                      <h3 className="text-sm font-semibold text-gray-900">Key Interactions</h3>
+                      <button
+                        type="button"
+                        onClick={addKeyInteraction}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                        style={{
+                          background: "#1f2937",
+                          boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                        }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Interaction
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {formData.keyInteractions.map((interaction, index) => (
+                        <div key={index} className="p-4 rounded-xl" style={{
+                          background: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                        }}>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-gray-700">Interaction {index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeKeyInteraction(index)}
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              maxLength={MAX_CHARS_255}
+                              value={interaction.interactionTitle}
+                              onChange={(e) => updateKeyInteraction(index, "interactionTitle", e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                              style={inputStyle()}
+                              placeholder="Interaction Title"
+                            />
+                            <textarea
+                              maxLength={MAX_CHARS_500}
+                              value={interaction.clinicalImpact}
+                              onChange={(e) => updateKeyInteraction(index, "clinicalImpact", e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                              style={inputStyle()}
+                              rows={2}
+                              placeholder="Clinical Impact"
+                            />
+                            {renderCharCounter(interaction.clinicalImpact, MAX_CHARS_500)}
+                            <textarea
+                              maxLength={MAX_CHARS_500}
+                              value={interaction.whatToDo}
+                              onChange={(e) => updateKeyInteraction(index, "whatToDo", e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                              style={inputStyle()}
+                              rows={2}
+                              placeholder="What to Do"
+                            />
+                            {renderCharCounter(interaction.whatToDo, MAX_CHARS_500)}
+                          </div>
+                        </div>
+                      ))}
+                      {formData.keyInteractions.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          No interactions added yet. Click "Add Interaction" to add one.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Practical Prescribing Pearls */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <div className="flex items-center justify-between mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                      <h3 className="text-sm font-semibold text-gray-900">Practical Prescribing Pearls</h3>
+                      <button
+                        type="button"
+                        onClick={addPracticalPearl}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                        style={{
+                          background: "#1f2937",
+                          boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                        }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Pearl
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {formData.practicalPrescribingPearls.map((pearl, index) => (
+                        <div key={index} className="p-4 rounded-xl" style={{
+                          background: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                        }}>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-gray-700">Pearl {index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => removePracticalPearl(index)}
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              maxLength={MAX_CHARS_255}
+                              value={pearl.pearlTitle}
+                              onChange={(e) => updatePracticalPearl(index, "pearlTitle", e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                              style={inputStyle()}
+                              placeholder="Pearl Title"
+                            />
+                            <textarea
+                              maxLength={MAX_CHARS_500}
+                              value={pearl.pearlContent}
+                              onChange={(e) => updatePracticalPearl(index, "pearlContent", e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                              style={inputStyle()}
+                              rows={2}
+                              placeholder="Pearl Content"
+                            />
+                            {renderCharCounter(pearl.pearlContent, MAX_CHARS_500)}
+                          </div>
+                        </div>
+                      ))}
+                      {formData.practicalPrescribingPearls.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          No pearls added yet. Click "Add Pearl" to add one.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Evidence Base */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Evidence Base</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Guidelines (Name + Year) *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.guidelines}
+                          onChange={(e) => setFormData({ ...formData, guidelines: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                          placeholder="e.g., ADA Standards of Care 2024, IDF Global Guideline 2022"
+                        />
+                        {renderCharCounter(formData.guidelines, MAX_CHARS_500)}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Landmark Trials (Name + Year) *</label>
+                        <textarea
+                          required
+                          maxLength={MAX_CHARS_500}
+                          value={formData.landmarkTrials}
+                          onChange={(e) => setFormData({ ...formData, landmarkTrials: e.target.value })}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={inputStyle()}
+                          rows={2}
+                          placeholder="e.g., UKPDS 34 (1998), DPP (2002)"
+                        />
+                        {renderCharCounter(formData.landmarkTrials, MAX_CHARS_500)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Status</h3>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={inputStyle()}
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      maxLength={MAX_CHARS_255}
-                      value={interaction.interactionTitle}
-                      onChange={(e) => updateKeyInteraction(index, "interactionTitle", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                      placeholder="Interaction Title"
-                    />
-                    <textarea
-                      maxLength={MAX_CHARS_500}
-                      value={interaction.clinicalImpact}
-                      onChange={(e) => updateKeyInteraction(index, "clinicalImpact", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                      rows={2}
-                      placeholder="Clinical Impact"
-                    />
-                    {renderCharCounter(interaction.clinicalImpact, MAX_CHARS_500)}
-                    <textarea
-                      maxLength={MAX_CHARS_500}
-                      value={interaction.whatToDo}
-                      onChange={(e) => updateKeyInteraction(index, "whatToDo", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                      rows={2}
-                      placeholder="What to Do"
-                    />
-                    {renderCharCounter(interaction.whatToDo, MAX_CHARS_500)}
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
                   </div>
                 </div>
-              ))}
-              {formData.keyInteractions.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No interactions added yet. Click "Add Interaction" to add one.
-                </p>
-              )}
-            </div>
-          </div>
 
-          {/* Practical Prescribing Pearls */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">Practical Prescribing Pearls</h3>
-              <button
-                type="button"
-                onClick={addPracticalPearl}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Pearl
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {formData.practicalPrescribingPearls.map((pearl, index) => (
-                <div key={index} className="p-3 bg-white border border-gray-300 rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-gray-700">Pearl {index + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => removePracticalPearl(index)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      maxLength={MAX_CHARS_255}
-                      value={pearl.pearlTitle}
-                      onChange={(e) => updatePracticalPearl(index, "pearlTitle", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                      placeholder="Pearl Title"
-                    />
-                    <textarea
-                      maxLength={MAX_CHARS_500}
-                      value={pearl.pearlContent}
-                      onChange={(e) => updatePracticalPearl(index, "pearlContent", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                      rows={2}
-                      placeholder="Pearl Content"
-                    />
-                    {renderCharCounter(pearl.pearlContent, MAX_CHARS_500)}
-                  </div>
+                {/* Sticky Footer */}
+                <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+                  borderTop: "1px solid rgba(0,0,0,0.06)",
+                  marginLeft: "-2px", marginRight: "-2px",
+                  paddingLeft: "2px", paddingRight: "2px"
+                }}>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{
+                      background: "#1f2937",
+                      boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>{IDI ? "Update Drug" : "Add Drug"}</span>
+                    )}
+                  </button>
                 </div>
-              ))}
-              {formData.practicalPrescribingPearls.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No pearls added yet. Click "Add Pearl" to add one.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Evidence Base */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Evidence Base</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Guidelines (Name + Year) *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.guidelines}
-                  onChange={(e) => setFormData({ ...formData, guidelines: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                  placeholder="e.g., ADA Standards of Care 2024, IDF Global Guideline 2022"
-                />
-                {renderCharCounter(formData.guidelines, MAX_CHARS_500)}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Landmark Trials (Name + Year) *
-                </label>
-                <textarea
-                  required
-                  maxLength={MAX_CHARS_500}
-                  value={formData.landmarkTrials}
-                  onChange={(e) => setFormData({ ...formData, landmarkTrials: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  rows={2}
-                  placeholder="e.g., UKPDS 34 (1998), DPP (2002)"
-                />
-                {renderCharCounter(formData.landmarkTrials, MAX_CHARS_500)}
-              </div>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-
-          {/* Form Actions */}
-          {submitError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-700">{submitError}</p>
-            </div>
-          )}
-
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : IDI ? "Update Drug" : "Add Drug"}
-            </button>
-          </div>
-        </form>
-      )}
+              </form>
+            )}
+          </>
+        )}
+      </div>
     </Modal>
   );
 }
