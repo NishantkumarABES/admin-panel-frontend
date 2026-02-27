@@ -1,6 +1,6 @@
 import { api } from "../../services/api";
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.svg";
@@ -154,6 +154,16 @@ export default function LoginView() {
                 </>
               )}
             </button>
+
+            {/* Forgot Password Link */}
+            <div className="flex justify-center">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </form>
         </div>
 

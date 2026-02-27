@@ -96,8 +96,13 @@ export const getTopSellingProducts = () =>
   api.get<TopSellingProduct[]>("/analytics/admin/dashboard/top-selling-products/");
 
 // Get revenue analytics
-export const getRevenueAnalytics = () =>
-  api.get<RevenueAnalyticsDataPoint[]>("/analytics/admin/dashboard/revenue-analytics/");
+export const getRevenueAnalytics = (year?: number, month?: number) => {
+  const params = new URLSearchParams();
+  if (year) params.append("year", year.toString());
+  if (month) params.append("month", month.toString());
+  const query = params.toString();
+  return api.get<RevenueAnalyticsDataPoint[]>(`/analytics/admin/dashboard/revenue-analytics/${query ? `?${query}` : ""}`);
+};
 
 // Get order status analytics
 export const getOrderStatusAnalytics = () =>

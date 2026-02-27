@@ -154,7 +154,7 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
       isOpen={isOpen}
       onClose={handleClose}
       title={isEditMode ? `Edit Coupon: ${coupon?.code}` : "Create Coupon"}
-      size="sm"
+      size="md"
     >
       <div className="flex flex-col h-full">
         {/* Close Button - Top Right with Click Animation */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Minus, Trash2, AlertCircle, X } from "lucide-react";
 import type { OrderStatus, PaymentMethod } from "../order.types";
 import { ORDER_STATUS_CONFIG, PAYMENT_METHOD_LABELS } from "../order.types";
+import Modal from "../../../components/common/Modal";
 
 interface User {
     id: string;
@@ -62,6 +63,31 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
+    // Add scrollbar styles
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    `;
+        document.head.appendChild(style);
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
 
     const fetchUsers = async (search?: string) => {
         try {
@@ -176,7 +202,8 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                 payment_reference: paymentReference || undefined,
                 status,
             });
-            handleClose();
+            setSubmitSuccess(true);
+            setTimeout(() => { handleClose(); }, 1500);
         } catch (err: any) {
             setError(err?.message || "Failed to create order");
         } finally {
@@ -194,10 +221,9 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
         setError("");
         setUserSearch("");
         setProductSearch("");
+        setSubmitSuccess(false);
         onClose();
     };
-
-    if (!isOpen) return null;
 
     const filteredUsers = users.filter(
         (user) =>
@@ -211,61 +237,107 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
             product.sku?.toLowerCase().includes(productSearch.toLowerCase())
     );
 
-    const insetInputStyle = {
-        background: "#eff1f5",
-        border: "none",
-        boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.08), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
-    };
+    const inputStyle = (hasError = false) => ({
+        background: "#ffffff",
+        border: hasError ? "1px solid #ef4444" : "1px solid #e5e7eb",
+        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+    });
 
-    const insetPanelStyle = {
+    const sectionStyle = {
         background: "#f8f9fb",
         boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
     };
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={handleClose} />
-
-            {/* Modal container */}
-            <div className="flex min-h-full items-center justify-center p-4">
-                <div
-                    className="relative bg-white rounded-[18px] w-full max-w-2xl max-h-[90vh] flex flex-col"
-                    style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
-                    onClick={(e) => e.stopPropagation()}
+        <Modal
+            isOpen={isOpen}
+            onClose={handleClose}
+            title="Create New Order"
+            size="md"
+        >
+            <div className="flex flex-col h-full">
+                {/* Close Button - Top Right with Click Animation */}
+                <button
+                    type="button"
+                    onClick={handleClose}
+                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 z-10 active:scale-95 active:shadow-inner"
+                    style={{
+                        background: "#f8f9fb",
+                        boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.6)"
+                    }}
                 >
-                    {/* Sticky Header */}
-                    <div
-                        className="flex items-center justify-between px-6 py-4 shrink-0"
-                        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-                    >
-                        <h2 className="text-lg font-semibold text-gray-900">Create New Order</h2>
+                    <X className="w-5 h-5 text-gray-600" />
+                </button>
+
+                {/* Success State */}
+                {submitSuccess ? (
+                    <div className="space-y-4 max-h-[calc(80vh-140px)] overflow-y-auto pr-2 custom-scrollbar" style={{
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#cbd5e1 transparent'
+                    }}>
+                        <div className="rounded-xl p-4" style={{ background: "rgba(79, 207, 165, 0.08)", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)" }}>
+                            <p className="text-sm text-emerald-800">
+                                Order has been successfully created.
+                            </p>
+                        </div>
+
+                        {/* Done Button - Fixed at Bottom */}
+                        <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+                            borderTop: "1px solid rgba(0,0,0,0.06)",
+                            marginLeft: "-2px",
+                            marginRight: "-2px",
+                            paddingLeft: "2px",
+                            paddingRight: "2px"
+                        }}>
+                            <button
+                                onClick={handleClose}
+                                className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
+                                style={{
+                                    background: "#1f2937",
+                                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                                }}
+                            >
+                                Done
+                            </button>
+                        </div>
                     </div>
+                ) : (
+                    /* Scrollable Form Content */
+                    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                        <div className="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar" style={{
+                            maxHeight: 'calc(80vh - 140px)',
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: '#cbd5e1 transparent'
+                        }}>
+                            {/* Error Message */}
+                            {error && (
+                                <div className="flex items-start gap-3 p-3 rounded-xl" style={{
+                                    background: "#fee",
+                                    border: "1px solid #fcc"
+                                }}>
+                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-red-700">{error}</p>
+                                </div>
+                            )}
 
-                    {/* Scrollable Body */}
-                    <div className="overflow-y-auto flex-1 px-6 py-4">
-                        <form id="add-order-form" onSubmit={handleSubmit}>
-                            <div className="space-y-5">
-                                {/* Error Banner */}
-                                {error && (
-                                    <div
-                                        className="flex items-start gap-2 p-3 rounded-xl text-sm text-red-600"
-                                        style={{ background: "rgba(255, 112, 112, 0.08)", border: "1px solid rgba(255, 112, 112, 0.2)" }}
-                                    >
-                                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                                        <p>{error}</p>
-                                    </div>
-                                )}
+                            {/* Customer Selection Section */}
+                            <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                    Customer
+                                </h3>
 
-                                {/* Customer Selection */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                        Customer <span className="text-red-500">*</span>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Select Customer *
                                     </label>
                                     {selectedUser ? (
                                         <div
                                             className="flex items-center justify-between p-3 rounded-xl"
-                                            style={insetPanelStyle}
+                                            style={{
+                                                background: "#ffffff",
+                                                border: "1px solid #e5e7eb",
+                                                boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                                            }}
                                         >
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">{selectedUser.full_name}</div>
@@ -287,15 +359,15 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                 value={userSearch}
                                                 onChange={(e) => setUserSearch(e.target.value)}
                                                 placeholder="Search customers by name or email..."
-                                                className="w-full pl-9 pr-4 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                                style={insetInputStyle}
+                                                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                                style={inputStyle()}
                                             />
                                             {userSearch && filteredUsers.length > 0 && (
                                                 <div
-                                                    className="absolute z-10 w-full mt-1 rounded-xl max-h-48 overflow-y-auto"
+                                                    className="absolute z-50 w-full mt-1 bg-white rounded-xl max-h-48 overflow-y-auto"
                                                     style={{
-                                                        background: "#fff",
-                                                        boxShadow: "6px 6px 12px rgba(0, 0, 0, 0.08), -6px -6px 12px rgba(255, 255, 255, 0.7)",
+                                                        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)",
+                                                        border: "1px solid #e5e7eb"
                                                     }}
                                                 >
                                                     {filteredUsers.map((user) => (
@@ -303,7 +375,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                             key={user.id}
                                                             type="button"
                                                             onClick={() => { setSelectedUser(user); setUserSearch(""); }}
-                                                            className="w-full px-4 py-2.5 text-left hover:bg-gray-50/80 transition-colors"
+                                                            className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
                                                         >
                                                             <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
                                                             <div className="text-xs text-gray-500">{user.email}</div>
@@ -314,17 +386,27 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
-                                {/* Address Selection */}
-                                {selectedUser && (
+                            {/* Address Selection Section */}
+                            {selectedUser && (
+                                <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                        Delivery Address
+                                    </h3>
+
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                            Delivery Address <span className="text-red-500">*</span>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Select Address *
                                         </label>
                                         {loadingAddresses ? (
                                             <div className="text-sm text-gray-500 py-2">Loading addresses...</div>
                                         ) : addresses.length === 0 ? (
-                                            <div className="text-sm text-gray-500 p-3 rounded-xl" style={insetPanelStyle}>
+                                            <div className="text-sm text-gray-500 p-3 rounded-xl" style={{
+                                                background: "#ffffff",
+                                                border: "1px solid #e5e7eb",
+                                                boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                                            }}>
                                                 No addresses found for this customer.
                                             </div>
                                         ) : (
@@ -339,7 +421,11 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                                     background: "rgba(107, 150, 255, 0.06)",
                                                                     boxShadow: "0 0 0 1.5px #6b96ff, inset 2px 2px 5px rgba(107, 150, 255, 0.04)",
                                                                 }
-                                                                : insetPanelStyle
+                                                                : {
+                                                                    background: "#ffffff",
+                                                                    border: "1px solid #e5e7eb",
+                                                                    boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                                                                }
                                                         }
                                                     >
                                                         <input
@@ -360,14 +446,19 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                             </div>
                                         )}
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {/* Products */}
+                            {/* Products Section */}
+                            <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                    Products
+                                </h3>
+
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                        Products <span className="text-red-500">*</span>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Search & Add Products *
                                     </label>
-
                                     <div className="relative mb-3">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <input
@@ -375,15 +466,15 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                             value={productSearch}
                                             onChange={(e) => setProductSearch(e.target.value)}
                                             placeholder="Search products by name or SKU..."
-                                            className="w-full pl-9 pr-4 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                            style={insetInputStyle}
+                                            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                            style={inputStyle()}
                                         />
                                         {productSearch && filteredProducts.length > 0 && (
                                             <div
-                                                className="absolute z-10 w-full mt-1 rounded-xl max-h-48 overflow-y-auto"
+                                                className="absolute z-50 w-full mt-1 bg-white rounded-xl max-h-48 overflow-y-auto"
                                                 style={{
-                                                    background: "#fff",
-                                                    boxShadow: "6px 6px 12px rgba(0, 0, 0, 0.08), -6px -6px 12px rgba(255, 255, 255, 0.7)",
+                                                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)",
+                                                    border: "1px solid #e5e7eb"
                                                 }}
                                             >
                                                 {filteredProducts.map((product) => (
@@ -391,7 +482,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                         key={product.id}
                                                         type="button"
                                                         onClick={() => handleAddProduct(product)}
-                                                        className="w-full px-4 py-2.5 text-left hover:bg-gray-50/80 transition-colors flex justify-between items-center"
+                                                        className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex justify-between items-center"
                                                     >
                                                         <div>
                                                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
@@ -410,7 +501,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                     {orderItems.length > 0 && (
                                         <div
                                             className="rounded-xl overflow-hidden"
-                                            style={{ border: "1px solid rgba(0,0,0,0.06)" }}
+                                            style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)" }}
                                         >
                                             {orderItems.map((item) => (
                                                 <div
@@ -427,16 +518,8 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleUpdateQuantity(item.product.id, -1)}
-                                                                className="p-1 rounded-lg transition-all"
+                                                                className="p-1 rounded-lg transition-all hover:bg-gray-100"
                                                                 style={{ color: "#6b7280" }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.background = "rgba(0,0,0,0.06)";
-                                                                    e.currentTarget.style.boxShadow = "inset 1px 1px 3px rgba(0,0,0,0.08), inset -1px -1px 3px rgba(255,255,255,0.5)";
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.background = "transparent";
-                                                                    e.currentTarget.style.boxShadow = "none";
-                                                                }}
                                                             >
                                                                 <Minus className="w-3.5 h-3.5" />
                                                             </button>
@@ -444,16 +527,8 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleUpdateQuantity(item.product.id, 1)}
-                                                                className="p-1 rounded-lg transition-all"
+                                                                className="p-1 rounded-lg transition-all hover:bg-gray-100"
                                                                 style={{ color: "#6b7280" }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.background = "rgba(0,0,0,0.06)";
-                                                                    e.currentTarget.style.boxShadow = "inset 1px 1px 3px rgba(0,0,0,0.08), inset -1px -1px 3px rgba(255,255,255,0.5)";
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.background = "transparent";
-                                                                    e.currentTarget.style.boxShadow = "none";
-                                                                }}
                                                             >
                                                                 <Plus className="w-3.5 h-3.5" />
                                                             </button>
@@ -464,16 +539,8 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveItem(item.product.id)}
-                                                            className="p-1 rounded-lg transition-all"
+                                                            className="p-1 rounded-lg transition-all hover:bg-red-50"
                                                             style={{ color: "#ff7070" }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.background = "rgba(255, 112, 112, 0.08)";
-                                                                e.currentTarget.style.boxShadow = "inset 1px 1px 3px rgba(0,0,0,0.06), inset -1px -1px 3px rgba(255,255,255,0.5)";
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.background = "transparent";
-                                                                e.currentTarget.style.boxShadow = "none";
-                                                            }}
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
@@ -490,16 +557,22 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
-                                {/* Payment Method & Reference */}
-                                <div className="grid grid-cols-2 gap-4">
+                            {/* Payment Details Section */}
+                            <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                    Payment Details
+                                </h3>
+
+                                <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Payment Method</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
                                         <select
                                             value={paymentMethod}
                                             onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                                            className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                            style={insetInputStyle}
+                                            className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                            style={inputStyle()}
                                         >
                                             {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
                                                 <option key={value} value={value}>{label}</option>
@@ -507,7 +580,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Payment Reference <span className="text-gray-400">(Optional)</span>
                                         </label>
                                         <input
@@ -515,20 +588,20 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                             value={paymentReference}
                                             onChange={(e) => setPaymentReference(e.target.value)}
                                             placeholder="Transaction ID"
-                                            className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                            style={insetInputStyle}
+                                            className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                            style={inputStyle()}
                                         />
                                     </div>
                                 </div>
 
                                 {/* Initial Status */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Initial Status</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Initial Status</label>
                                     <select
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value as OrderStatus)}
-                                        className="w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                        style={insetInputStyle}
+                                        className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                        style={inputStyle()}
                                     >
                                         {Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => (
                                             <option key={value} value={value}>{config.label}</option>
@@ -536,38 +609,38 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                     </select>
                                 </div>
                             </div>
-                        </form>
-                    </div>
+                        </div>
 
-                    {/* Sticky Footer */}
-                    <div
-                        className="flex items-center justify-end gap-3 px-6 py-4 shrink-0"
-                        style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
-                    >
-                        <button
-                            type="button"
-                            onClick={handleClose}
-                            disabled={loading}
-                            className="clay-btn disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ fontSize: "13px", padding: "6px 18px" }}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            form="add-order-form"
-                            disabled={loading || !selectedUser || !selectedAddress || orderItems.length === 0}
-                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{
-                                background: "#1f2937",
-                                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-                            }}
-                        >
-                            {loading ? "Creating..." : "Create Order"}
-                        </button>
-                    </div>
-                </div>
+                        {/* Submit Button - Fixed Footer at Bottom */}
+                        <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{
+                            borderTop: "1px solid rgba(0,0,0,0.06)",
+                            marginLeft: "-2px",
+                            marginRight: "-2px",
+                            paddingLeft: "2px",
+                            paddingRight: "2px"
+                        }}>
+                            <button
+                                type="submit"
+                                disabled={loading || !selectedUser || !selectedAddress || orderItems.length === 0}
+                                className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                style={{
+                                    background: "#1f2937",
+                                    boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)"
+                                }}
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Creating...</span>
+                                    </>
+                                ) : (
+                                    <span>Create Order</span>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
-        </div>
+        </Modal>
     );
 }

@@ -1,6 +1,6 @@
 import { Users, Stethoscope, BookOpen, TrendingUp, AlertCircle, Package } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getDashboardMetrics, getPendingActions, getTopSellingProducts, getRevenueAnalytics, getOrderStatusAnalytics, type DashboardMetrics, type PendingActions } from "../../services/dashboard.service";
 import OrderStatusDistributionChart, { type OrderStatusData } from "../../components/charts/OrderStatusDistributionChart";
 import RevenueOverTimeChart, { type RevenueDataPoint } from "../../components/charts/RevenueOverTimeChart";
@@ -110,6 +110,20 @@ export default function DashboardView() {
     }, 200);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Handler for revenue chart year/month filter
+  const handleRevenueFilterChange = useCallback(async (year: number, month: number | null) => {
+    try {
+      const res = await getRevenueAnalytics(year, month ?? undefined);
+      setRevenueData(res.data.map(r => ({
+        date: r.date,
+        revenue: r.revenue,
+        orders: r.orders
+      })));
+    } catch (err) {
+      console.error("Error fetching filtered revenue data:", err);
+    }
   }, []);
 
   if (loading) {
@@ -251,7 +265,7 @@ export default function DashboardView() {
             </div>
           ) : (
             <div className="dashboard-chart-container">
-              <RevenueOverTimeChart data={revenueData} />
+              <RevenueOverTimeChart data={revenueData} onFilterChange={handleRevenueFilterChange} />
             </div>
           )}
         </div>

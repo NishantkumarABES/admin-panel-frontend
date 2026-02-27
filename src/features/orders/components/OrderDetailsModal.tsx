@@ -275,7 +275,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                   <div className="flex justify-between">
                     <span className="text-xs text-gray-500">Payment Method</span>
                     <span className="text-sm font-medium text-gray-900">
-                      {PAYMENT_METHOD_LABELS[order.payment_method]}
+                      {order.payment_method}
                     </span>
                   </div>
                   {order.payment_reference && (

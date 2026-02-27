@@ -139,7 +139,7 @@ export default function SettingEditor({
           />
         ) : (
           <div
-            className="rounded-xl p-4 min-h-[400px]"
+            className="rounded-xl p-4 min-h-[400px] max-h-[550px] overflow-y-auto custom-scrollbar"
             style={{
               background: "#f8f9fb",
               boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.5)",
@@ -147,7 +147,8 @@ export default function SettingEditor({
           >
             {content ? (
               <div
-                className="prose prose-sm max-w-none"
+                className="ProseMirror prose prose-sm max-w-none [&_p]:mb-3 [&_br]:block [&_br]:mb-2"
+                style={{ whiteSpace: 'pre-wrap' }}
                 dangerouslySetInnerHTML={{ __html: content }}
               />
             ) : (

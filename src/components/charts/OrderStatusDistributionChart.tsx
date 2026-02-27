@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ORDER_STATUS_CONFIG, type OrderStatus } from '../../features/orders/order.types';
+import { ShoppingBag, CreditCard, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
 
 export interface OrderStatusData {
     status: OrderStatus;
@@ -23,6 +24,10 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 
 export default function OrderStatusDistributionChart({ data }: OrderStatusDistributionChartProps) {
     const totalCount = data.reduce((sum, item) => sum + item.count, 0);
+    const paidCount = data.find(d => d.status === 'paid')?.count ?? 0;
+    const refundedCount = data.find(d => d.status === 'refunded')?.count ?? 0;
+    const deliveredCount = data.find(d => d.status === 'delivered')?.count ?? 0;
+    const cancelledCount = data.find(d => d.status === 'cancelled')?.count ?? 0;
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -44,66 +49,167 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
         return null;
     };
 
-    return (
-        <div className="clay-card">
-            <h3 className="font-semibold text-gray-900" style={{ fontSize: "18px", marginBottom: "8px" }}>Order Status Distribution</h3>
-            <p className="text-sm" style={{ color: "#6b7280", marginBottom: "16px" }}>Distribution of orders across processing stages</p>
-            <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
-                <span className="text-sm" style={{ color: "#6b7280" }}>Total Orders</span>
-                <span className="text-xl font-bold text-gray-900">{totalCount.toLocaleString()}</span>
-            </div>
-            <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                    <Pie
-                        data={data as any}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={140}
-                        innerRadius={70}
-                        fill="#8884d8"
-                        dataKey="count"
-                        nameKey="status"
-                        paddingAngle={2}
-                    >
-                        {data.map((entry, index) => (
-                            <Cell
-                                key={`cell-${index}`}
-                                fill={STATUS_COLORS[entry.status] || '#9ca3af'}
-                                stroke="#f7f8fa"
-                                strokeWidth={2}
-                            />
-                        ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-            </ResponsiveContainer>
+    const paidPct = totalCount > 0 ? ((paidCount / totalCount) * 100).toFixed(1) : '0';
+    const refundedPct = totalCount > 0 ? ((refundedCount / totalCount) * 100).toFixed(1) : '0';
+    const deliveredPct = totalCount > 0 ? ((deliveredCount / totalCount) * 100).toFixed(1) : '0';
+    const cancelledPct = totalCount > 0 ? ((cancelledCount / totalCount) * 100).toFixed(1) : '0';
 
-            {/* Status Count Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" style={{ marginTop: "16px" }}>
-                {data.map((item) => {
-                    const config = ORDER_STATUS_CONFIG[item.status];
-                    const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : '0';
-                    return (
-                        <div
-                            key={item.status}
-                            className="clay-inset flex items-center gap-2"
-                            style={{ padding: "10px 12px" }}
-                        >
-                            <div
-                                className="flex-shrink-0"
-                                style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: STATUS_COLORS[item.status] }}
-                            />
-                            <div className="min-w-0 flex-1">
-                                <div className="text-xs truncate" style={{ color: "#9ca3af" }}>{config?.label || item.status}</div>
-                                <div className="text-sm font-semibold text-gray-900">
-                                    {item.count.toLocaleString()}
-                                    <span className="text-xs font-normal ml-1" style={{ color: "#9ca3af" }}>({percentage}%)</span>
+    return (
+        <div className="clay-card h-full" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Header */}
+            <div>
+                <h3 className="font-semibold text-gray-900" style={{ fontSize: "18px", marginBottom: "4px" }}>Order Status Distribution</h3>
+                <p className="text-sm" style={{ color: "#6b7280" }}>Distribution of orders across processing stages</p>
+            </div>
+
+            {/* Stat Cards Row */}
+            <div className="grid grid-cols-5 gap-3">
+                {/* Total Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(107, 150, 255, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(107, 150, 255, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <ShoppingBag style={{ width: '18px', height: '18px', color: '#6b96ff' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{totalCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Total Orders</div>
+                </div>
+
+                {/* Paid Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(79, 207, 165, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(79, 207, 165, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <CreditCard style={{ width: '18px', height: '18px', color: '#4fcfa5' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{paidCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Paid Orders</div>
+                    <div className="text-xs font-medium" style={{ color: '#4fcfa5', marginTop: '2px' }}>{paidPct}%</div>
+                </div>
+
+                {/* Refunded Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(139, 149, 163, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(139, 149, 163, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <RotateCcw style={{ width: '18px', height: '18px', color: '#8b95a3' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{refundedCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Refunded Orders</div>
+                    <div className="text-xs font-medium" style={{ color: '#ff7070', marginTop: '2px' }}>{refundedPct}%</div>
+                </div>
+
+                {/* Delivered Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(79, 207, 165, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(79, 207, 165, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <CheckCircle style={{ width: '18px', height: '18px', color: '#4fcfa5' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{deliveredCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Delivered</div>
+                    <div className="text-xs font-medium" style={{ color: '#4fcfa5', marginTop: '2px' }}>{deliveredPct}%</div>
+                </div>
+
+                {/* Cancelled Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(255, 112, 112, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(255, 112, 112, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <XCircle style={{ width: '18px', height: '18px', color: '#ff7070' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{cancelledCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Cancelled</div>
+                    <div className="text-xs font-medium" style={{ color: '#ff7070', marginTop: '2px' }}>{cancelledPct}%</div>
+                </div>
+            </div>
+
+            {/* Chart + Legend Row */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* Donut Chart */}
+                <div style={{ flex: '1 1 220px', minWidth: '200px' }}>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <PieChart>
+                            <Pie
+                                data={data as any}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={115}
+                                innerRadius={60}
+                                fill="#8884d8"
+                                dataKey="count"
+                                nameKey="status"
+                                paddingAngle={2}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={STATUS_COLORS[entry.status] || '#9ca3af'}
+                                        stroke="#f7f8fa"
+                                        strokeWidth={2}
+                                    />
+                                ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Legend List */}
+                <div style={{ flex: '1 1 180px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '160px' }}>
+                    {data.map((item) => {
+                        const config = ORDER_STATUS_CONFIG[item.status];
+                        const pct = totalCount > 0 ? ((item.count / totalCount) * 100) : 0;
+                        return (
+                            <div key={item.status} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{
+                                    width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0,
+                                    backgroundColor: STATUS_COLORS[item.status]
+                                }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '3px' }}>
+                                        <span className="text-xs" style={{ color: '#374151', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {config?.label || item.status}
+                                        </span>
+                                        <span className="text-xs font-semibold" style={{ color: '#111827', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                                            {item.count.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    {/* Mini progress bar */}
+                                    <div style={{ height: '4px', borderRadius: '2px', background: '#f0f1f3', overflow: 'hidden' }}>
+                                        <div style={{
+                                            height: '100%', borderRadius: '2px',
+                                            background: STATUS_COLORS[item.status],
+                                            width: `${pct}%`,
+                                            transition: 'width 0.6s ease'
+                                        }} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

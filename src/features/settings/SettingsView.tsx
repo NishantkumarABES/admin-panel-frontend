@@ -82,10 +82,21 @@ export default function SettingsView() {
   };
 
   const handleSave = async (type: SettingType, data: UpdateSettingDTO) => {
-    const updatedSetting = await settingsService.updateSetting(type, data);
+    const response = await settingsService.updateSetting(type, data);
+    // Handle both response shapes: wrapped { data: SettingItem[] } or direct SettingItem
+    let updatedItem: SettingItem | null = null;
+    if (Array.isArray((response as any).data)) {
+      updatedItem = (response as any).data.find((s: SettingItem) => s.type === type) || (response as any).data[0];
+    } else if ((response as any).content !== undefined) {
+      updatedItem = response as unknown as SettingItem;
+    }
+    // Fallback: preserve the content that was just saved
+    if (!updatedItem) {
+      updatedItem = { ...settings[type], content: data.content } as SettingItem;
+    }
     setSettings((prev) => ({
       ...prev,
-      [type]: updatedSetting,
+      [type]: updatedItem,
     }));
   };
 
