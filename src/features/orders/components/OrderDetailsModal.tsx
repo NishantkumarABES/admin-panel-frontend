@@ -1,7 +1,7 @@
 import { User, MapPin, Package, CreditCard, Clock, FileText } from "lucide-react";
 import type { Order } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
-import { PAYMENT_METHOD_LABELS } from "../order.types";
+// import { PAYMENT_METHOD_LABELS } from "../order.types";
 import productPlaceholder from "../../../assets/placeholders/product.png";
 
 interface OrderDetailsModalProps {
