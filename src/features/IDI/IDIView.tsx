@@ -212,7 +212,7 @@ export default function IDIView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+          <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Total Drugs</div>
         </div>
 
@@ -229,7 +229,7 @@ export default function IDIView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold" style={{ color: "#6b96ff", marginBottom: "2px" }}>{stats.published}</div>
+          <div className="text-2xl font-bold" style={{ color: "#6b96ff", marginBottom: "2px" }}>{stats.published}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Published</div>
         </div>
 
@@ -246,7 +246,7 @@ export default function IDIView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.draft}</div>
+          <div className="text-2xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.draft}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Draft</div>
         </div>
       </div>

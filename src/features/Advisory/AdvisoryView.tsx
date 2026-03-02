@@ -251,7 +251,7 @@ export default function AdvisoryView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+            <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Total Members</div>
         </div>
@@ -272,7 +272,7 @@ export default function AdvisoryView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.active}</div>
+            <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.active}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Active</div>
         </div>
@@ -293,7 +293,7 @@ export default function AdvisoryView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#ffc554", marginBottom: "2px" }}>{stats.inactive}</div>
+            <div className="text-2xl font-bold" style={{ color: "#ffc554", marginBottom: "2px" }}>{stats.inactive}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Inactive</div>
         </div>

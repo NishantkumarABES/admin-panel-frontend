@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X, HelpCircle, Package, CheckSquare, XSquare, Tag } from "lucide-react";
 import type { Product, CreateProductDTO, ProductAnalytics, ProductStatus } from "./product.types";
-import { mockProducts, PRODUCT_CATEGORIES } from "./product.types";
+import { mockProducts, PRODUCT_CATEGORIES, PRODUCT_CATEGORY_LABELS } from "./product.types";
 import { type CreateCouponDTO, type Coupon, type UpdateCouponDTO } from "./coupon.types";
 import ProductTable from "./components/ProductTable";
 import ProductDetailsModal from "./components/ProductDetailsModal";
@@ -266,13 +266,14 @@ export default function ProductsView() {
     setUserTypeFilter("all");
   };
 
-  const filteredCategories = PRODUCT_CATEGORIES.filter((category) =>
-    category.toLowerCase().includes(categorySearchTerm.toLowerCase())
-  );
+  const filteredCategories = PRODUCT_CATEGORIES.filter((category) => {
+    const label = PRODUCT_CATEGORY_LABELS[category] || category;
+    return label.toLowerCase().includes(categorySearchTerm.toLowerCase());
+  });
 
   const getCategoryDisplayLabel = () => {
     if (categoryFilter === "all") return "All Categories";
-    return categoryFilter;
+    return PRODUCT_CATEGORY_LABELS[categoryFilter] || categoryFilter;
   };
 
   const hasActiveFilters = searchTerm || statusFilter !== "all" || categoryFilter !== "all" || userTypeFilter !== "all";
@@ -343,7 +344,7 @@ export default function ProductsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+            <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Total Products</div>
         </div>
@@ -364,7 +365,7 @@ export default function ProductsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.instock}</div>
+            <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.instock}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>In Stock</div>
         </div>
@@ -385,7 +386,7 @@ export default function ProductsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#ff7070", marginBottom: "2px" }}>{stats.outofstock}</div>
+            <div className="text-2xl font-bold" style={{ color: "#ff7070", marginBottom: "2px" }}>{stats.outofstock}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Out of Stock</div>
         </div>
@@ -464,7 +465,7 @@ export default function ProductsView() {
                               onClick={() => { setCategoryFilter(category); setIsCategoryDropdownOpen(false); setCategorySearchTerm(""); }}
                               className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${categoryFilter === category ? "bg-gray-50 font-medium" : ""}`}
                             >
-                              {category}
+                              {PRODUCT_CATEGORY_LABELS[category] || category}
                             </button>
                           ))
                         ) : (

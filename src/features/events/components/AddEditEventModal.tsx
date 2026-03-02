@@ -892,14 +892,24 @@ export default function AddEditEventModal({
                           </div>
                           <div className="col-span-2">
                             <label className="block text-xs font-medium text-gray-600 mb-1">Bio</label>
-                            <textarea
-                              value={speaker.bio || ""}
-                              onChange={(e) => handleSpeakerChange(index, 'bio', e.target.value)}
-                              className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                              style={inputStyle()}
-                              placeholder="Brief biography..."
-                              rows={2}
-                            />
+                            <div className="relative">
+                              <textarea
+                                value={speaker.bio || ""}
+                                onChange={(e) => {
+                                  if (e.target.value.length <= 500) {
+                                    handleSpeakerChange(index, 'bio', e.target.value);
+                                  }
+                                }}
+                                maxLength={500}
+                                className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                style={inputStyle()}
+                                placeholder="Brief biography..."
+                                rows={2}
+                              />
+                              <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                                {(speaker.bio || "").length}/500
+                              </div>
+                            </div>
                           </div>
                           <div className="col-span-2">
                             <label className="block text-xs font-medium text-gray-600 mb-1">Speaker Image</label>

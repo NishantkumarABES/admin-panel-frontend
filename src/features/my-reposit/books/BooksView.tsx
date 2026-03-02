@@ -181,7 +181,7 @@ export default function BooksView() {
                                 {analyticsLoading ? (
                                     <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
                                 ) : (
-                                    <div className="text-xl font-bold" style={{ color: stat.color, marginBottom: "2px" }}>{stat.value}</div>
+                                    <div className="text-2xl font-bold" style={{ color: stat.color, marginBottom: "2px" }}>{stat.value}</div>
                                 )}
                                 <div className="text-xs" style={{ color: "#111827" }}>{stat.label}</div>
                             </div>

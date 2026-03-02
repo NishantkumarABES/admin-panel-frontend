@@ -301,7 +301,7 @@ export default function OrdersView() {
           </div>
 
           {/* Orders Table */}
-          <div className="clay-card overflow-hidden" style={{ padding: 0, maxHeight: "520px", display: "flex", flexDirection: "column" }}>
+          <div className="clay-card overflow-hidden" style={{ padding: 0, maxHeight: "438px", display: "flex", flexDirection: "column" }}>
             {loading ? (
               /* Skeleton Loading Rows */
               <div className="w-full">

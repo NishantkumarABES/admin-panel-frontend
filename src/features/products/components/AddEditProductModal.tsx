@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import type { Product, CreateProductDTO } from "../product.types";
-import { PRODUCT_CATEGORIES } from "../product.types";
+import { PRODUCT_CATEGORIES, PRODUCT_CATEGORY_LABELS } from "../product.types";
 import Modal from "../../../components/common/Modal";
 import { ChevronDown, Search, AlertCircle, X, Upload } from "lucide-react";
 
@@ -114,9 +114,10 @@ export default function AddEditProductModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredCategories = PRODUCT_CATEGORIES.filter((category) =>
-    category.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+  const filteredCategories = PRODUCT_CATEGORIES.filter((category) => {
+    const label = PRODUCT_CATEGORY_LABELS[category] || category;
+    return label.toLowerCase().includes(categorySearch.toLowerCase());
+  });
 
   const MAX_IMAGES = 5;
 
@@ -218,7 +219,7 @@ export default function AddEditProductModal({
   };
 
   const getCategoryName = (categoryId: string) => {
-    return PRODUCT_CATEGORIES.find(c => c === categoryId) || categoryId;
+    return PRODUCT_CATEGORY_LABELS[categoryId] || categoryId;
   };
 
   return (
@@ -419,7 +420,7 @@ export default function AddEditProductModal({
                                   }`}
                                 onClick={() => handleCategorySelect(category)}
                               >
-                                {category}
+                                {PRODUCT_CATEGORY_LABELS[category] || category}
                               </div>
                             ))
                           ) : (

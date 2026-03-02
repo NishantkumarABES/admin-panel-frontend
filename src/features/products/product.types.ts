@@ -124,8 +124,28 @@ export const PRODUCT_CATEGORIES = [
   'diagnostics',
   'ppe',
   'monitoring',
-  'supplies'
+  'supplies',
+  'medicine',
+  'skin_care',
+  'vitamins_minerals',
+  'baby_care',
+  'pain_relief',
+  'diabetic_care',
+  'protein_supplements',
+  'personal_care_hygiene',
 ] as const;
 
-
-
+export const PRODUCT_CATEGORY_LABELS: Record<string, string> = {
+  diagnostics: 'Diagnostics',
+  ppe: 'PPE',
+  monitoring: 'Monitoring',
+  supplies: 'Supplies',
+  medicine: 'Medicine',
+  skin_care: 'Skin Care',
+  vitamins_minerals: 'Vitamins & Minerals',
+  baby_care: 'Baby Care',
+  pain_relief: 'Pain Relief',
+  diabetic_care: 'Diabetic Care',
+  protein_supplements: 'Protein Supplements',
+  personal_care_hygiene: 'Personal Care & Hygiene',
+};

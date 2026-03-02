@@ -304,7 +304,7 @@ export default function DoctorsView() {
             {analyticsLoading ? (
               <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
             ) : (
-              <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+              <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
             )}
             <div className="text-xs" style={{ color: "#111827" }}>Total Doctors</div>
           </div>
@@ -324,7 +324,7 @@ export default function DoctorsView() {
             {analyticsLoading ? (
               <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
             ) : (
-              <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.active}</div>
+              <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.active}</div>
             )}
             <div className="text-xs" style={{ color: "#111827" }}>Active</div>
           </div>
@@ -344,7 +344,7 @@ export default function DoctorsView() {
             {analyticsLoading ? (
               <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
             ) : (
-              <div className="text-xl font-bold" style={{ color: "#ffc554", marginBottom: "2px" }}>{stats.inactive}</div>
+              <div className="text-2xl font-bold" style={{ color: "#ffc554", marginBottom: "2px" }}>{stats.inactive}</div>
             )}
             <div className="text-xs" style={{ color: "#111827" }}>Inactive</div>
           </div>
@@ -364,7 +364,7 @@ export default function DoctorsView() {
             {analyticsLoading ? (
               <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
             ) : (
-              <div className="text-xl font-bold" style={{ color: "#a285ff", marginBottom: "2px" }}>{stats.created}</div>
+              <div className="text-2xl font-bold" style={{ color: "#a285ff", marginBottom: "2px" }}>{stats.created}</div>
             )}
             <div className="text-xs" style={{ color: "#111827" }}>Created</div>
           </div>
@@ -376,7 +376,7 @@ export default function DoctorsView() {
               </div>
               <div className="group relative">
                 <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
+                <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 p-3 text-xs rounded-xl z-50" style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", boxShadow: "4px 4px 10px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.7), 0 0 0 1px rgba(0,0,0,0.06)", color: "#374151" }}>
                   Accounts that have been permanently deleted by the user.
                 </div>
               </div>
@@ -384,7 +384,7 @@ export default function DoctorsView() {
             {analyticsLoading ? (
               <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
             ) : (
-              <div className="text-xl font-bold" style={{ color: "#ff7070", marginBottom: "2px" }}>{stats.deleted}</div>
+              <div className="text-2xl font-bold" style={{ color: "#ff7070", marginBottom: "2px" }}>{stats.deleted}</div>
             )}
             <div className="text-xs" style={{ color: "#111827" }}>Deleted</div>
           </div>
