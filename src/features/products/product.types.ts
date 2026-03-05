@@ -21,6 +21,7 @@ export interface Product {
   stock_quantity: number;
   for_patients: boolean;
   for_doctors: boolean;
+  is_refundable: boolean;
   images: ProductImage[];
   created_at: string;
   updated_at: string;
@@ -54,6 +55,7 @@ export interface CreateProductDTO {
   stock_quantity: number;
   for_patients: boolean;
   for_doctors: boolean;
+  is_refundable: boolean;
   images?: File[];
   deleted_image_ids?: string[];
 }
@@ -78,6 +80,7 @@ export const mockProducts: Product[] = [
     stock_quantity: 500,
     for_patients: true,
     for_doctors: false,
+    is_refundable: false,
     images: [],
     created_at: "2024-01-15T10:00:00Z",
     updated_at: "2024-01-15T10:00:00Z",
@@ -96,6 +99,7 @@ export const mockProducts: Product[] = [
     stock_quantity: 300,
     for_patients: false,
     for_doctors: true,
+    is_refundable: true,
     images: [],
     created_at: "2024-01-16T11:30:00Z",
     updated_at: "2024-01-16T11:30:00Z",
@@ -114,6 +118,7 @@ export const mockProducts: Product[] = [
     stock_quantity: 0,
     for_patients: true,
     for_doctors: true,
+    is_refundable: false,
     images: [],
     created_at: "2024-01-17T14:00:00Z",
     updated_at: "2024-01-17T14:00:00Z",

@@ -86,6 +86,52 @@ export const pageHelpContent: Record<string, HelpContent> = {
             "Out-of-stock items appear in pending actions on dashboard"
         ]
     },
+    "/coupons": {
+        name: "Coupons",
+        description: "Manage promotional discount codes for your products. Create, edit, and track coupon usage to boost sales and customer engagement.",
+        features: [
+            "Search coupons by code",
+            "Filter by coupon type (percentage, fixed amount)",
+            "Filter by status (active/inactive)",
+            "View detailed coupon information",
+            "Track coupon usage statistics"
+        ],
+        actions: [
+            "Click 'Create Coupon' to create a new discount code",
+            "Click the eye icon to view coupon details",
+            "Click the edit icon to modify coupon settings",
+            "Toggle status to enable/disable a coupon",
+            "Click the delete icon to remove a coupon"
+        ],
+        tips: [
+            "Use percentage discounts for broader promotions",
+            "Set expiration dates to create urgency",
+            "Monitor usage limits to control promotion costs"
+        ]
+    },
+    "/banners": {
+        name: "Application Banners",
+        description: "Manage promotional banners displayed in the mobile app. Create eye-catching banners to highlight campaigns, categories, and special offers.",
+        features: [
+            "Create and manage app banners with images",
+            "Set redirect categories for banner taps",
+            "Control display order priority",
+            "Toggle banner visibility (active/inactive)",
+            "Search and filter banners"
+        ],
+        actions: [
+            "Click 'Create Banner' to add a new promotional banner",
+            "Click the edit icon to modify banner content",
+            "Toggle the status badge to activate/deactivate",
+            "Click the delete icon to remove a banner",
+            "Set display order to prioritize banners"
+        ],
+        tips: [
+            "Use high-quality images with 16:9 aspect ratio",
+            "Lower order numbers display first in the app",
+            "Keep banners relevant and update them regularly"
+        ]
+    },
     "/orders": {
         name: "Orders",
         description: "Track and manage all product orders. Monitor order status, process payments, update shipping information, and handle customer orders efficiently.",

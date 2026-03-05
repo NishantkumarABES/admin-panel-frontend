@@ -22,6 +22,7 @@ const initialFormData: CreateProductDTO = {
   stock_quantity: 0,
   for_patients: false,
   for_doctors: false,
+  is_refundable: false,
   images: [],
 };
 
@@ -81,6 +82,7 @@ export default function AddEditProductModal({
         stock_quantity: product.stock_quantity,
         for_patients: product.for_patients,
         for_doctors: product.for_doctors,
+        is_refundable: product.is_refundable,
         images: [],
       });
       if (product.images && product.images.length > 0) {
@@ -640,6 +642,33 @@ export default function AddEditProductModal({
                       {errors.for_patients}
                     </p>
                   )}
+                </div>
+
+                {/* Refundable Toggle */}
+                <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Refundable
+                      </label>
+                      <p className="text-xs text-gray-500 mt-0.5">Is this product eligible for refunds?</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, is_refundable: !formData.is_refundable })}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                      style={{
+                        background: formData.is_refundable ? "#1f2937" : "#d1d5db",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.1)"
+                      }}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.is_refundable ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        style={{ boxShadow: "1px 1px 3px rgba(0, 0, 0, 0.15)" }}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
 

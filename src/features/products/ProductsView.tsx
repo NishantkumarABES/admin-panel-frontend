@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X, HelpCircle, Package, CheckSquare, XSquare, Tag } from "lucide-react";
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X, HelpCircle, Package, CheckSquare, XSquare } from "lucide-react";
 import type { Product, CreateProductDTO, ProductAnalytics, ProductStatus } from "./product.types";
 import { mockProducts, PRODUCT_CATEGORIES, PRODUCT_CATEGORY_LABELS } from "./product.types";
-import { type CreateCouponDTO, type Coupon, type UpdateCouponDTO } from "./coupon.types";
 import ProductTable from "./components/ProductTable";
 import ProductDetailsModal from "./components/ProductDetailsModal";
 import AddEditProductModal from "./components/AddEditProductModal";
-import CouponTable from "./components/CouponTable";
-import AddEditCouponModal from "./components/AddEditCouponModal";
-import CouponDetailsModal from "./components/CouponDetailsModal";
-import ConfirmDialog from "../../components/common/ConfirmDialog";
 import * as productService from "../../services/product.service";
-import * as couponService from "../../services/coupon.service";
 
 export default function ProductsView() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -40,16 +34,7 @@ export default function ProductsView() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
 
-  // Coupon states
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [couponsLoading, setCouponsLoading] = useState(true);
-  const [couponSearchTerm, setCouponSearchTerm] = useState("");
-  const [couponTypeFilter, setCouponTypeFilter] = useState<string>("all");
-  const [couponStatusFilter, setCouponStatusFilter] = useState<string>("all");
-  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
-  const [isAddEditCouponModalOpen, setIsAddEditCouponModalOpen] = useState(false);
-  const [isDeleteCouponDialogOpen, setIsDeleteCouponDialogOpen] = useState(false);
-  const [isCouponDetailsModalOpen, setIsCouponDetailsModalOpen] = useState(false);
+
 
   // Fetch products analytics
   const fetchAnalytics = async () => {
@@ -134,44 +119,14 @@ export default function ProductsView() {
     }
   };
 
-  // Fetch coupons
-  const fetchCoupons = async () => {
-    try {
-      setCouponsLoading(true);
-      const filters: any = {};
-      if (couponSearchTerm) filters.search = couponSearchTerm;
-      if (couponTypeFilter !== "all") filters.coupon_type = couponTypeFilter;
-      if (couponStatusFilter !== "all") filters.is_active = couponStatusFilter === "active";
-
-      const response = await couponService.getCoupons(filters);
-      const couponsData = response.data?.results || response.data;
-      if (Array.isArray(couponsData)) {
-        setCoupons(couponsData);
-      } else {
-        setCoupons([]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch coupons:", error);
-      setCoupons([]);
-    } finally {
-      setCouponsLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchAnalytics();
-    fetchCoupons();
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => { fetchProducts(); }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm, statusFilter, categoryFilter, currentPage, pageSize, userTypeFilter]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => { fetchCoupons(); }, 300);
-    return () => clearTimeout(timer);
-  }, [couponSearchTerm, couponTypeFilter, couponStatusFilter]);
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, categoryFilter, userTypeFilter]);
 
@@ -214,50 +169,7 @@ export default function ProductsView() {
     }
   };
 
-  const handleCouponSubmit = async (data: CreateCouponDTO | UpdateCouponDTO): Promise<{ error?: string }> => {
-    try {
-      if ('id' in data && data.id) {
-        await couponService.updateCoupon(data as UpdateCouponDTO);
-      } else {
-        await couponService.createCoupon(data as CreateCouponDTO);
-      }
-      fetchCoupons();
-      return {};
-    } catch (error: any) {
-      console.error("Failed to save coupon:", error);
-      const errorMessage = error?.response?.data?.message
-        || error?.response?.data?.error
-        || error?.message
-        || "Failed to save coupon. Please try again.";
-      return { error: errorMessage };
-    }
-  };
 
-  const handleViewCoupon = (coupon: Coupon) => { setSelectedCoupon(coupon); setIsCouponDetailsModalOpen(true); };
-  const handleCreateCoupon = () => { setSelectedCoupon(null); setIsAddEditCouponModalOpen(true); };
-  const handleEditCoupon = (coupon: Coupon) => { setSelectedCoupon(coupon); setIsAddEditCouponModalOpen(true); };
-  const handleDeleteCoupon = (coupon: Coupon) => { setSelectedCoupon(coupon); setIsDeleteCouponDialogOpen(true); };
-
-  const handleToggleCouponStatus = async (coupon: Coupon) => {
-    try {
-      await couponService.updateCoupon({ id: coupon.id, is_active: !coupon.is_active });
-      fetchCoupons();
-    } catch (error) {
-      console.error("Failed to toggle coupon status:", error);
-    }
-  };
-
-  const handleConfirmDeleteCoupon = async () => {
-    if (!selectedCoupon) return;
-    try {
-      await couponService.deleteCoupon(selectedCoupon.id);
-      fetchCoupons();
-      setIsDeleteCouponDialogOpen(false);
-      setSelectedCoupon(null);
-    } catch (error) {
-      console.error("Failed to delete coupon:", error);
-    }
-  };
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -296,13 +208,7 @@ export default function ProductsView() {
     return pages;
   };
 
-  const handleClearCouponFilters = () => {
-    setCouponSearchTerm("");
-    setCouponTypeFilter("all");
-    setCouponStatusFilter("all");
-  };
 
-  const hasCouponActiveFilters = couponSearchTerm || couponTypeFilter !== "all" || couponStatusFilter !== "all";
 
   const stats = analytics
     ? {
@@ -677,153 +583,6 @@ export default function ProductsView() {
         )}
       </div>
 
-      {/* Coupons Section */}
-      <div className="clay-card overflow-hidden" style={{ padding: 0 }}>
-        {/* Coupon Section Header */}
-        <div
-          className="px-5 py-3 flex items-center gap-2"
-          style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-        >
-          <div className="clay-circle" style={{ background: "rgba(162, 133, 255, 0.08)", width: "32px", height: "32px" }}>
-            <Tag className="w-4 h-4" style={{ color: "#a285ff" }} />
-          </div>
-          <h2 className="text-sm font-semibold text-gray-900">Coupons Management</h2>
-        </div>
-
-        {/* Coupon Filters */}
-        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#fafbfc" }}>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4 min-w-0">
-            {/* Left side: Search + Filters */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:gap-3 min-w-0 flex-1">
-              {/* Search */}
-              <div className="flex-1 min-w-0 w-full sm:min-w-64 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={couponSearchTerm}
-                  onChange={(e) => setCouponSearchTerm(e.target.value)}
-                  placeholder="Search coupons by code..."
-                  className="w-full pl-9 pr-4 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  style={insetInputStyle}
-                />
-              </div>
-
-              {/* Type Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-36">
-                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
-                <select
-                  value={couponTypeFilter}
-                  onChange={(e) => setCouponTypeFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                  style={insetInputStyle}
-                >
-                  <option value="all">All Types</option>
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed Amount</option>
-                </select>
-              </div>
-
-              {/* Status Filter */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial sm:min-w-36">
-                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
-                <select
-                  value={couponStatusFilter}
-                  onChange={(e) => setCouponStatusFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-0"
-                  style={insetInputStyle}
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              {/* Clear Coupon Filters */}
-              {hasCouponActiveFilters && (
-                <button
-                  onClick={handleClearCouponFilters}
-                  className="clay-btn text-sm whitespace-nowrap"
-                  style={{ padding: "6px 14px", fontSize: "13px" }}
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-
-            {/* Create Coupon Button */}
-            <div className="flex justify-end lg:justify-normal shrink-0">
-              <button
-                onClick={handleCreateCoupon}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
-                style={{
-                  background: "#1f2937",
-                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-                }}
-              >
-                <Plus className="w-4 h-4" />
-                Create Coupon
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Coupon Table */}
-        {couponsLoading ? (
-          /* Skeleton Loading Rows */
-          <div className="w-full">
-            <div
-              className="px-4 py-3"
-              style={{ background: "#f8f9fb", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-24 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse ml-auto" />
-              </div>
-            </div>
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 px-4 py-4 animate-pulse"
-                style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}
-              >
-                {/* Code */}
-                <div className="w-28 h-4 bg-gray-200 rounded" />
-                {/* Type */}
-                <div className="w-20 h-6 bg-gray-200 rounded-lg" />
-                {/* Value */}
-                <div className="w-16 h-3.5 bg-gray-200 rounded" />
-                {/* Min Order */}
-                <div className="w-16 h-3.5 bg-gray-200 rounded" />
-                {/* Status */}
-                <div className="w-20 h-6 bg-gray-200 rounded-full" />
-                {/* Actions */}
-                <div className="flex gap-1.5 ml-auto">
-                  <div className="w-7 h-7 bg-gray-200 rounded-lg" />
-                  <div className="w-7 h-7 bg-gray-200 rounded-lg" />
-                  <div className="w-7 h-7 bg-gray-200 rounded-lg" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : coupons.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No coupons found. Create a coupon to get started.
-          </div>
-        ) : (
-          <CouponTable
-            coupons={coupons}
-            onView={handleViewCoupon}
-            onEdit={handleEditCoupon}
-            onDelete={handleDeleteCoupon}
-            onToggleStatus={handleToggleCouponStatus}
-          />
-        )}
-      </div>
-
       {/* Modals */}
       <ProductDetailsModal
         product={selectedProduct}
@@ -839,38 +598,6 @@ export default function ProductsView() {
           setSelectedProduct(null);
         }}
         onSubmit={handleAddEditSubmit}
-      />
-
-      <CouponDetailsModal
-        coupon={selectedCoupon}
-        isOpen={isCouponDetailsModalOpen}
-        onClose={() => {
-          setIsCouponDetailsModalOpen(false);
-          setSelectedCoupon(null);
-        }}
-      />
-
-      <AddEditCouponModal
-        coupon={selectedCoupon}
-        isOpen={isAddEditCouponModalOpen}
-        onClose={() => {
-          setIsAddEditCouponModalOpen(false);
-          setSelectedCoupon(null);
-        }}
-        onSubmit={handleCouponSubmit}
-      />
-
-      <ConfirmDialog
-        isOpen={isDeleteCouponDialogOpen}
-        onClose={() => {
-          setIsDeleteCouponDialogOpen(false);
-          setSelectedCoupon(null);
-        }}
-        onConfirm={handleConfirmDeleteCoupon}
-        title="Delete Coupon"
-        message={`Are you sure you want to delete coupon "${selectedCoupon?.code}"? This action cannot be undone.`}
-        confirmText="Delete"
-        variant="danger"
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Coupon, CreateCouponDTO, UpdateCouponDTO } from "../features/products/coupon.types";
+import type { Coupon, CreateCouponDTO, UpdateCouponDTO } from "../features/coupon/coupon.types";
 
 export interface CouponFilters {
   page?: number;
