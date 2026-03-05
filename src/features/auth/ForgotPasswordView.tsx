@@ -26,7 +26,7 @@ export default function ForgotPasswordView() {
         setIsLoading(true);
 
         try {
-            await api.post("/auth/forgot-password/", { email });
+            await api.post("auth/admin/forgot-password/request/", { email });
             setSuccess("A verification code has been sent to your email.");
             setStep("otp");
         } catch (err: any) {
@@ -48,7 +48,7 @@ export default function ForgotPasswordView() {
         setIsLoading(true);
 
         try {
-            await api.post("/auth/verify-otp/", { email, otp });
+            await api.post("auth/admin/forgot-password/verify/", { email, otp });
             setSuccess("Code verified! Set your new password.");
             setStep("reset");
         } catch (err: any) {
@@ -81,9 +81,8 @@ export default function ForgotPasswordView() {
         setIsLoading(true);
 
         try {
-            await api.post("/auth/reset-password/", {
+            await api.post("/auth/admin/forgot-password/reset/", {
                 email,
-                otp,
                 new_password: newPassword,
             });
             setIsComplete(true);
@@ -131,10 +130,10 @@ export default function ForgotPasswordView() {
                         <div key={s.key} className="flex items-center gap-2">
                             <div
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${idx < currentStepIndex
-                                        ? "bg-green-100 text-green-700"
-                                        : idx === currentStepIndex
-                                            ? "bg-gray-900 text-white"
-                                            : "bg-gray-100 text-gray-400"
+                                    ? "bg-green-100 text-green-700"
+                                    : idx === currentStepIndex
+                                        ? "bg-gray-900 text-white"
+                                        : "bg-gray-100 text-gray-400"
                                     }`}
                             >
                                 {idx < currentStepIndex ? (
@@ -165,7 +164,7 @@ export default function ForgotPasswordView() {
                             <p className="text-sm text-green-700">{success}</p>
                             <Link
                                 to="/login"
-                                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors"
+                                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-md text-sm font-medium !text-white bg-gray-900 hover:bg-gray-800 transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                                 Back to Sign In

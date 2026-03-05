@@ -1,4 +1,4 @@
-import { Package, Tag, IndianRupee, FileText, Box } from "lucide-react";
+import { Package, Tag, IndianRupee, FileText, Box, RefreshCw } from "lucide-react";
 import type { Product } from "../product.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 import productPlaceholder from "../../../assets/placeholders/product.png";
@@ -51,7 +51,7 @@ export default function ProductDetailsModal({
       {/* Modal container */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="relative bg-white rounded-[18px] w-full max-w-lg max-h-[90vh] flex flex-col"
+          className="relative bg-white rounded-[18px] w-full max-w-2xl max-h-[90vh] flex flex-col"
           style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -141,6 +141,18 @@ export default function ProductDetailsModal({
                 value={
                   <span className="font-medium text-red-500">
                     {product.tax_percentage}%
+                  </span>
+                }
+              />
+              <InfoItem
+                icon={RefreshCw}
+                label="Refundable"
+                value={
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${product.is_refundable
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-gray-100 text-gray-600"
+                    }`}>
+                    {product.is_refundable ? "Yes" : "No"}
                   </span>
                 }
               />

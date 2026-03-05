@@ -274,7 +274,7 @@ export default function TopicsView() {
             </div>
           ) : (
             <>
-              <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+              <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
               <div className="text-xs" style={{ color: "#111827" }}>Total Topics</div>
             </>
           )}
@@ -300,7 +300,7 @@ export default function TopicsView() {
             </div>
           ) : (
             <>
-              <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.published}</div>
+              <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.published}</div>
               <div className="text-xs" style={{ color: "#111827" }}>Published</div>
             </>
           )}
@@ -326,7 +326,7 @@ export default function TopicsView() {
             </div>
           ) : (
             <>
-              <div className="text-xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.unpublished}</div>
+              <div className="text-2xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.unpublished}</div>
               <div className="text-xs" style={{ color: "#111827" }}>Unpublished</div>
             </>
           )}

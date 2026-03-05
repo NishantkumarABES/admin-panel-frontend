@@ -1,4 +1,4 @@
-import { User, MapPin, Package, CreditCard, Clock, FileText } from "lucide-react";
+import { User, MapPin, Package, CreditCard, Clock, FileText, RotateCcw } from "lucide-react";
 import type { Order } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
 // import { PAYMENT_METHOD_LABELS } from "../order.types";
@@ -8,9 +8,10 @@ interface OrderDetailsModalProps {
   order: Order | null;
   isOpen: boolean;
   onClose: () => void;
+  onInitiateRefund?: (order: Order) => void;
 }
 
-export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalProps) {
+export default function OrderDetailsModal({ order, isOpen, onClose, onInitiateRefund }: OrderDetailsModalProps) {
   if (!isOpen || !order) return null;
 
   const formatDate = (dateString: string) => {
@@ -339,13 +340,31 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
             style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
           >
             <div className="text-xs text-gray-400">Order ID: {order.id}</div>
-            <button
-              onClick={onClose}
-              className="clay-btn"
-              style={{ fontSize: "13px", padding: "6px 18px" }}
-            >
-              Close
-            </button>
+            <div className="flex items-center gap-2">
+              {onInitiateRefund && (order.status === "delivered" || order.status === "paid") && (
+                <button
+                  onClick={() => { onClose(); onInitiateRefund(order); }}
+                  className="flex items-center gap-1.5 text-sm font-medium rounded-xl hover:opacity-90 transition-all"
+                  style={{
+                    padding: "6px 18px",
+                    fontSize: "13px",
+                    background: "rgba(255, 112, 112, 0.08)",
+                    color: "#ff7070",
+                    border: "1px solid rgba(255, 112, 112, 0.2)",
+                  }}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Initiate Refund
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="clay-btn"
+                style={{ fontSize: "13px", padding: "6px 18px" }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>

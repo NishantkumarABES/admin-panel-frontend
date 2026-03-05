@@ -201,7 +201,7 @@ export default function EventsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+            <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Total Events</div>
         </div>
@@ -222,7 +222,7 @@ export default function EventsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#6b96ff", marginBottom: "2px" }}>{stats.upcoming}</div>
+            <div className="text-2xl font-bold" style={{ color: "#6b96ff", marginBottom: "2px" }}>{stats.upcoming}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Upcoming</div>
         </div>
@@ -243,7 +243,7 @@ export default function EventsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.ongoing}</div>
+            <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.ongoing}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Ongoing</div>
         </div>
@@ -264,7 +264,7 @@ export default function EventsView() {
           {analyticsLoading ? (
             <div className="clay-skeleton" style={{ height: "28px", marginBottom: "6px" }} />
           ) : (
-            <div className="text-xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.completed}</div>
+            <div className="text-2xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.completed}</div>
           )}
           <div className="text-xs" style={{ color: "#111827" }}>Completed</div>
         </div>

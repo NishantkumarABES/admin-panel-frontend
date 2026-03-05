@@ -340,3 +340,403 @@ export const mockOrders: Order[] = [
     updated_at: "2024-01-13T11:30:00Z"
   }
 ];
+
+// ──────────────────────────────────────────────────────
+// REFUND TYPES
+// ──────────────────────────────────────────────────────
+
+export type RefundStatus =
+  | "refund_requested"
+  | "under_review"
+  | "approved"
+  | "rejected"
+  | "refund_initiated"
+  | "refund_completed"
+  | "refund_failed";
+
+export type RefundType = "full" | "partial";
+
+export interface RefundTimelineEvent {
+  status: RefundStatus;
+  timestamp: string;
+  note?: string;
+  actor?: string;
+}
+
+export interface RefundRequest {
+  id: string;
+  order_id: string;
+  order: Order;
+  refund_type: RefundType;
+  refund_amount: number;
+  reason: string;
+  user_notes?: string;
+  status: RefundStatus;
+  requested_at: string;
+  reviewed_at?: string;
+  reviewed_by?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  admin_notes?: string;
+  rejection_reason?: string;
+  refund_initiated_at?: string;
+  refund_completed_at?: string;
+  payment_gateway_reference?: string;
+  timeline?: RefundTimelineEvent[];
+}
+
+export interface RefundAnalytics {
+  total_refund_requests: number;
+  pending_review: number;
+  approved: number;
+  rejected: number;
+  processing: number;
+  completed: number;
+  failed: number;
+  total_refund_amount: number;
+  refunds_this_month: number;
+  refund_rate_percentage: number;
+}
+
+export interface RefundFilters {
+  status?: RefundStatus | "all";
+  refund_type?: RefundType | "all";
+  date_from?: string;
+  date_to?: string;
+  search?: string;
+  payment_method?: PaymentMethod | "all";
+  page?: number;
+  page_size?: number;
+}
+
+export const REFUND_STATUS_CONFIG: Record<RefundStatus, {
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}> = {
+  refund_requested: {
+    label: "Refund Requested",
+    color: "text-amber-700",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+  },
+  under_review: {
+    label: "Under Review",
+    color: "text-blue-700",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+  },
+  approved: {
+    label: "Approved",
+    color: "text-green-700",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+  },
+  rejected: {
+    label: "Rejected",
+    color: "text-red-700",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+  },
+  refund_initiated: {
+    label: "Refund Initiated",
+    color: "text-purple-700",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-200",
+  },
+  refund_completed: {
+    label: "Refund Completed",
+    color: "text-emerald-700",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+  },
+  refund_failed: {
+    label: "Refund Failed",
+    color: "text-rose-700",
+    bgColor: "bg-rose-50",
+    borderColor: "border-rose-200",
+  },
+};
+
+// ──────────────────────────────────────────────────────
+// MOCK REFUND DATA
+// ──────────────────────────────────────────────────────
+
+export const mockRefundRequests: RefundRequest[] = [
+  {
+    id: "REF-2024-001",
+    order_id: "ORD-2024-001",
+    order: mockOrders[0],
+    refund_type: "full",
+    refund_amount: 2499.0,
+    reason: "Product not as described",
+    user_notes: "The stethoscope quality does not match the description on the website. Tube is too stiff.",
+    status: "refund_requested",
+    requested_at: "2024-01-15T10:30:00Z",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-15T10:30:00Z",
+        note: "User submitted refund request",
+        actor: "Dr. Rajesh Kumar",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-002",
+    order_id: "ORD-2024-002",
+    order: mockOrders[1],
+    refund_type: "partial",
+    refund_amount: 2999.5,
+    reason: "Received damaged item",
+    user_notes: "One of the two BP monitors arrived with a cracked screen.",
+    status: "under_review",
+    requested_at: "2024-01-14T08:15:00Z",
+    reviewed_at: "2024-01-14T14:00:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    admin_notes: "Checking with warehouse for damage report",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-14T08:15:00Z",
+        note: "User submitted refund request for damaged item",
+        actor: "Dr. Priya Sharma",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-14T14:00:00Z",
+        note: "Admin started reviewing the request",
+        actor: "Admin User",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-003",
+    order_id: "ORD-2024-004",
+    order: mockOrders[3],
+    refund_type: "full",
+    refund_amount: 8999.0,
+    reason: "Wrong product delivered",
+    user_notes: "Ordered ECG Machine Portable but received a different model.",
+    status: "approved",
+    requested_at: "2024-01-13T11:00:00Z",
+    reviewed_at: "2024-01-13T16:30:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    admin_notes: "Confirmed wrong item shipped. Full refund approved.",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-13T11:00:00Z",
+        note: "User reported wrong product delivery",
+        actor: "Dr. Sneha Reddy",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-13T14:00:00Z",
+        note: "Review started",
+        actor: "Admin User",
+      },
+      {
+        status: "approved",
+        timestamp: "2024-01-13T16:30:00Z",
+        note: "Full refund approved — wrong item confirmed by warehouse",
+        actor: "Admin User",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-004",
+    order_id: "ORD-2024-003",
+    order: mockOrders[2],
+    refund_type: "full",
+    refund_amount: 1299.0,
+    reason: "Changed mind",
+    status: "rejected",
+    requested_at: "2024-01-14T12:00:00Z",
+    reviewed_at: "2024-01-15T09:00:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    rejection_reason: "Refund policy does not cover change-of-mind for opened consumable items",
+    admin_notes: "Product is consumable and has been opened. Cannot be restocked.",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-14T12:00:00Z",
+        note: "User requested refund — changed mind",
+        actor: "Dr. Amit Patel",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-14T18:00:00Z",
+        note: "Review started",
+        actor: "Admin User",
+      },
+      {
+        status: "rejected",
+        timestamp: "2024-01-15T09:00:00Z",
+        note: "Rejected: consumable item already opened",
+        actor: "Admin User",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-005",
+    order_id: "ORD-2024-001",
+    order: mockOrders[0],
+    refund_type: "partial",
+    refund_amount: 500.0,
+    reason: "Minor defect in product",
+    user_notes: "Small scratch on the stethoscope chest-piece. Requesting partial refund.",
+    status: "refund_initiated",
+    requested_at: "2024-01-12T09:00:00Z",
+    reviewed_at: "2024-01-12T15:00:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    admin_notes: "Partial refund approved for cosmetic defect",
+    refund_initiated_at: "2024-01-13T10:00:00Z",
+    payment_gateway_reference: "RZP-REF-98765",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-12T09:00:00Z",
+        note: "Partial refund requested for cosmetic defect",
+        actor: "Dr. Rajesh Kumar",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-12T12:00:00Z",
+        note: "Review started",
+        actor: "Admin User",
+      },
+      {
+        status: "approved",
+        timestamp: "2024-01-12T15:00:00Z",
+        note: "Partial refund of ₹500 approved",
+        actor: "Admin User",
+      },
+      {
+        status: "refund_initiated",
+        timestamp: "2024-01-13T10:00:00Z",
+        note: "Refund initiated via Razorpay — Ref: RZP-REF-98765",
+        actor: "system",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-006",
+    order_id: "ORD-2024-002",
+    order: mockOrders[1],
+    refund_type: "full",
+    refund_amount: 5999.0,
+    reason: "Product not working",
+    user_notes: "Both BP monitors show inaccurate readings after calibration.",
+    status: "refund_completed",
+    requested_at: "2024-01-10T08:00:00Z",
+    reviewed_at: "2024-01-10T14:00:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    admin_notes: "QA confirmed calibration issue. Full refund processed.",
+    refund_initiated_at: "2024-01-11T09:00:00Z",
+    refund_completed_at: "2024-01-12T16:00:00Z",
+    payment_gateway_reference: "RZP-REF-11223",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-10T08:00:00Z",
+        note: "User reported defective product",
+        actor: "Dr. Priya Sharma",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-10T10:00:00Z",
+        note: "Review started",
+        actor: "Admin User",
+      },
+      {
+        status: "approved",
+        timestamp: "2024-01-10T14:00:00Z",
+        note: "Full refund approved after QA verification",
+        actor: "Admin User",
+      },
+      {
+        status: "refund_initiated",
+        timestamp: "2024-01-11T09:00:00Z",
+        note: "Refund initiated via Razorpay",
+        actor: "system",
+      },
+      {
+        status: "refund_completed",
+        timestamp: "2024-01-12T16:00:00Z",
+        note: "Refund of ₹5,999.00 completed successfully",
+        actor: "system",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-007",
+    order_id: "ORD-2024-004",
+    order: mockOrders[3],
+    refund_type: "partial",
+    refund_amount: 1500.0,
+    reason: "Missing accessories",
+    user_notes: "ECG Machine delivered without the carrying case and leads.",
+    status: "refund_failed",
+    requested_at: "2024-01-11T07:30:00Z",
+    reviewed_at: "2024-01-11T13:00:00Z",
+    reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
+    admin_notes: "Refund approved but payment gateway returned error",
+    refund_initiated_at: "2024-01-12T08:00:00Z",
+    payment_gateway_reference: "RZP-REF-FAIL-001",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-11T07:30:00Z",
+        note: "User reported missing accessories",
+        actor: "Dr. Sneha Reddy",
+      },
+      {
+        status: "under_review",
+        timestamp: "2024-01-11T10:00:00Z",
+        note: "Review started",
+        actor: "Admin User",
+      },
+      {
+        status: "approved",
+        timestamp: "2024-01-11T13:00:00Z",
+        note: "Partial refund of ₹1,500 approved",
+        actor: "Admin User",
+      },
+      {
+        status: "refund_initiated",
+        timestamp: "2024-01-12T08:00:00Z",
+        note: "Refund initiated via Razorpay",
+        actor: "system",
+      },
+      {
+        status: "refund_failed",
+        timestamp: "2024-01-12T08:05:00Z",
+        note: "Payment gateway error: transaction timed out. Will retry.",
+        actor: "system",
+      },
+    ],
+  },
+  {
+    id: "REF-2024-008",
+    order_id: "ORD-2024-003",
+    order: mockOrders[2],
+    refund_type: "partial",
+    refund_amount: 400.0,
+    reason: "Overcharged shipping",
+    user_notes: "Was promised free shipping but charged ₹400 for delivery.",
+    status: "refund_requested",
+    requested_at: "2024-01-16T11:00:00Z",
+    timeline: [
+      {
+        status: "refund_requested",
+        timestamp: "2024-01-16T11:00:00Z",
+        note: "User claims overcharged shipping",
+        actor: "Dr. Amit Patel",
+      },
+    ],
+  },
+];

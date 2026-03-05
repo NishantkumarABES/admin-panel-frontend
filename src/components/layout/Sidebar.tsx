@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck,
   ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill, Lightbulb,
-  Library, FileText, Video, Briefcase
+  Library, FileText, Video, Briefcase, Tag, Image, RotateCcw
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
@@ -26,6 +26,16 @@ const navGroups = [
     items: [
       { label: "Products", path: "/products", icon: Package },
       { label: "Orders", path: "/orders", icon: FileCheck },
+      { label: "Refunds", path: "/refunds", icon: RotateCcw },
+    ],
+    subGroups: [
+      {
+        label: "Marketing",
+        items: [
+          { label: "Coupons", path: "/coupons", icon: Tag },
+          { label: "App Banners", path: "/banners", icon: Image },
+        ],
+      },
     ],
   },
   {
@@ -103,8 +113,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile = false 
   };
 
   // Check if any route in a group is active (for highlighting the group header)
-  const isGroupActive = (items: { path: string }[]) =>
-    items.some((item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/"));
+  const isGroupActive = (group: typeof navGroups[number]) => {
+    const mainActive = group.items.some((item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/"));
+    const subActive = group.subGroups?.some((sg) =>
+      sg.items.some((item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/"))
+    ) ?? false;
+    return mainActive || subActive;
+  };
 
   return (
     <aside
@@ -183,7 +198,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile = false 
         >
           {/* Nav Groups — always expanded */}
           {navGroups.map((group) => {
-            const hasActiveItem = isGroupActive(group.items);
+            const hasActiveItem = isGroupActive(group);
 
             return (
               <div key={group.key} className="mb-1">
@@ -220,6 +235,32 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile = false 
                 <div className={`space-y-0.5 ${!isCollapsed ? "mt-0.5 ml-1" : ""}`}>
                   {group.items.map((item) => renderNavLink(item))}
                 </div>
+
+                {/* Sub Groups */}
+                {group.subGroups?.map((subGroup) => {
+                  const hasSubActive = subGroup.items.some(
+                    (item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/")
+                  );
+                  return (
+                    <div key={subGroup.label} className={`${!isCollapsed ? "mt-1" : "mt-0.5"}`}>
+                      {!isCollapsed && (
+                        <div
+                          className="flex items-center w-full px-2.5 py-1 ml-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
+                          style={{
+                            color: hasSubActive
+                              ? "rgba(107, 213, 177, 0.8)"
+                              : "rgba(148, 163, 184, 0.4)",
+                          }}
+                        >
+                          <span>{subGroup.label}</span>
+                        </div>
+                      )}
+                      <div className={`space-y-0.5 ${!isCollapsed ? "ml-2" : ""}`}>
+                        {subGroup.items.map((item) => renderNavLink(item, "small"))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}

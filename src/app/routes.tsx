@@ -5,9 +5,12 @@ import DashboardView from "../features/dashboard/DashboardView";
 import DoctorsView from "../features/doctors/DoctorsView";
 import PatientsView from "../features/patients/PatientsView";
 import ProductsView from "../features/products/ProductsView";
+import CouponView from "../features/coupon/CouponView";
+import BannersView from "../features/banners/BannersView";
 import TopicsView from "../features/topics/TopicsView";
 import EventsView from "../features/events/EventsView";
 import OrdersView from "../features/orders/OrdersView";
+import RefundsView from "../features/orders/RefundsView";
 import SettingsView from "../features/settings/SettingsView";
 import AdvertisementsView from "../features/Advertisements/AdvertisementsView";
 import IDIView from "../features/IDI/IDIView";
@@ -25,7 +28,10 @@ export default function AppRoutes() {
       <Route path="/doctors" element={<DoctorsView />} />
       <Route path="/patients" element={<PatientsView />} />
       <Route path="/products" element={<ProductsView />} />
+      <Route path="/coupons" element={<CouponView />} />
+      <Route path="/banners" element={<BannersView />} />
       <Route path="/orders" element={<OrdersView />} />
+      <Route path="/refunds" element={<RefundsView />} />
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/advertisements" element={<AdvertisementsView />} />

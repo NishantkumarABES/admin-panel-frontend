@@ -49,6 +49,8 @@ export default function AddEditDoctorModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [experienceError, setExperienceError] = useState<string | null>(null);
+  const [fullNameError, setFullNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   // Password display states
   const [copied, setCopied] = useState(false);
@@ -78,6 +80,29 @@ export default function AddEditDoctorModal({
     };
   }, []);
 
+  // Fix phone dropdown positioning — reposition to fixed when it opens
+  useEffect(() => {
+    if (!phoneContainerRef.current) return;
+    const container = phoneContainerRef.current;
+
+    const observer = new MutationObserver(() => {
+      const dropdown = container.querySelector('.react-international-phone-country-selector-dropdown') as HTMLElement | null;
+      if (dropdown) {
+        const button = container.querySelector('.react-international-phone-country-selector-button');
+        if (button) {
+          const rect = button.getBoundingClientRect();
+          dropdown.style.position = 'fixed';
+          dropdown.style.top = `${rect.bottom + 4}px`;
+          dropdown.style.left = `${rect.left}px`;
+          dropdown.style.zIndex = '9999';
+        }
+      }
+    });
+
+    observer.observe(container, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (doctor) {
       setFormData({
@@ -100,6 +125,8 @@ export default function AddEditDoctorModal({
     setCopied(false);
     setShowPassword(true);
     setExperienceError(null);
+    setFullNameError(null);
+    setEmailError(null);
   }, [doctor, isOpen]);
 
   // Close dropdown when clicking outside
@@ -134,16 +161,28 @@ export default function AddEditDoctorModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setExperienceError(null);
+    setFullNameError(null);
+    setEmailError(null);
 
-    // Validate years of experience
-    if (formData.yearsOfExperience < 1) {
-      setExperienceError("Years of experience must be at least 1");
+    // Validate full name length
+    if (formData.fullName.length >= 100) {
+      setFullNameError("Full name cannot exceed 100 characters");
       return;
     }
 
     // Validate email length
-    if (formData.email.length > 254) {
-      setSubmitError("Email cannot exceed 254 characters");
+    if (formData.email.length >= 100) {
+      setEmailError("Email cannot exceed 100 characters");
+      return;
+    }
+
+    // Validate years of experience
+    if (formData.yearsOfExperience < 0) {
+      setExperienceError("Years of experience must be at least 0");
+      return;
+    }
+    if (formData.yearsOfExperience > 70) {
+      setExperienceError("Years of experience cannot exceed 70");
       return;
     }
 
@@ -409,16 +448,31 @@ export default function AddEditDoctorModal({
                   <input
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, fullName: val });
+                      if (val.length >= 100) {
+                        setFullNameError("Full name cannot exceed 100 characters");
+                      } else {
+                        setFullNameError(null);
+                      }
+                    }}
+                    className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:outline-none transition-all ${fullNameError ? 'focus:ring-red-500' : 'focus:ring-gray-900'}`}
                     style={{
                       background: "#ffffff",
-                      border: "1px solid #e5e7eb",
+                      border: fullNameError ? "1px solid #ef4444" : "1px solid #e5e7eb",
                       boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
                     placeholder="Enter full name"
                     required
+                    maxLength={100}
                   />
+                  {fullNameError && (
+                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {fullNameError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -429,17 +483,31 @@ export default function AddEditDoctorModal({
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, email: val });
+                      if (val.length >= 100) {
+                        setEmailError("Email cannot exceed 100 characters");
+                      } else {
+                        setEmailError(null);
+                      }
+                    }}
+                    className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:outline-none transition-all ${emailError ? 'focus:ring-red-500' : 'focus:ring-gray-900'}`}
                     style={{
                       background: "#ffffff",
-                      border: "1px solid #e5e7eb",
+                      border: emailError ? "1px solid #ef4444" : "1px solid #e5e7eb",
                       boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
                     placeholder="doctor@example.com"
                     required
-                    maxLength={254}
+                    maxLength={100}
                   />
+                  {emailError && (
+                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {emailError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Phone Number */}
@@ -672,7 +740,8 @@ export default function AddEditDoctorModal({
                         boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                       }}
                       placeholder="e.g., 5"
-                      min="1"
+                      min="0"
+                      max="70"
                       required
                     />
                     {experienceError && (

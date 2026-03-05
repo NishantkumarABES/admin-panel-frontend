@@ -162,7 +162,7 @@ export default function AdvertisementsView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
+          <div className="text-2xl font-bold text-gray-900" style={{ marginBottom: "2px" }}>{stats.total}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Total Ads</div>
         </div>
 
@@ -179,7 +179,7 @@ export default function AdvertisementsView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.enabled}</div>
+          <div className="text-2xl font-bold" style={{ color: "#4fcfa5", marginBottom: "2px" }}>{stats.enabled}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Enabled</div>
         </div>
 
@@ -196,7 +196,7 @@ export default function AdvertisementsView() {
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.disabled}</div>
+          <div className="text-2xl font-bold" style={{ color: "#6b7280", marginBottom: "2px" }}>{stats.disabled}</div>
           <div className="text-xs" style={{ color: "#111827" }}>Disabled</div>
         </div>
       </div>

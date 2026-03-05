@@ -1,5 +1,6 @@
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye, RefreshCw, RotateCcw } from "lucide-react";
 import type { Order } from "../order.types";
+import { mockRefundRequests } from "../order.types";
 import OrderStatusBadge from "./OrderStatusBadge";
 // import { PAYMENT_METHOD_LABELS } from "../order.types";
 
@@ -86,7 +87,18 @@ export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTa
 
                 {/* Status */}
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <OrderStatusBadge status={order.status} size="sm" />
+                  <div className="flex items-center gap-1.5">
+                    <OrderStatusBadge status={order.status} size="sm" />
+                    {mockRefundRequests.some((r) => r.order_id === order.id && !["rejected", "refund_completed", "refund_failed"].includes(r.status)) && (
+                      <span
+                        title="Active refund request"
+                        className="inline-flex items-center justify-center w-5 h-5 rounded-full"
+                        style={{ background: "rgba(255, 112, 112, 0.1)" }}
+                      >
+                        <RotateCcw className="w-3 h-3" style={{ color: "#ff7070" }} />
+                      </span>
+                    )}
+                  </div>
                 </td>
 
                 {/* Payment */}

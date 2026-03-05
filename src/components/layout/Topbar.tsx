@@ -14,6 +14,8 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/doctors": { name: "Doctors", description: "Manage doctor profiles and information" },
   "/patients": { name: "Patients", description: "Manage patient records and appointments" },
   "/products": { name: "Products", description: "Manage product listings and inventory" },
+  "/coupons": { name: "Coupons", description: "Manage promotional discount codes" },
+  "/banners": { name: "Application Banners", description: "Manage promotional banners displayed in the app" },
   "/orders": { name: "Orders", description: "Manage product orders" },
   "/topics": { name: "Topics", description: "Manage educational topics and content" },
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
