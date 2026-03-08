@@ -1,4 +1,4 @@
-import { AlertCircle, Package, BookOpen, Megaphone, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Package, BookOpen, Megaphone, CheckCircle2, FileText, Video, Briefcase, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { PendingActions } from "../../../services/dashboard.service";
 
@@ -76,6 +76,119 @@ export default function DashboardQuickActions({ pendingActions, loading }: Dashb
                 linkTo: "/advertisements",
             });
         }
+
+        // Books — Pending
+        if (pendingActions.pending_books > 0) {
+            actions.push({
+                count: pendingActions.pending_books,
+                title: `${pendingActions.pending_books} Pending Books`,
+                description: "Books awaiting initial review",
+                icon: <BookOpen className="w-4 h-4" style={{ color: "#ffc554" }} />,
+                accentColor: "#ffc554",
+                bgColor: "rgba(255, 197, 84, 0.08)",
+                linkTo: "/my-reposit/books",
+            });
+        }
+        // Books — In Review
+        if (pendingActions.in_review_books > 0) {
+            actions.push({
+                count: pendingActions.in_review_books,
+                title: `${pendingActions.in_review_books} Books In Review`,
+                description: "Books currently being reviewed by admin",
+                icon: <Clock className="w-4 h-4" style={{ color: "#6b96ff" }} />,
+                accentColor: "#6b96ff",
+                bgColor: "rgba(107, 150, 255, 0.08)",
+                linkTo: "/my-reposit/books",
+            });
+        }
+
+        // Articles — Draft
+        if (pendingActions.draft_articles > 0) {
+            actions.push({
+                count: pendingActions.draft_articles,
+                title: `${pendingActions.draft_articles} Draft Articles`,
+                description: "Articles saved as drafts, not yet submitted",
+                icon: <FileText className="w-4 h-4" style={{ color: "#ffc554" }} />,
+                accentColor: "#ffc554",
+                bgColor: "rgba(255, 197, 84, 0.08)",
+                linkTo: "/my-reposit/articles",
+            });
+        }
+        // Articles — In Review
+        if (pendingActions.in_review_articles > 0) {
+            actions.push({
+                count: pendingActions.in_review_articles,
+                title: `${pendingActions.in_review_articles} Articles In Review`,
+                description: "Articles currently under admin review",
+                icon: <Clock className="w-4 h-4" style={{ color: "#6b96ff" }} />,
+                accentColor: "#6b96ff",
+                bgColor: "rgba(107, 150, 255, 0.08)",
+                linkTo: "/my-reposit/articles",
+            });
+        }
+
+        // Videos — Pending
+        if (pendingActions.pending_videos > 0) {
+            actions.push({
+                count: pendingActions.pending_videos,
+                title: `${pendingActions.pending_videos} Pending Videos`,
+                description: "Videos saved as drafts, not yet submitted",
+                icon: <Video className="w-4 h-4" style={{ color: "#ffc554" }} />,
+                accentColor: "#ffc554",
+                bgColor: "rgba(255, 197, 84, 0.08)",
+                linkTo: "/my-reposit/videos",
+            });
+        }
+        // Videos — In Review
+        if (pendingActions.in_review_videos > 0) {
+            actions.push({
+                count: pendingActions.in_review_videos,
+                title: `${pendingActions.in_review_videos} Videos In Review`,
+                description: "Videos currently under admin review",
+                icon: <Clock className="w-4 h-4" style={{ color: "#6b96ff" }} />,
+                accentColor: "#6b96ff",
+                bgColor: "rgba(107, 150, 255, 0.08)",
+                linkTo: "/my-reposit/videos",
+            });
+        }
+
+        // Jobs — Draft
+        if (pendingActions.draft_jobs > 0) {
+            actions.push({
+                count: pendingActions.draft_jobs,
+                title: `${pendingActions.draft_jobs} Draft Jobs`,
+                description: "Jobs saved as drafts, not yet submitted for review",
+                icon: <Briefcase className="w-4 h-4" style={{ color: "#ffc554" }} />,
+                accentColor: "#ffc554",
+                bgColor: "rgba(255, 197, 84, 0.08)",
+                linkTo: "/my-reposit/jobs",
+            });
+        }
+        // Jobs — In Review
+        if (pendingActions.in_review_jobs > 0) {
+            actions.push({
+                count: pendingActions.in_review_jobs,
+                title: `${pendingActions.in_review_jobs} Jobs In Review`,
+                description: "Jobs currently under admin review before publishing",
+                icon: <Clock className="w-4 h-4" style={{ color: "#6b96ff" }} />,
+                accentColor: "#6b96ff",
+                bgColor: "rgba(107, 150, 255, 0.08)",
+                linkTo: "/my-reposit/jobs",
+            });
+        }
+
+        // Topics — Pending Videos
+        if (pendingActions.pending_videos_topics > 0) {
+            actions.push({
+                count: pendingActions.pending_videos_topics,
+                title: `${pendingActions.pending_videos_topics} Topics with Pending Videos`,
+                description: "Topics with videos awaiting processing or review",
+                icon: <Video className="w-4 h-4" style={{ color: "#a285ff" }} />,
+                accentColor: "#a285ff",
+                bgColor: "rgba(162, 133, 255, 0.08)",
+                linkTo: "/topics",
+            });
+        }
     }
 
     return (
@@ -114,7 +227,7 @@ export default function DashboardQuickActions({ pendingActions, loading }: Dashb
                     </p>
                 </div>
             ) : (
-                <div className="quick-actions-scroll" style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "320px", overflowY: "auto", paddingRight: "4px" }}>
+                <div className="quick-actions-scroll" style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "680px", overflowY: "auto", paddingRight: "4px" }}>
                     {actions.map((action, index) => (
                         <div
                             key={index}

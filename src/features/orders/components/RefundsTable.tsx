@@ -89,15 +89,15 @@ export default function RefundsTable({ refunds, onView, onReview }: RefundsTable
                                 {/* Customer */}
                                 <td className="px-4 py-4 whitespace-nowrap">
                                     <div>
-                                        <div className="text-sm font-medium text-gray-900">{refund.order.user.name}</div>
-                                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{refund.order.user.email}</div>
+                                        <div className="text-sm font-medium text-gray-900">{refund.user.name}</div>
+                                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{refund.user.email}</div>
                                     </div>
                                 </td>
 
                                 {/* Order ID */}
                                 <td className="px-4 py-4 whitespace-nowrap">
                                     <span className="text-sm font-mono" style={{ color: "#6b96ff" }}>
-                                        {refund.order_id}
+                                        {refund.order_number || refund.order_id}
                                     </span>
                                 </td>
 
@@ -132,7 +132,7 @@ export default function RefundsTable({ refunds, onView, onReview }: RefundsTable
 
                                 {/* Payment Method */}
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
-                                    {refund.order.payment_method}
+                                    {refund.payment_method || 'N/A'}
                                 </td>
 
                                 {/* Actions */}

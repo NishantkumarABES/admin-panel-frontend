@@ -82,15 +82,24 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                         {/* Header: icon + book title + status */}
                         <div className="flex items-start justify-between gap-4 pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                             <div className="flex items-center gap-3">
-                                <div
-                                    className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0"
-                                    style={{
-                                        background: "#f8f9fb",
-                                        boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)"
-                                    }}
-                                >
-                                    <BookOpen className="w-5 h-5 text-gray-500" />
-                                </div>
+                                {book.book_cover ? (
+                                    <img
+                                        src={book.book_cover}
+                                        alt={book.title}
+                                        className="w-10 h-14 object-cover rounded-lg shrink-0"
+                                        style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.1)" }}
+                                    />
+                                ) : (
+                                    <div
+                                        className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0"
+                                        style={{
+                                            background: "#f8f9fb",
+                                            boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)"
+                                        }}
+                                    >
+                                        <BookOpen className="w-5 h-5 text-gray-500" />
+                                    </div>
+                                )}
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">{book.title}</h3>
                                     <p className="text-xs text-gray-500">by {book.authors}</p>
@@ -111,6 +120,27 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                                 )}
                             </div>
                         </div>
+
+                        {/* Book Cover Image */}
+                        {book.book_cover && (
+                            <div className="mt-3">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">Book Cover</h4>
+                                <div
+                                    className="rounded-xl p-3 flex justify-center"
+                                    style={{
+                                        background: "#f8f9fb",
+                                        boxShadow: "inset 2px 2px 5px rgba(0, 0, 0, 0.04), inset -2px -2px 5px rgba(255, 255, 255, 0.6)",
+                                    }}
+                                >
+                                    <img
+                                        src={book.book_cover}
+                                        alt={`${book.title} cover`}
+                                        className="max-h-64 rounded-lg object-contain"
+                                        style={{ boxShadow: "2px 2px 8px rgba(0,0,0,0.12)" }}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         {/* Book Information — Inset Panel */}
                         <div className="mt-3">

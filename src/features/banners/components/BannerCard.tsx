@@ -44,7 +44,7 @@ export default function BannerCard({
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <ImageIcon
-                            className="w-10 h-10"
+                            className="w-8 h-8"
                             style={{ color: "rgba(148, 163, 184, 0.4)" }}
                         />
                     </div>
@@ -53,10 +53,11 @@ export default function BannerCard({
                 {/* Order Badge */}
                 {banner.order !== undefined && (
                     <div
-                        className="absolute top-3 left-3 flex items-center justify-center text-xs font-bold text-white"
+                        className="absolute top-2 left-2 flex items-center justify-center font-bold text-white"
                         style={{
-                            width: "28px",
-                            height: "28px",
+                            width: "22px",
+                            height: "22px",
+                            fontSize: "10px",
                             borderRadius: "50%",
                             background: "rgba(0,0,0,0.5)",
                             backdropFilter: "blur(4px)",
@@ -71,16 +72,18 @@ export default function BannerCard({
                 {banner.is_active !== undefined && (
                     <button
                         onClick={() => onToggleStatus(banner)}
-                        className="absolute top-3 right-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
+                        className="absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-full font-medium transition-colors cursor-pointer"
                         style={
                             banner.is_active
                                 ? {
+                                    fontSize: "10px",
                                     background: "rgba(79, 207, 165, 0.9)",
                                     color: "#ffffff",
                                     border: "none",
                                     backdropFilter: "blur(4px)",
                                 }
                                 : {
+                                    fontSize: "10px",
                                     background: "rgba(0,0,0,0.5)",
                                     color: "#ffffff",
                                     border: "none",
@@ -95,16 +98,17 @@ export default function BannerCard({
             </div>
 
             {/* Content Section */}
-            <div className="p-4 flex-1 flex flex-col">
+            <div className="p-3 flex-1 flex flex-col">
                 <h3
-                    className="text-sm font-semibold text-gray-900 truncate"
+                    className="text-xs font-semibold text-gray-900 truncate"
                     title={banner.title}
                 >
                     {banner.title}
                 </h3>
                 {banner.subtitle && (
                     <p
-                        className="text-xs text-gray-500 mt-1 line-clamp-2"
+                        className="text-gray-500 mt-0.5 line-clamp-1"
+                        style={{ fontSize: "11px" }}
                         title={banner.subtitle}
                     >
                         {banner.subtitle}
@@ -115,10 +119,10 @@ export default function BannerCard({
 
                 {/* Actions */}
                 <div
-                    className="flex items-center justify-end gap-2 mt-auto pt-3"
+                    className="flex items-center justify-end gap-1.5 mt-auto pt-2"
                     style={{
                         borderTop: "1px solid rgba(0,0,0,0.06)",
-                        marginTop: "12px",
+                        marginTop: "8px",
                     }}
                 >
                     <button

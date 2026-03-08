@@ -67,6 +67,9 @@ export const createBook = async (data: CreateBookDTO) => {
   if (data.book_file) {
     formData.append("file", data.book_file);
   }
+  if (data.book_cover) {
+    formData.append("book_cover", data.book_cover);
+  }
 
   const response = await api.post("/books/admin/create/", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -90,6 +93,7 @@ export const updateBook = async (id: string, data: UpdateBookDTO) => {
   if (data.description !== undefined) formData.append("description", data.description);
   if (data.price !== undefined) formData.append("price", data.price.toString());
   if (data.book_file) formData.append("book_file", data.book_file);
+  if (data.book_cover) formData.append("book_cover", data.book_cover);
 
   const response = await api.patch(`/books/admin/${id}/update/`, formData, {
     headers: { "Content-Type": "multipart/form-data" },

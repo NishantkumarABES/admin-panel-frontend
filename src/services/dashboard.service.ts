@@ -63,6 +63,15 @@ export interface PendingActions {
   out_of_stock_products: number;
   unpublished_topics: number;
   unpublished_advt: number;
+  pending_books: number;
+  in_review_books: number;
+  draft_articles: number;
+  in_review_articles: number;
+  pending_videos: number;
+  in_review_videos: number;
+  draft_jobs: number;
+  in_review_jobs: number;
+  pending_videos_topics: number;
 }
 
 // Get dashboard metrics

@@ -130,9 +130,18 @@ export default function BooksTable({
                                         <tr key={book.id} className="hover:bg-gray-50/60 transition-colors">
                                             <td className="px-4 py-4" style={{ maxWidth: "340px" }}>
                                                 <div className="flex items-start gap-3">
-                                                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 shrink-0 mt-0.5">
-                                                        <BookOpen className="w-4.5 h-4.5 text-gray-500" />
-                                                    </div>
+                                                    {book.book_cover ? (
+                                                        <img
+                                                            src={book.book_cover}
+                                                            alt={book.title}
+                                                            className="w-9 h-9 object-cover rounded-lg shrink-0 mt-0.5"
+                                                            style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.1)" }}
+                                                        />
+                                                    ) : (
+                                                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 shrink-0 mt-0.5">
+                                                            <BookOpen className="w-4.5 h-4.5 text-gray-500" />
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <div className="text-sm font-medium text-gray-900 break-words">{book.title}</div>
@@ -142,13 +151,13 @@ export default function BooksTable({
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-4 text-sm text-gray-700">{book.authors}</td>
-                                            <td className="px-4 py-4 text-sm text-gray-700">{book.uploaded_by}</td>
-                                            <td className="px-4 py-4"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">{book.book_type}</span></td>
-                                            <td className="px-4 py-4 text-sm text-gray-700">{book.speciality || "—"}</td>
-                                            <td className="px-4 py-4">{getStatusBadge(book.status)}</td>
-                                            <td className="px-4 py-4 text-sm text-gray-700">{book.publication_year}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-right">
+                                            <td className="px-4 py-2 text-sm text-gray-700">{book.authors}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{book.uploaded_by}</td>
+                                            <td className="px-4 py-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">{book.book_type}</span></td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{book.speciality || "—"}</td>
+                                            <td className="px-4 py-2">{getStatusBadge(book.status)}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{book.publication_year}</td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button onClick={() => setViewingBook(book)} title="View Details" className="p-1.5 rounded-lg transition-all duration-200" style={{ color: "#6b96ff" }}
                                                         onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(107, 150, 255, 0.08)"; e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)"; }}

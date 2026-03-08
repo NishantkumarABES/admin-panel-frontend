@@ -1,6 +1,6 @@
 import {
     RotateCcw, Clock, CheckCircle, XCircle, Zap, CheckCheck,
-    IndianRupee, Percent
+    IndianRupee
 } from "lucide-react";
 import type { RefundAnalytics } from "../order.types";
 
@@ -17,7 +17,6 @@ interface StatCard {
     iconBg: string;
     valueStyle?: React.CSSProperties;
     isCurrency?: boolean;
-    isPercentage?: boolean;
 }
 
 export default function RefundSummaryCards({ analytics, loading }: RefundSummaryCardsProps) {
@@ -78,15 +77,6 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
             valueStyle: { color: "#ff7070" },
             isCurrency: true,
         },
-        {
-            label: "Refund Rate",
-            value: analytics?.refund_rate_percentage ?? 0,
-            icon: Percent,
-            iconColor: "#8b95a3",
-            iconBg: "rgba(139, 149, 163, 0.08)",
-            valueStyle: { color: "#8b95a3" },
-            isPercentage: true,
-        },
     ];
 
     const formatCurrency = (value: number) =>
@@ -96,7 +86,7 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
         })}`;
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
             {cards.map((card) => {
                 const Icon = card.icon;
                 return (
@@ -114,9 +104,7 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
                                 >
                                     {card.isCurrency
                                         ? formatCurrency(Number(card.value))
-                                        : card.isPercentage
-                                            ? `${Number(card.value).toFixed(1)}%`
-                                            : Number(card.value).toLocaleString()}
+                                        : Number(card.value).toLocaleString()}
                                 </div>
                             )}
                             <span className="text-xs" style={{ color: "#111827" }}>{card.label}</span>

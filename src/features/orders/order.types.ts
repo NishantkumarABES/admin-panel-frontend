@@ -363,14 +363,38 @@ export interface RefundTimelineEvent {
   actor?: string;
 }
 
+export interface RefundItemProduct {
+  id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
 export interface RefundRequest {
   id: string;
   order_id: string;
-  order: Order;
+  order_number?: string;
+  order_status?: string;
+  order_total_amount?: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  address?: Address;
+  items?: RefundItemProduct[];
+  payment_method?: string;
+  payment_gateway?: string;
+  payment_reference?: string;
+  payment_id?: string;
   refund_type: RefundType;
   refund_amount: number;
   reason: string;
   user_notes?: string;
+  is_partial?: boolean;
   status: RefundStatus;
   requested_at: string;
   reviewed_at?: string;
@@ -383,7 +407,7 @@ export interface RefundRequest {
   rejection_reason?: string;
   refund_initiated_at?: string;
   refund_completed_at?: string;
-  payment_gateway_reference?: string;
+  payment_gateway_reference?: string | null;
   timeline?: RefundTimelineEvent[];
 }
 
@@ -469,7 +493,12 @@ export const mockRefundRequests: RefundRequest[] = [
   {
     id: "REF-2024-001",
     order_id: "ORD-2024-001",
-    order: mockOrders[0],
+    order_number: "ORD-2024-001",
+    order_status: "delivered",
+    order_total_amount: "2499.00",
+    user: { id: "USR-001", name: "Dr. Rajesh Kumar", email: "rajesh.kumar@example.com", phone: "+91 9876543210" },
+    payment_method: "card",
+    payment_reference: "PAY-123456789",
     refund_type: "full",
     refund_amount: 2499.0,
     reason: "Product not as described",
@@ -477,18 +506,18 @@ export const mockRefundRequests: RefundRequest[] = [
     status: "refund_requested",
     requested_at: "2024-01-15T10:30:00Z",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-15T10:30:00Z",
-        note: "User submitted refund request",
-        actor: "Dr. Rajesh Kumar",
-      },
+      { status: "refund_requested", timestamp: "2024-01-15T10:30:00Z", note: "User submitted refund request", actor: "Dr. Rajesh Kumar" },
     ],
   },
   {
     id: "REF-2024-002",
     order_id: "ORD-2024-002",
-    order: mockOrders[1],
+    order_number: "ORD-2024-002",
+    order_status: "processing",
+    order_total_amount: "5999.00",
+    user: { id: "USR-002", name: "Dr. Priya Sharma", email: "priya.sharma@example.com", phone: "+91 9876543211" },
+    payment_method: "upi",
+    payment_reference: "UPI-987654321",
     refund_type: "partial",
     refund_amount: 2999.5,
     reason: "Received damaged item",
@@ -499,24 +528,19 @@ export const mockRefundRequests: RefundRequest[] = [
     reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
     admin_notes: "Checking with warehouse for damage report",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-14T08:15:00Z",
-        note: "User submitted refund request for damaged item",
-        actor: "Dr. Priya Sharma",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-14T14:00:00Z",
-        note: "Admin started reviewing the request",
-        actor: "Admin User",
-      },
+      { status: "refund_requested", timestamp: "2024-01-14T08:15:00Z", note: "User submitted refund request for damaged item", actor: "Dr. Priya Sharma" },
+      { status: "under_review", timestamp: "2024-01-14T14:00:00Z", note: "Admin started reviewing the request", actor: "Admin User" },
     ],
   },
   {
     id: "REF-2024-003",
     order_id: "ORD-2024-004",
-    order: mockOrders[3],
+    order_number: "ORD-2024-004",
+    order_status: "shipped",
+    order_total_amount: "8999.00",
+    user: { id: "USR-004", name: "Dr. Sneha Reddy", email: "sneha.reddy@example.com", phone: "+91 9876543213" },
+    payment_method: "netbanking",
+    payment_reference: "NB-456789123",
     refund_type: "full",
     refund_amount: 8999.0,
     reason: "Wrong product delivered",
@@ -527,30 +551,19 @@ export const mockRefundRequests: RefundRequest[] = [
     reviewed_by: { id: "ADM-001", name: "Admin User", email: "admin@clinictopics.com" },
     admin_notes: "Confirmed wrong item shipped. Full refund approved.",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-13T11:00:00Z",
-        note: "User reported wrong product delivery",
-        actor: "Dr. Sneha Reddy",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-13T14:00:00Z",
-        note: "Review started",
-        actor: "Admin User",
-      },
-      {
-        status: "approved",
-        timestamp: "2024-01-13T16:30:00Z",
-        note: "Full refund approved — wrong item confirmed by warehouse",
-        actor: "Admin User",
-      },
+      { status: "refund_requested", timestamp: "2024-01-13T11:00:00Z", note: "User reported wrong product delivery", actor: "Dr. Sneha Reddy" },
+      { status: "under_review", timestamp: "2024-01-13T14:00:00Z", note: "Review started", actor: "Admin User" },
+      { status: "approved", timestamp: "2024-01-13T16:30:00Z", note: "Full refund approved — wrong item confirmed by warehouse", actor: "Admin User" },
     ],
   },
   {
     id: "REF-2024-004",
     order_id: "ORD-2024-003",
-    order: mockOrders[2],
+    order_number: "ORD-2024-003",
+    order_status: "pending_payment",
+    order_total_amount: "1299.00",
+    user: { id: "USR-003", name: "Dr. Amit Patel", email: "amit.patel@example.com" },
+    payment_method: "cod",
     refund_type: "full",
     refund_amount: 1299.0,
     reason: "Changed mind",
@@ -561,30 +574,20 @@ export const mockRefundRequests: RefundRequest[] = [
     rejection_reason: "Refund policy does not cover change-of-mind for opened consumable items",
     admin_notes: "Product is consumable and has been opened. Cannot be restocked.",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-14T12:00:00Z",
-        note: "User requested refund — changed mind",
-        actor: "Dr. Amit Patel",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-14T18:00:00Z",
-        note: "Review started",
-        actor: "Admin User",
-      },
-      {
-        status: "rejected",
-        timestamp: "2024-01-15T09:00:00Z",
-        note: "Rejected: consumable item already opened",
-        actor: "Admin User",
-      },
+      { status: "refund_requested", timestamp: "2024-01-14T12:00:00Z", note: "User requested refund — changed mind", actor: "Dr. Amit Patel" },
+      { status: "under_review", timestamp: "2024-01-14T18:00:00Z", note: "Review started", actor: "Admin User" },
+      { status: "rejected", timestamp: "2024-01-15T09:00:00Z", note: "Rejected: consumable item already opened", actor: "Admin User" },
     ],
   },
   {
     id: "REF-2024-005",
     order_id: "ORD-2024-001",
-    order: mockOrders[0],
+    order_number: "ORD-2024-001",
+    order_status: "delivered",
+    order_total_amount: "2499.00",
+    user: { id: "USR-001", name: "Dr. Rajesh Kumar", email: "rajesh.kumar@example.com", phone: "+91 9876543210" },
+    payment_method: "card",
+    payment_reference: "PAY-123456789",
     refund_type: "partial",
     refund_amount: 500.0,
     reason: "Minor defect in product",
@@ -597,36 +600,21 @@ export const mockRefundRequests: RefundRequest[] = [
     refund_initiated_at: "2024-01-13T10:00:00Z",
     payment_gateway_reference: "RZP-REF-98765",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-12T09:00:00Z",
-        note: "Partial refund requested for cosmetic defect",
-        actor: "Dr. Rajesh Kumar",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-12T12:00:00Z",
-        note: "Review started",
-        actor: "Admin User",
-      },
-      {
-        status: "approved",
-        timestamp: "2024-01-12T15:00:00Z",
-        note: "Partial refund of ₹500 approved",
-        actor: "Admin User",
-      },
-      {
-        status: "refund_initiated",
-        timestamp: "2024-01-13T10:00:00Z",
-        note: "Refund initiated via Razorpay — Ref: RZP-REF-98765",
-        actor: "system",
-      },
+      { status: "refund_requested", timestamp: "2024-01-12T09:00:00Z", note: "Partial refund requested for cosmetic defect", actor: "Dr. Rajesh Kumar" },
+      { status: "under_review", timestamp: "2024-01-12T12:00:00Z", note: "Review started", actor: "Admin User" },
+      { status: "approved", timestamp: "2024-01-12T15:00:00Z", note: "Partial refund of ₹500 approved", actor: "Admin User" },
+      { status: "refund_initiated", timestamp: "2024-01-13T10:00:00Z", note: "Refund initiated via Razorpay — Ref: RZP-REF-98765", actor: "system" },
     ],
   },
   {
     id: "REF-2024-006",
     order_id: "ORD-2024-002",
-    order: mockOrders[1],
+    order_number: "ORD-2024-002",
+    order_status: "processing",
+    order_total_amount: "5999.00",
+    user: { id: "USR-002", name: "Dr. Priya Sharma", email: "priya.sharma@example.com", phone: "+91 9876543211" },
+    payment_method: "upi",
+    payment_reference: "UPI-987654321",
     refund_type: "full",
     refund_amount: 5999.0,
     reason: "Product not working",
@@ -640,42 +628,22 @@ export const mockRefundRequests: RefundRequest[] = [
     refund_completed_at: "2024-01-12T16:00:00Z",
     payment_gateway_reference: "RZP-REF-11223",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-10T08:00:00Z",
-        note: "User reported defective product",
-        actor: "Dr. Priya Sharma",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-10T10:00:00Z",
-        note: "Review started",
-        actor: "Admin User",
-      },
-      {
-        status: "approved",
-        timestamp: "2024-01-10T14:00:00Z",
-        note: "Full refund approved after QA verification",
-        actor: "Admin User",
-      },
-      {
-        status: "refund_initiated",
-        timestamp: "2024-01-11T09:00:00Z",
-        note: "Refund initiated via Razorpay",
-        actor: "system",
-      },
-      {
-        status: "refund_completed",
-        timestamp: "2024-01-12T16:00:00Z",
-        note: "Refund of ₹5,999.00 completed successfully",
-        actor: "system",
-      },
+      { status: "refund_requested", timestamp: "2024-01-10T08:00:00Z", note: "User reported defective product", actor: "Dr. Priya Sharma" },
+      { status: "under_review", timestamp: "2024-01-10T10:00:00Z", note: "Review started", actor: "Admin User" },
+      { status: "approved", timestamp: "2024-01-10T14:00:00Z", note: "Full refund approved after QA verification", actor: "Admin User" },
+      { status: "refund_initiated", timestamp: "2024-01-11T09:00:00Z", note: "Refund initiated via Razorpay", actor: "system" },
+      { status: "refund_completed", timestamp: "2024-01-12T16:00:00Z", note: "Refund of ₹5,999.00 completed successfully", actor: "system" },
     ],
   },
   {
     id: "REF-2024-007",
     order_id: "ORD-2024-004",
-    order: mockOrders[3],
+    order_number: "ORD-2024-004",
+    order_status: "shipped",
+    order_total_amount: "8999.00",
+    user: { id: "USR-004", name: "Dr. Sneha Reddy", email: "sneha.reddy@example.com", phone: "+91 9876543213" },
+    payment_method: "netbanking",
+    payment_reference: "NB-456789123",
     refund_type: "partial",
     refund_amount: 1500.0,
     reason: "Missing accessories",
@@ -688,42 +656,21 @@ export const mockRefundRequests: RefundRequest[] = [
     refund_initiated_at: "2024-01-12T08:00:00Z",
     payment_gateway_reference: "RZP-REF-FAIL-001",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-11T07:30:00Z",
-        note: "User reported missing accessories",
-        actor: "Dr. Sneha Reddy",
-      },
-      {
-        status: "under_review",
-        timestamp: "2024-01-11T10:00:00Z",
-        note: "Review started",
-        actor: "Admin User",
-      },
-      {
-        status: "approved",
-        timestamp: "2024-01-11T13:00:00Z",
-        note: "Partial refund of ₹1,500 approved",
-        actor: "Admin User",
-      },
-      {
-        status: "refund_initiated",
-        timestamp: "2024-01-12T08:00:00Z",
-        note: "Refund initiated via Razorpay",
-        actor: "system",
-      },
-      {
-        status: "refund_failed",
-        timestamp: "2024-01-12T08:05:00Z",
-        note: "Payment gateway error: transaction timed out. Will retry.",
-        actor: "system",
-      },
+      { status: "refund_requested", timestamp: "2024-01-11T07:30:00Z", note: "User reported missing accessories", actor: "Dr. Sneha Reddy" },
+      { status: "under_review", timestamp: "2024-01-11T10:00:00Z", note: "Review started", actor: "Admin User" },
+      { status: "approved", timestamp: "2024-01-11T13:00:00Z", note: "Partial refund of ₹1,500 approved", actor: "Admin User" },
+      { status: "refund_initiated", timestamp: "2024-01-12T08:00:00Z", note: "Refund initiated via Razorpay", actor: "system" },
+      { status: "refund_failed", timestamp: "2024-01-12T08:05:00Z", note: "Payment gateway error: transaction timed out. Will retry.", actor: "system" },
     ],
   },
   {
     id: "REF-2024-008",
     order_id: "ORD-2024-003",
-    order: mockOrders[2],
+    order_number: "ORD-2024-003",
+    order_status: "pending_payment",
+    order_total_amount: "1299.00",
+    user: { id: "USR-003", name: "Dr. Amit Patel", email: "amit.patel@example.com" },
+    payment_method: "cod",
     refund_type: "partial",
     refund_amount: 400.0,
     reason: "Overcharged shipping",
@@ -731,12 +678,8 @@ export const mockRefundRequests: RefundRequest[] = [
     status: "refund_requested",
     requested_at: "2024-01-16T11:00:00Z",
     timeline: [
-      {
-        status: "refund_requested",
-        timestamp: "2024-01-16T11:00:00Z",
-        note: "User claims overcharged shipping",
-        actor: "Dr. Amit Patel",
-      },
+      { status: "refund_requested", timestamp: "2024-01-16T11:00:00Z", note: "User claims overcharged shipping", actor: "Dr. Amit Patel" },
     ],
   },
 ];
+

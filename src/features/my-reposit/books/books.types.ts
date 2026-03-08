@@ -28,6 +28,7 @@ export interface Book {
     copyright_status: CopyrightStatus;
     price: number;
     file_url: string | null;
+    book_cover: string | null;
     collections: string[];
     is_deleted: boolean;
     created_at: string;
@@ -71,6 +72,7 @@ export interface CreateBookDTO {
     description: string;
     price: number;
     book_file?: File;
+    book_cover?: File;
 }
 
 export interface UpdateBookDTO {
@@ -87,6 +89,7 @@ export interface UpdateBookDTO {
     description?: string;
     price?: number;
     book_file?: File;
+    book_cover?: File;
 }
 
 export const BOOK_TYPES: { value: BookType; label: string }[] = [

@@ -40,7 +40,7 @@ export const getRefunds = (filters?: RefundFilters) => {
         count: number;
         next: string | null;
         previous: string | null;
-    }>(`/commerce/admin/refundss/${queryString ? `?${queryString}` : ""}`);
+    }>(`/commerce/admin/refunds/${queryString ? `?${queryString}` : ""}`);
 };
 
 // Get single refund by ID

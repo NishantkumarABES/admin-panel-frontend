@@ -157,6 +157,12 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
                         </div>
                     </div>
                     <div className="sticky bottom-0 bg-white pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                        {isEditMode && video?.is_deleted && (
+                            <div className="mb-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                                <span className="text-sm text-red-600">This video has been deleted and cannot be updated.</span>
+                            </div>
+                        )}
                         <button type="submit" disabled={isSubmitting || (isEditMode && video?.is_deleted)} className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: "#1f2937", boxShadow: "4px 4px 8px rgba(0,0,0,0.12)" }}>
                             {isSubmitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>{isEditMode ? "Updating..." : "Adding..."}</span></> : <span>{isEditMode ? "Update Video" : "Add Video"}</span>}
                         </button>

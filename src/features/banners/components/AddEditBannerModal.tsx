@@ -8,6 +8,7 @@ interface AddEditBannerModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CreateBannerDTO | UpdateBannerDTO) => Promise<{ error?: string }>;
+    activeBannerCount: number;
 }
 
 export default function AddEditBannerModal({
@@ -15,6 +16,7 @@ export default function AddEditBannerModal({
     isOpen,
     onClose,
     onSubmit,
+    activeBannerCount,
 }: AddEditBannerModalProps) {
     const isEditMode = !!banner;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +27,7 @@ export default function AddEditBannerModal({
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [redirectCategory, setRedirectCategory] = useState("");
     const [isActive, setIsActive] = useState(true);
-    const [order, setOrder] = useState(0);
+    const [order, setOrder] = useState(1);
     const categories: Category[] = [
         { key: "diagnostics", label: "Diagnostics" },
         { key: "ppe", label: "PPE" },
@@ -60,7 +62,7 @@ export default function AddEditBannerModal({
             setImagePreview(banner.image || null);
             setRedirectCategory(banner.redirect_category);
             setIsActive(banner.is_active ?? true);
-            setOrder(banner.order ?? 0);
+            setOrder(banner.order ?? 1);
         } else {
             resetForm();
         }
@@ -90,7 +92,7 @@ export default function AddEditBannerModal({
         setImagePreview(null);
         setRedirectCategory("");
         setIsActive(true);
-        setOrder(0);
+        setOrder(1);
         setCategorySearch("");
     };
 
@@ -102,12 +104,16 @@ export default function AddEditBannerModal({
         onClose();
     };
 
+    const maxOrder = isEditMode ? activeBannerCount : activeBannerCount + 1;
+
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
         if (!title.trim()) newErrors.title = "Title is required";
         if (!isEditMode && !imageFile) newErrors.image = "Image is required";
         if (!redirectCategory) newErrors.redirect_category = "Redirect category is required";
-        if (order < 0) newErrors.order = "Order must be 0 or greater";
+        if (order < 1 || order > maxOrder) {
+            newErrors.order = `Order must be between 1 and ${maxOrder}`;
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -623,14 +629,14 @@ export default function AddEditBannerModal({
                                     {/* Display Order */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Display Order
+                                            Display Order *
                                         </label>
                                         <input
                                             type="number"
                                             value={order}
                                             onChange={(e) => {
                                                 setOrder(
-                                                    parseInt(e.target.value) || 0
+                                                    parseInt(e.target.value) || 1
                                                 );
                                                 if (errors.order)
                                                     setErrors((prev) => ({
@@ -638,13 +644,14 @@ export default function AddEditBannerModal({
                                                         order: "",
                                                     }));
                                             }}
-                                            min="0"
+                                            min="1"
+                                            max={maxOrder}
                                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                                             style={inputStyle(!!errors.order)}
-                                            placeholder="0"
+                                            placeholder="1"
                                         />
                                         <p className="text-xs text-gray-400 mt-1">
-                                            Lower number = higher priority
+                                            Allowed range: 1 – {maxOrder} (lower = higher priority)
                                         </p>
                                         {errors.order && (
                                             <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">

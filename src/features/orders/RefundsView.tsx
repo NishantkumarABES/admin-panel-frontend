@@ -101,8 +101,8 @@ export default function RefundsView() {
             (r) =>
               r.id.toLowerCase().includes(search) ||
               r.order_id.toLowerCase().includes(search) ||
-              r.order.user.name.toLowerCase().includes(search) ||
-              r.order.user.email.toLowerCase().includes(search) ||
+              r.user.name.toLowerCase().includes(search) ||
+              r.user.email.toLowerCase().includes(search) ||
               r.reason.toLowerCase().includes(search)
           );
         }
