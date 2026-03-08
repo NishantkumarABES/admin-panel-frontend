@@ -91,21 +91,13 @@ export default function TopicsView() {
       setLoading(true);
       const response = await topicService.getTopics({
         status: statusFilter !== "all" ? statusFilter : undefined,
+        topic_type: typeFilter !== "all" ? typeFilter : undefined,
         page: currentPage,
         page_size: pageSize,
         search: searchTerm || undefined,
       });
 
-      let results = response.results || [];
-
-      // Client-side type filter (admin = no video_url, doctor = has video_url)
-      if (typeFilter === "admin") {
-        results = results.filter((t) => !t.video_url);
-      } else if (typeFilter === "doctor") {
-        results = results.filter((t) => !!t.video_url);
-      }
-
-      setTopics(results);
+      setTopics(response.results || []);
       setTotalCount(response.count || 0);
       setHasNext(response.next !== null);
       setHasPrevious(response.previous !== null);
@@ -121,7 +113,7 @@ export default function TopicsView() {
   useEffect(() => {
     fetchAnalytics();
     fetchTopics();
-  }, [currentPage, pageSize, statusFilter]);
+  }, [currentPage, pageSize, statusFilter, typeFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -130,11 +122,6 @@ export default function TopicsView() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-    fetchTopics();
-  }, [typeFilter]);
 
   // Handlers
   const handleView = (topic: Topic) => { setSelectedTopic(topic); setIsDetailsModalOpen(true); };

@@ -1,7 +1,7 @@
 import { api } from "../../services/api";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff, CheckCircle2, Check, X } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
 type Step = "email" | "otp" | "reset";
@@ -62,29 +62,37 @@ export default function ForgotPasswordView() {
         }
     };
 
+    // ── Password strength checks ─────────────────────────
+    const passwordRules = [
+        { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+        { label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
+        { label: "One lowercase letter", test: (p: string) => /[a-z]/.test(p) },
+        { label: "One number", test: (p: string) => /\d/.test(p) },
+        { label: "One special character (!@#$%^&*)", test: (p: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(p) },
+    ];
+    const allRulesPass = passwordRules.every((r) => r.test(newPassword));
+    const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
+
     // ── Step 3: Reset Password ──────────────────────────
     const handleResetPassword = async (e: FormEvent) => {
         e.preventDefault();
         setError("");
         setSuccess("");
 
-        if (newPassword !== confirmPassword) {
-            setError("Passwords do not match.");
+        if (!allRulesPass) {
+            setError("Password does not meet all strength requirements.");
             return;
         }
 
-        if (newPassword.length < 8) {
-            setError("Password must be at least 8 characters.");
+        if (!passwordsMatch) {
+            setError("Passwords do not match.");
             return;
         }
 
         setIsLoading(true);
 
         try {
-            await api.post("/auth/admin/forgot-password/reset/", {
-                email,
-                new_password: newPassword,
-            });
+            await api.post("/auth/admin/forgot-password/reset/", { email, otp, new_password: newPassword });
             setIsComplete(true);
             setSuccess("Your password has been reset successfully!");
         } catch (err: any) {
@@ -306,6 +314,21 @@ export default function ForgotPasswordView() {
                                         </div>
                                     </div>
 
+                                    {/* Password Strength Checklist */}
+                                    {newPassword.length > 0 && (
+                                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                                            {passwordRules.map((rule, idx) => {
+                                                const passed = rule.test(newPassword);
+                                                return (
+                                                    <div key={idx} className={`flex items-center gap-2 text-xs transition-colors ${passed ? 'text-green-600' : 'text-gray-400'}`}>
+                                                        {passed ? <Check className="w-3.5 h-3.5 shrink-0" /> : <X className="w-3.5 h-3.5 shrink-0" />}
+                                                        {rule.label}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
                                     {/* Confirm Password */}
                                     <div>
                                         <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-900 mb-2">
@@ -334,9 +357,17 @@ export default function ForgotPasswordView() {
                                         </div>
                                     </div>
 
+                                    {/* Password match indicator */}
+                                    {confirmPassword.length > 0 && (
+                                        <div className={`mt-2 flex items-center gap-2 text-xs transition-colors ${passwordsMatch ? 'text-green-600' : 'text-red-500'}`}>
+                                            {passwordsMatch ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                                            {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
+                                        </div>
+                                    )}
+
                                     <button
                                         type="submit"
-                                        disabled={isLoading}
+                                        disabled={isLoading || !allRulesPass || !passwordsMatch}
                                         className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         {isLoading ? (

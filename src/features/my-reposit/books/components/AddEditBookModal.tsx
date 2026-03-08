@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Search, ChevronDown, Upload, FileText, AlertCircle } from "lucide-react";
+import { X, Search, ChevronDown, Upload, FileText, AlertCircle, ImagePlus } from "lucide-react";
 import type { Book, CreateBookDTO, BookType, AccessLevel, CopyrightStatus } from "../books.types";
 import { BOOK_TYPES, ACCESS_LEVELS, COPYRIGHT_STATUSES } from "../books.types";
 import { SPECIALTIES } from "../../../Advertisements/advertisement.types";
@@ -34,6 +34,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
 
     const [formData, setFormData] = useState(initialFormData);
     const [bookFile, setBookFile] = useState<File | null>(null);
+    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [selectedUser, setSelectedUser] = useState<DoctorUser | null>(null);
     const [userSearchTerm, setUserSearchTerm] = useState("");
     const [userResults, setUserResults] = useState<DoctorUser[]>([]);
@@ -43,6 +45,7 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
     const [errors, setErrors] = useState<Record<string, string>>({});
     const userDropdownRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     // Add scrollbar styles
     useEffect(() => {
@@ -96,9 +99,9 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                     copyright_status: book.copyright_status, description: book.description,
                     price: book.price,
                 });
-                setBookFile(null); setSelectedUser(null); setUserSearchTerm("");
+                setBookFile(null); setCoverFile(null); setCoverPreview(book.book_cover || null); setSelectedUser(null); setUserSearchTerm("");
             } else {
-                setFormData(initialFormData); setBookFile(null); setSelectedUser(null); setUserSearchTerm("");
+                setFormData(initialFormData); setBookFile(null); setCoverFile(null); setCoverPreview(null); setSelectedUser(null); setUserSearchTerm("");
             }
             setErrors({});
         }
@@ -114,6 +117,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
         if (!formData.book_type) newErrors.book_type = "Book type is required";
         if (!formData.access_level) newErrors.access_level = "Access level is required";
         if (!formData.copyright_status) newErrors.copyright_status = "Copyright status is required";
+        if (formData.isbn && !/^\d{13}$/.test(formData.isbn)) newErrors.isbn = "ISBN must be exactly 13 digits";
+        if (formData.description.length > 1000) newErrors.description = "Description must not exceed 1000 characters";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -135,6 +140,24 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
         }
     };
 
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+            if (!allowedTypes.includes(file.type)) {
+                setErrors({ ...errors, book_cover: "Only JPEG, PNG, and WebP images are allowed" });
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                setErrors({ ...errors, book_cover: "Image size must be less than 5MB" });
+                return;
+            }
+            setCoverFile(file);
+            setCoverPreview(URL.createObjectURL(file));
+            setErrors({ ...errors, book_cover: "" });
+        }
+    };
+
     const handleSubmit = async () => {
         if (!validate()) return;
         if (!isEditMode && !selectedUser) return;
@@ -144,6 +167,7 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                 ...formData,
                 user_id: isEditMode ? (book!.id) : selectedUser!.id,
                 book_file: bookFile || undefined,
+                book_cover: coverFile || undefined,
             });
             onClose();
         } catch (error) { console.error(`Failed to ${isEditMode ? "update" : "create"} book:`, error); }
@@ -295,7 +319,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">ISBN</label>
-                                    <input type="text" value={formData.isbn} onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="ISBN number" />
+                                    <input type="text" value={formData.isbn} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 13); setFormData({ ...formData, isbn: v }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.isbn)} placeholder="ISBN number (13 digits)" maxLength={13} />
+                                    {errors.isbn && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.isbn}</p>}
                                 </div>
                             </div>
 
@@ -342,6 +367,61 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                             </div>
                         </div>
 
+                        {/* Cover Image Section */}
+                        <div className="rounded-xl px-5 py-4" style={sectionStyle}>
+                            <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                Cover Image
+                            </h3>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Book Cover
+                                    {isEditMode && book!.book_cover && (
+                                        <span className="text-xs text-gray-500 ml-2">(upload new image to replace)</span>
+                                    )}
+                                </label>
+                                <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverChange} className="hidden" />
+                                {coverPreview ? (
+                                    <div className="flex items-start gap-4 px-4 py-3 rounded-xl" style={{ ...inputStyle(), background: "#f8f9fb" }}>
+                                        <img
+                                            src={coverPreview}
+                                            alt="Book cover preview"
+                                            className="w-20 h-28 object-cover rounded-lg shrink-0"
+                                            style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.1)" }}
+                                        />
+                                        <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                            <div className="font-medium text-gray-900 text-sm truncate">
+                                                {coverFile ? coverFile.name : "Current cover"}
+                                            </div>
+                                            {coverFile && (
+                                                <div className="text-xs text-gray-500">{formatFileSize(coverFile.size)}</div>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => { setCoverFile(null); setCoverPreview(null); if (coverInputRef.current) coverInputRef.current.value = ""; }}
+                                                className="mt-1 text-xs text-red-500 hover:text-red-700 self-start"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => coverInputRef.current?.click()}
+                                        className="w-full px-4 py-5 border-2 border-dashed rounded-xl transition-all flex flex-col items-center gap-2 text-gray-500 hover:text-gray-600 hover:border-gray-400"
+                                        style={{ borderColor: "#d1d5db", background: "transparent" }}
+                                    >
+                                        <ImagePlus className="w-6 h-6" />
+                                        <div className="text-sm font-medium">
+                                            {isEditMode ? "Click to upload new cover image" : "Click to upload cover image"}
+                                        </div>
+                                        <div className="text-xs">JPEG, PNG, or WebP (max 5MB)</div>
+                                    </button>
+                                )}
+                                {errors.book_cover && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.book_cover}</p>}
+                            </div>
+                        </div>
+
                         {/* File & Description Section */}
                         <div className="rounded-xl px-5 py-4" style={sectionStyle}>
                             <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
@@ -368,8 +448,25 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                                 <div className="text-xs text-gray-500">{formatFileSize(bookFile.size)}</div>
                                             </div>
                                         </div>
-                                        <button onClick={() => { setBookFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="p-1 rounded text-gray-400 hover:text-gray-600 shrink-0">
+                                        <button type="button" onClick={() => { setBookFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="p-1 rounded text-gray-400 hover:text-gray-600 shrink-0">
                                             <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : isEditMode && book!.file_url ? (
+                                    <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{ ...inputStyle(), background: "#f8f9fb" }}>
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 shrink-0">
+                                                <FileText className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="font-medium text-gray-900 text-sm truncate">
+                                                    {book!.file_url.split('/').pop() || "Current book file"}
+                                                </div>
+                                                <div className="text-xs text-gray-500">Existing file</div>
+                                            </div>
+                                        </div>
+                                        <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-blue-600 hover:text-blue-800 font-medium shrink-0">
+                                            Replace
                                         </button>
                                     </div>
                                 ) : (
@@ -380,9 +477,7 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                         style={{ borderColor: "#d1d5db", background: "transparent" }}
                                     >
                                         <Upload className="w-6 h-6" />
-                                        <div className="text-sm font-medium">
-                                            {isEditMode ? "Click to upload new book file" : "Click to upload book file"}
-                                        </div>
+                                        <div className="text-sm font-medium">Click to upload book file</div>
                                         <div className="text-xs">PDF, EPUB, or MOBI (max 50MB)</div>
                                     </button>
                                 )}
@@ -392,16 +487,26 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                             {/* Description */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all resize-none" style={inputStyle()} placeholder="Enter book description" />
+                                <textarea value={formData.description} onChange={(e) => { if (e.target.value.length <= 1000) setFormData({ ...formData, description: e.target.value }); }} rows={3} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all resize-none" style={inputStyle(!!errors.description)} placeholder="Enter book description" maxLength={1000} />
+                                <div className="mt-1.5 flex items-center justify-between">
+                                    {errors.description ? <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.description}</p> : <span />}
+                                    <span className={`text-xs ${formData.description.length >= 1000 ? 'text-red-500' : 'text-gray-400'}`}>{formData.description.length}/1000</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Submit Button - Fixed Footer */}
                     <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginLeft: "-2px", marginRight: "-2px", paddingLeft: "2px", paddingRight: "2px" }}>
+                        {isEditMode && book?.is_deleted && (
+                            <div className="mb-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                                <span className="text-sm text-red-600">This book has been deleted and cannot be updated.</span>
+                            </div>
+                        )}
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || (isEditMode && book?.is_deleted)}
                             className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             style={{ background: "#1f2937", boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)" }}
                         >

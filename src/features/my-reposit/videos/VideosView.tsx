@@ -77,7 +77,7 @@ export default function VideosView() {
     const statCards = [
         { label: "Total Videos", value: analytics?.total_videos || 0, icon: Video, color: "#6b96ff", bg: "rgba(107, 150, 255, 0.08)", tooltip: "The total number of videos in the system." },
         { label: "Published", value: analytics?.published_videos || 0, icon: CheckCircle, color: "#4fcfa5", bg: "rgba(79, 207, 165, 0.08)", tooltip: "Videos that have been published." },
-        { label: "Draft", value: analytics?.draft_videos || 0, icon: AlertTriangle, color: "#ffc554", bg: "rgba(255, 197, 84, 0.08)", tooltip: "Videos saved as drafts." },
+        { label: "Pending", value: analytics?.draft_videos || 0, icon: AlertTriangle, color: "#ffc554", bg: "rgba(255, 197, 84, 0.08)", tooltip: "Videos saved as drafts." },
         { label: "In Review", value: analytics?.in_review_videos || 0, icon: Clock, color: "#6b96ff", bg: "rgba(107, 150, 255, 0.08)", tooltip: "Videos currently under review." },
         { label: "Rejected", value: analytics?.rejected_videos || 0, icon: XCircle, color: "#ff7070", bg: "rgba(255, 112, 112, 0.08)", tooltip: "Videos that have been rejected." },
     ];

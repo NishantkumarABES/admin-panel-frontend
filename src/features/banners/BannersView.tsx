@@ -68,6 +68,7 @@ export default function BannersView() {
         } catch (error: any) {
             console.error("Failed to save banner:", error);
             const errorMessage =
+                error?.response?.data?.detail ||
                 error?.response?.data?.message ||
                 error?.response?.data?.error ||
                 error?.message ||
@@ -148,49 +149,7 @@ export default function BannersView() {
             className="min-w-0 max-w-full"
         >
             <div className="clay-card overflow-hidden" style={{ padding: 0 }}>
-                {/* Header */}
-                <div
-                    className="px-5 py-3 flex items-center justify-between gap-2"
-                    style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-                >
-                    <div className="flex items-center gap-2">
-                        <div
-                            className="clay-circle"
-                            style={{
-                                background: "rgba(107, 150, 255, 0.08)",
-                                width: "32px",
-                                height: "32px",
-                            }}
-                        >
-                            <ImageIcon
-                                className="w-4 h-4"
-                                style={{ color: "#6b96ff" }}
-                            />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-semibold text-gray-900">
-                                Application Banners
-                            </h2>
-                            <p className="text-xs text-gray-500">
-                                Manage promotional banners displayed in the app
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleCreate}
-                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
-                        style={{
-                            background: "#1f2937",
-                            boxShadow:
-                                "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-                        }}
-                    >
-                        <Plus className="w-4 h-4" />
-                        Create Banner
-                    </button>
-                </div>
-
-                {/* Filters */}
+                {/* Filters + Create Banner */}
                 <div
                     className="px-5 py-3"
                     style={{
@@ -242,21 +201,35 @@ export default function BannersView() {
                                 Clear Filters
                             </button>
                         )}
+
+                        {/* Create Banner */}
+                        <button
+                            onClick={handleCreate}
+                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
+                            style={{
+                                background: "#1f2937",
+                                boxShadow:
+                                    "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                            }}
+                        >
+                            <Plus className="w-4 h-4" />
+                            Create Banner
+                        </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5">
+                <div className="p-4">
                     {loading ? (
                         /* Skeleton Loaders */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {[...Array(6)].map((_, i) => (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {[...Array(8)].map((_, i) => (
                                 <div
                                     key={i}
                                     className="clay-skeleton overflow-hidden"
                                     style={{
-                                        borderRadius: "18px",
-                                        height: "320px",
+                                        borderRadius: "14px",
+                                        height: "220px",
                                     }}
                                 >
                                     <div
@@ -267,12 +240,12 @@ export default function BannersView() {
                                                 "rgba(0,0,0,0.04)",
                                         }}
                                     />
-                                    <div className="p-4 space-y-3">
-                                        <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse" />
-                                        <div className="w-1/2 h-3 bg-gray-200 rounded animate-pulse" />
+                                    <div className="p-3 space-y-2">
+                                        <div className="w-3/4 h-3 bg-gray-200 rounded animate-pulse" />
+                                        <div className="w-1/2 h-2.5 bg-gray-200 rounded animate-pulse" />
                                         <div className="flex gap-2">
-                                            <div className="w-16 h-5 bg-gray-200 rounded-full animate-pulse" />
-                                            <div className="w-12 h-5 bg-gray-200 rounded-full animate-pulse" />
+                                            <div className="w-14 h-4 bg-gray-200 rounded-full animate-pulse" />
+                                            <div className="w-10 h-4 bg-gray-200 rounded-full animate-pulse" />
                                         </div>
                                     </div>
                                 </div>
@@ -319,7 +292,7 @@ export default function BannersView() {
                         </div>
                     ) : (
                         /* Banner Cards Grid */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {banners.map((banner) => (
                                 <BannerCard
                                     key={banner.id}
@@ -343,6 +316,7 @@ export default function BannersView() {
                     setSelectedBanner(null);
                 }}
                 onSubmit={handleSubmit}
+                activeBannerCount={banners.filter((b) => b.is_active).length}
             />
 
             <ConfirmDialog

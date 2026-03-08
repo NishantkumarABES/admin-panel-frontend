@@ -115,7 +115,7 @@ export default function ReviewRefundModal({ refund, isOpen, onClose, onApprove, 
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-xs text-gray-500">Customer</span>
-                                    <span className="text-sm font-medium text-gray-900">{refund.order.user.name}</span>
+                                    <span className="text-sm font-medium text-gray-900">{refund.user.name}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-xs text-gray-500">Refund Amount</span>
@@ -146,8 +146,8 @@ export default function ReviewRefundModal({ refund, isOpen, onClose, onApprove, 
                                     <button
                                         onClick={() => setDecision("approve")}
                                         className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border-2 ${decision === "approve"
-                                                ? "text-white"
-                                                : "text-green-700 hover:bg-green-50"
+                                            ? "text-white"
+                                            : "text-green-700 hover:bg-green-50"
                                             }`}
                                         style={
                                             decision === "approve"
@@ -164,8 +164,8 @@ export default function ReviewRefundModal({ refund, isOpen, onClose, onApprove, 
                                     <button
                                         onClick={() => setDecision("reject")}
                                         className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border-2 ${decision === "reject"
-                                                ? "text-white"
-                                                : "text-red-700 hover:bg-red-50"
+                                            ? "text-white"
+                                            : "text-red-700 hover:bg-red-50"
                                             }`}
                                         style={
                                             decision === "reject"

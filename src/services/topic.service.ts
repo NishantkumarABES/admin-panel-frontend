@@ -13,6 +13,7 @@ export interface TopicFilters {
   page?: number;
   page_size?: number;
   search?: string;
+  topic_type?: string;
 }
 
 // Get topics analytics
@@ -36,6 +37,9 @@ export const getTopics = async (filters: TopicFilters = {}) => {
   }
   if (filters.status) {
     params.append("status", filters.status);
+  }
+  if (filters.topic_type) {
+    params.append("topic_type", filters.topic_type);
   }
 
   const queryString = params.toString();

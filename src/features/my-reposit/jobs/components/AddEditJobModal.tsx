@@ -393,6 +393,12 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                     {/* Submit Button - Fixed Footer */}
                     <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginLeft: "-2px", marginRight: "-2px", paddingLeft: "2px", paddingRight: "2px" }}>
+                        {isEditMode && job?.is_deleted && (
+                            <div className="mb-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                                <span className="text-sm text-red-600">This job has been deleted and cannot be updated.</span>
+                            </div>
+                        )}
                         <button
                             type="submit"
                             disabled={isSubmitting || (isEditMode && job?.is_deleted)}
