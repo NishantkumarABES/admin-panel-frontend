@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, ChevronLeft, ChevronRight, Calendar, Download } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import type { RefundRequest, RefundAnalytics, RefundStatus, RefundType } from "./order.types";
 import { mockRefundRequests } from "./order.types";
 import RefundSummaryCards from "./components/RefundSummaryCards";
@@ -36,18 +36,13 @@ export default function RefundsView() {
   // Compute analytics from mock data
   const computeAnalytics = (data: RefundRequest[]): RefundAnalytics => {
     return {
-      total_refund_requests: data.length,
-      pending_review: data.filter((r) => r.status === "refund_requested" || r.status === "under_review").length,
-      approved: data.filter((r) => r.status === "approved").length,
-      rejected: data.filter((r) => r.status === "rejected").length,
-      processing: data.filter((r) => r.status === "refund_initiated").length,
-      completed: data.filter((r) => r.status === "refund_completed").length,
-      failed: data.filter((r) => r.status === "refund_failed").length,
+      total_refunds: data.length,
+      pending_refunds: data.filter((r) => r.status === "refund_requested" || r.status === "under_review").length,
+      approved_refunds: data.filter((r) => r.status === "approved").length,
+      rejected_refunds: data.filter((r) => r.status === "rejected").length,
       total_refund_amount: data
         .filter((r) => r.status === "refund_completed")
         .reduce((sum, r) => sum + r.refund_amount, 0),
-      refunds_this_month: data.length,
-      refund_rate_percentage: 18.5, // mock
     };
   };
 
@@ -181,13 +176,6 @@ export default function RefundsView() {
     setDateTo("");
   };
 
-  const handleExport = async () => {
-    try {
-      await refundService.exportRefunds({ status: statusFilter !== "all" ? statusFilter : undefined, date_from: dateFrom || undefined, date_to: dateTo || undefined });
-    } catch {
-      console.log("Export not available in mock mode");
-    }
-  };
 
   const hasActiveFilters = searchTerm || statusFilter !== "all" || typeFilter !== "all" || dateFrom || dateTo;
 
@@ -307,20 +295,7 @@ export default function RefundsView() {
             </div>
           </div>
 
-          {/* Right side: Export */}
-          <div className="flex justify-end lg:justify-normal shrink-0">
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
-              style={{
-                background: "#1f2937",
-                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-              }}
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-          </div>
+
         </div>
       </div>
 

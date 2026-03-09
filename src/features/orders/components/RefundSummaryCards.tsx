@@ -1,5 +1,5 @@
 import {
-    RotateCcw, Clock, CheckCircle, XCircle, Zap, CheckCheck,
+    RotateCcw, Clock, CheckCircle, XCircle,
     IndianRupee
 } from "lucide-react";
 import type { RefundAnalytics } from "../order.types";
@@ -23,14 +23,14 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
     const cards: StatCard[] = [
         {
             label: "Total Requests",
-            value: analytics?.total_refund_requests ?? 0,
+            value: analytics?.total_refunds ?? 0,
             icon: RotateCcw,
             iconColor: "#6b96ff",
             iconBg: "rgba(107, 150, 255, 0.08)",
         },
         {
             label: "Pending Review",
-            value: analytics?.pending_review ?? 0,
+            value: analytics?.pending_refunds ?? 0,
             icon: Clock,
             iconColor: "#ffc554",
             iconBg: "rgba(255, 197, 84, 0.08)",
@@ -38,7 +38,7 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
         },
         {
             label: "Approved",
-            value: analytics?.approved ?? 0,
+            value: analytics?.approved_refunds ?? 0,
             icon: CheckCircle,
             iconColor: "#4fcfa5",
             iconBg: "rgba(79, 207, 165, 0.08)",
@@ -46,27 +46,11 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
         },
         {
             label: "Rejected",
-            value: analytics?.rejected ?? 0,
+            value: analytics?.rejected_refunds ?? 0,
             icon: XCircle,
             iconColor: "#ff7070",
             iconBg: "rgba(255, 112, 112, 0.08)",
             valueStyle: { color: "#ff7070" },
-        },
-        {
-            label: "Processing",
-            value: analytics?.processing ?? 0,
-            icon: Zap,
-            iconColor: "#a285ff",
-            iconBg: "rgba(162, 133, 255, 0.08)",
-            valueStyle: { color: "#a285ff" },
-        },
-        {
-            label: "Completed",
-            value: analytics?.completed ?? 0,
-            icon: CheckCheck,
-            iconColor: "#10b981",
-            iconBg: "rgba(16, 185, 129, 0.08)",
-            valueStyle: { color: "#10b981" },
         },
         {
             label: "Refund Amount",
@@ -86,7 +70,7 @@ export default function RefundSummaryCards({ analytics, loading }: RefundSummary
         })}`;
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {cards.map((card) => {
                 const Icon = card.icon;
                 return (
