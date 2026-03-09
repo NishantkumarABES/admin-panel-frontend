@@ -17,6 +17,7 @@ const pageNames: Record<string, { name: string; description: string }> = {
   "/coupons": { name: "Coupons", description: "Manage promotional discount codes" },
   "/banners": { name: "Application Banners", description: "Manage promotional banners displayed in the app" },
   "/orders": { name: "Orders", description: "Manage product orders" },
+  "/refunds": { name: "Refunds", description: "Manage product refunds" },
   "/topics": { name: "Topics", description: "Manage educational topics and content" },
   "/events": { name: "Events", description: "Manage upcoming events and schedules" },
   "/advertisements": { name: "Advertisements", description: "Manage promotional advertisements" },

@@ -412,16 +412,11 @@ export interface RefundRequest {
 }
 
 export interface RefundAnalytics {
-  total_refund_requests: number;
-  pending_review: number;
-  approved: number;
-  rejected: number;
-  processing: number;
-  completed: number;
-  failed: number;
+  total_refunds: number;
+  pending_refunds: number;
+  approved_refunds: number;
+  rejected_refunds: number;
   total_refund_amount: number;
-  refunds_this_month: number;
-  refund_rate_percentage: number;
 }
 
 export interface RefundFilters {

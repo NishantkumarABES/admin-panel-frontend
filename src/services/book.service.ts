@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Book, BookFilters, ReviewBookDTO, BookAnalytics, CreateBookDTO, UpdateBookDTO } from "../features/my-reposit/books/books.types";
+import type { Book, BookFilters, ReviewBookDTO, BookAnalytics, CreateBookDTO, UpdateBookDTO, BookPurchase, BookPurchaseFilters, BookPurchaseStats } from "../features/my-reposit/books/books.types";
 
 interface PaginatedBooks {
   count: number;
@@ -7,6 +7,19 @@ interface PaginatedBooks {
   previous: string | null;
   results: Book[];
   detail: string;
+  success: boolean;
+}
+
+interface PaginatedBookPurchases {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: BookPurchase[];
+}
+
+interface BookPurchasesApiResponse {
+  detail: string;
+  data: PaginatedBookPurchases;
   success: boolean;
 }
 
@@ -98,5 +111,30 @@ export const updateBook = async (id: string, data: UpdateBookDTO) => {
   const response = await api.patch(`/books/admin/${id}/update/`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
+};
+
+// Get book purchases with optional filters
+export const getBookPurchases = async (filters?: BookPurchaseFilters): Promise<PaginatedBookPurchases> => {
+  const params = new URLSearchParams();
+
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.page_size) params.append("page_size", filters.page_size.toString());
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.order_status) params.append("order_status", filters.order_status);
+  if (filters?.payment_method) params.append("payment_method", filters.payment_method);
+
+  const queryString = params.toString();
+
+  const response = await api.get<BookPurchasesApiResponse>(
+    `/books/admin/purchases/${queryString ? `?${queryString}` : ""}`
+  );
+
+  return response.data.data;
+};
+
+// Get book purchase metrics
+export const getBookPurchaseMetrics = async (): Promise<BookPurchaseStats> => {
+  const response = await api.get<BookPurchaseStats>("/analytics/admin/book-purchases/metrics/");
   return response.data;
 };
