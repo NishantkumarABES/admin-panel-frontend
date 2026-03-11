@@ -195,7 +195,7 @@ export default function AddGeneralAdForm({
       isOpen={isOpen}
       onClose={handleClose}
       title="Add General Advertisement"
-      size="lg"
+      size="md"
     >
       <div className="flex flex-col h-full">
         {/* Close Button */}

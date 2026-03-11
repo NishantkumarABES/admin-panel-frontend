@@ -17,7 +17,7 @@ export default function PatientsView() {
 
   // Sorting state
   type SortDirection = "asc" | "desc" | null;
-  type PatientSortField = "full_name" | "email" | "phone" | "is_active";
+  type PatientSortField = "full_name" | "email" | "phone" | "is_active" | "gender" | "date_of_birth" | "created_at";
   const [sortField, setSortField] = useState<PatientSortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -94,8 +94,15 @@ export default function PatientsView() {
 
         if (sortField && sortDirection) {
           filteredData.sort((a, b) => {
-            let aVal = a[sortField];
-            let bVal = b[sortField];
+            let aVal: string | boolean | number = a[sortField];
+            let bVal: string | boolean | number = b[sortField];
+
+            // For date fields, compare as Date timestamps
+            if (sortField === "date_of_birth" || sortField === "created_at") {
+              const aTime = aVal ? new Date(aVal as string).getTime() : 0;
+              const bTime = bVal ? new Date(bVal as string).getTime() : 0;
+              return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+            }
 
             if (typeof aVal === "string") {
               aVal = aVal.toLowerCase();

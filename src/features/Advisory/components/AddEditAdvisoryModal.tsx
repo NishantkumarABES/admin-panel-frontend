@@ -30,7 +30,7 @@ const initialFormData: CreateAdvisoryDTO = {
 
 const MAX_CHARS_BIO = 1000;
 const MAX_CHARS_EMAIL = 254;
-const MAX_CHARS_NAME = 255;
+const MAX_CHARS_NAME = 50;
 const MAX_CHARS_PHONE = 15;
 const MAX_EXPERIENCE = 65;
 
@@ -66,6 +66,7 @@ export default function AddEditAdvisoryModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Add scrollbar styles
   useEffect(() => {
@@ -156,6 +157,21 @@ export default function AddEditAdvisoryModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate character limits
+    const errors: Record<string, string> = {};
+    if (formData.full_name.length > MAX_CHARS_NAME) {
+      errors.full_name = `Full Name cannot exceed ${MAX_CHARS_NAME} characters`;
+    }
+    if (formData.phone.length > MAX_CHARS_PHONE) {
+      errors.phone = `Phone cannot exceed ${MAX_CHARS_PHONE} characters`;
+    }
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -198,6 +214,7 @@ export default function AddEditAdvisoryModal({
     setImagePreview(null);
     setSubmitSuccess(false);
     setSubmitError(null);
+    setValidationErrors({});
     setMode("manual");
     setSelectedDoctor(null);
     setDoctorSearch("");
@@ -440,14 +457,21 @@ export default function AddEditAdvisoryModal({
                           type="text"
                           maxLength={MAX_CHARS_NAME}
                           value={formData.full_name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, full_name: e.target.value })
-                          }
+                          onChange={(e) => {
+                            setFormData({ ...formData, full_name: e.target.value });
+                            if (validationErrors.full_name) setValidationErrors({ ...validationErrors, full_name: "" });
+                          }}
                           className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                          style={inputStyle()}
+                          style={inputStyle(!!validationErrors.full_name)}
                           placeholder="Enter full name"
                           required
                         />
+                        {validationErrors.full_name && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                            <p className="text-xs text-red-600">{validationErrors.full_name}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -472,14 +496,21 @@ export default function AddEditAdvisoryModal({
                             type="tel"
                             maxLength={MAX_CHARS_PHONE}
                             value={formData.phone}
-                            onChange={(e) =>
-                              setFormData({ ...formData, phone: e.target.value })
-                            }
+                            onChange={(e) => {
+                              setFormData({ ...formData, phone: e.target.value });
+                              if (validationErrors.phone) setValidationErrors({ ...validationErrors, phone: "" });
+                            }}
                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                            style={inputStyle()}
+                            style={inputStyle(!!validationErrors.phone)}
                             placeholder="Enter phone number"
                             required
                           />
+                          {validationErrors.phone && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                              <p className="text-xs text-red-600">{validationErrors.phone}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
 

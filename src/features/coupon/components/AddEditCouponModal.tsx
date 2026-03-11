@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AlertCircle, X } from "lucide-react";
 import type { Coupon, CreateCouponDTO, UpdateCouponDTO } from "../coupon.types";
 import Modal from "../../../components/common/Modal";
@@ -23,6 +23,9 @@ const initialFormData: CreateCouponDTO = {
     valid_until: "",
 };
 
+const MAX_YEAR = 2099;
+const MAX_DATE = `${MAX_YEAR}-12-31`;
+
 export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }: AddEditCouponModalProps) {
     const isEditMode = !!coupon;
 
@@ -31,6 +34,23 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    // Prevent typing years longer than 4 digits in date inputs
+    const handleDateKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        const input = e.target as HTMLInputElement;
+        const value = input.value;
+        const yearPart = value.split("-")[0] || "";
+        const selectionStart = input.selectionStart || 0;
+
+        // If cursor is in the year portion (first 4 chars) and year already has 4 digits,
+        // block additional digit entry (allow navigation/delete keys)
+        const isDigit = /^[0-9]$/.test(e.key);
+        if (isDigit && selectionStart <= 4 && yearPart.length >= 4 && input.selectionStart === input.selectionEnd) {
+            e.preventDefault();
+        }
+    }, []);
 
     // Add scrollbar styles
     useEffect(() => {
@@ -85,6 +105,8 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
             newErrors.code = "Coupon code is required";
         } else if (formData.code.length < 3) {
             newErrors.code = "Coupon code must be at least 3 characters";
+        } else if (formData.code.length > 50) {
+            newErrors.code = "Coupon code cannot exceed 50 characters";
         }
         if (!formData.discount_value || parseFloat(formData.discount_value) <= 0) {
             newErrors.discount_value = "Discount value must be greater than 0";
@@ -258,6 +280,7 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
                                             boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                                         }}
                                         placeholder="e.g., SAVE20"
+                                        maxLength={50}
                                     />
                                     {errors.code && (
                                         <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
@@ -402,6 +425,9 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
                                             name="valid_from"
                                             value={formData.valid_from}
                                             onChange={handleChange}
+                                            onKeyDown={handleDateKeyDown}
+                                            min={todayStr}
+                                            max={MAX_DATE}
                                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                                             style={{
                                                 background: "#ffffff",
@@ -421,6 +447,9 @@ export default function AddEditCouponModal({ coupon, isOpen, onClose, onSubmit }
                                             name="valid_until"
                                             value={formData.valid_until}
                                             onChange={handleChange}
+                                            onKeyDown={handleDateKeyDown}
+                                            min={formData.valid_from || todayStr}
+                                            max={MAX_DATE}
                                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                                             style={{
                                                 background: "#ffffff",

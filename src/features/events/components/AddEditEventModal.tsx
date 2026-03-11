@@ -153,9 +153,18 @@ export default function AddEditEventModal({
     spec.toLowerCase().includes(specializationSearch.toLowerCase())
   );
 
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      const oversizedFiles = files.filter(file => file.size > MAX_IMAGE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setValidationErrors(prev => ({ ...prev, images: "Each image must be less than 2 MB" }));
+        e.target.value = "";
+        return;
+      }
+      setValidationErrors(prev => ({ ...prev, images: "" }));
       setFormData({ ...formData, images: files });
       const previews = files.map(file => URL.createObjectURL(file));
       setImagePreviews(previews);
@@ -173,8 +182,8 @@ export default function AddEditEventModal({
     const errors: Record<string, string> = {};
     if (!formData.title.trim()) {
       errors.title = "Event title is required";
-    } else if (formData.title.length > 150) {
-      errors.title = "Event title must be less than 150 characters";
+    } else if (formData.title.length > 60) {
+      errors.title = "Event title must be less than 60 characters";
     }
     if (!formData.event_type) errors.event_type = "Event type is required";
     if (!formData.start_date) errors.start_date = "Start date is required";
@@ -190,8 +199,8 @@ export default function AddEditEventModal({
     if (formData.agenda && formData.agenda.length > 1000) {
       errors.agenda = "Agenda must be less than 1000 characters";
     }
-    if (formData.venue && formData.venue.length > 255) {
-      errors.venue = "Venue must be less than 255 characters";
+    if (formData.venue && formData.venue.length > 100) {
+      errors.venue = "Venue must be less than 100 characters";
     }
     if (!formData.event_link?.trim()) {
       errors.event_link = "Event link is required";
@@ -368,6 +377,7 @@ export default function AddEditEventModal({
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                       style={inputStyle(!!validationErrors.title)}
                       placeholder="Enter event title"
+                      maxLength={60}
                     />
                     {validationErrors.title && (
                       <div className="flex items-center gap-1.5 mt-1.5">
@@ -715,6 +725,7 @@ export default function AddEditEventModal({
                         className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                         style={inputStyle(!!validationErrors.venue)}
                         placeholder="Enter venue address"
+                        maxLength={100}
                       />
                       {validationErrors.venue && (
                         <div className="flex items-center gap-1.5 mt-1.5">
@@ -876,6 +887,7 @@ export default function AddEditEventModal({
                               style={inputStyle()}
                               placeholder="Dr. John Doe"
                               required
+                              maxLength={50}
                             />
                           </div>
                           <div>
@@ -888,6 +900,7 @@ export default function AddEditEventModal({
                               style={inputStyle()}
                               placeholder="Chief Cardiologist, AIIMS"
                               required
+                              maxLength={50}
                             />
                           </div>
                           <div className="col-span-2">
@@ -987,8 +1000,14 @@ export default function AddEditEventModal({
                     }}
                   >
                     <Upload className="w-5 h-5" />
-                    Upload Images
+                    Upload Images (max 2 MB each)
                   </button>
+                  {validationErrors.images && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      <p className="text-xs text-red-600">{validationErrors.images}</p>
+                    </div>
+                  )}
 
                   {imagePreviews.length > 0 && (
                     <div className="grid grid-cols-4 gap-3">

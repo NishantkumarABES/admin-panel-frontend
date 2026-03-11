@@ -148,13 +148,13 @@ export default function ProfileView() {
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
-      formData.append("profile_image", file);
+      formData.append("profile_photo", file);
 
-      const res = await api.patch(`/auth/update/${user?.id}/`, formData, {
+      const res = await api.patch("/profiles/admin/profile/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const imageUrl = res.data?.profile_image || URL.createObjectURL(file);
+      const imageUrl = res.data?.profile_photo || URL.createObjectURL(file);
       updateUser({ profile_image: imageUrl });
       toast.success("Profile image updated!");
     } catch (error: any) {

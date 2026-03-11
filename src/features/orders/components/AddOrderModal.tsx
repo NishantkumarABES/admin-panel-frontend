@@ -10,11 +10,19 @@ interface User {
     email: string;
 }
 
+interface ProductImage {
+    id: string;
+    image: string;
+    created_at: string;
+}
+
 interface Product {
     id: string;
     name: string;
     price: number;
+    final_price: number;
     sku?: string;
+    images?: ProductImage[];
 }
 
 interface Address {
@@ -184,7 +192,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
     };
 
     const calculateTotal = () =>
-        orderItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+        orderItems.reduce((sum, item) => sum + item.product.final_price * item.quantity, 0);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -482,14 +490,22 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                         key={product.id}
                                                         type="button"
                                                         onClick={() => handleAddProduct(product)}
-                                                        className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex justify-between items-center"
+                                                        className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-3"
                                                     >
-                                                        <div>
+                                                        {product.images && product.images.length > 0 && (
+                                                            <img
+                                                                src={product.images[0].image}
+                                                                alt={product.name}
+                                                                className="w-9 h-9 rounded-lg object-cover shrink-0"
+                                                                style={{ border: "1px solid #e5e7eb" }}
+                                                            />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
                                                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
                                                             {product.sku && <div className="text-xs text-gray-500">SKU: {product.sku}</div>}
                                                         </div>
                                                         <div className="text-sm font-medium text-gray-900 shrink-0 ml-3">
-                                                            ₹{product.price.toLocaleString("en-IN")}
+                                                            ₹{product.final_price.toLocaleString("en-IN")}
                                                         </div>
                                                     </button>
                                                 ))}
@@ -509,9 +525,19 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                     className="flex items-center justify-between p-3"
                                                     style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
                                                 >
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium text-gray-900 truncate">{item.product.name}</div>
-                                                        <div className="text-xs text-gray-500">₹{item.product.price.toLocaleString("en-IN")} each</div>
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        {item.product.images && item.product.images.length > 0 && (
+                                                            <img
+                                                                src={item.product.images[0].image}
+                                                                alt={item.product.name}
+                                                                className="w-10 h-10 rounded-lg object-cover shrink-0"
+                                                                style={{ border: "1px solid #e5e7eb" }}
+                                                            />
+                                                        )}
+                                                        <div className="min-w-0">
+                                                            <div className="text-sm font-medium text-gray-900 truncate">{item.product.name}</div>
+                                                            <div className="text-xs text-gray-500">₹{item.product.final_price.toLocaleString("en-IN")} each</div>
+                                                        </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0 ml-3">
                                                         <div className="flex items-center gap-2">
@@ -534,7 +560,7 @@ export default function AddOrderModal({ isOpen, onClose, onSubmit }: AddOrderMod
                                                             </button>
                                                         </div>
                                                         <div className="w-24 text-right text-sm font-medium text-gray-900">
-                                                            ₹{(item.product.price * item.quantity).toLocaleString("en-IN")}
+                                                            ₹{(item.product.final_price * item.quantity).toLocaleString("en-IN")}
                                                         </div>
                                                         <button
                                                             type="button"

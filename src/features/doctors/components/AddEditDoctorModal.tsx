@@ -51,6 +51,7 @@ export default function AddEditDoctorModal({
   const [experienceError, setExperienceError] = useState<string | null>(null);
   const [fullNameError, setFullNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [licenseNumberError, setLicenseNumberError] = useState<string | null>(null);
 
   // Password display states
   const [copied, setCopied] = useState(false);
@@ -127,6 +128,7 @@ export default function AddEditDoctorModal({
     setExperienceError(null);
     setFullNameError(null);
     setEmailError(null);
+    setLicenseNumberError(null);
   }, [doctor, isOpen]);
 
   // Close dropdown when clicking outside
@@ -163,10 +165,11 @@ export default function AddEditDoctorModal({
     setExperienceError(null);
     setFullNameError(null);
     setEmailError(null);
+    setLicenseNumberError(null);
 
     // Validate full name length
-    if (formData.fullName.length >= 100) {
-      setFullNameError("Full name cannot exceed 100 characters");
+    if (formData.fullName.length > 50) {
+      setFullNameError("Name cannot be more than 50 characters");
       return;
     }
 
@@ -451,8 +454,8 @@ export default function AddEditDoctorModal({
                     onChange={(e) => {
                       const val = e.target.value;
                       setFormData({ ...formData, fullName: val });
-                      if (val.length >= 100) {
-                        setFullNameError("Full name cannot exceed 100 characters");
+                      if (val.length >= 50) {
+                        setFullNameError("Name cannot be more than 50 characters");
                       } else {
                         setFullNameError(null);
                       }
@@ -465,7 +468,7 @@ export default function AddEditDoctorModal({
                     }}
                     placeholder="Enter full name"
                     required
-                    maxLength={100}
+                    maxLength={50}
                   />
                   {fullNameError && (
                     <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
@@ -704,17 +707,31 @@ export default function AddEditDoctorModal({
                     <input
                       type="text"
                       value={formData.licenseNumber}
-                      onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, licenseNumber: val });
+                        if (val.length >= 15) {
+                          setLicenseNumberError("License Number cannot exceed 15 characters");
+                        } else {
+                          setLicenseNumberError(null);
+                        }
+                      }}
+                      className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:outline-none transition-all ${licenseNumberError ? 'focus:ring-red-500' : 'focus:ring-gray-900'}`}
                       style={{
                         background: "#ffffff",
-                        border: "1px solid #e5e7eb",
+                        border: licenseNumberError ? "1px solid #ef4444" : "1px solid #e5e7eb",
                         boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                       }}
                       placeholder="e.g., MED123456"
                       required
                       maxLength={15}
                     />
+                    {licenseNumberError && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {licenseNumberError}
+                      </p>
+                    )}
                   </div>
 
                   {/* Years of Experience */}

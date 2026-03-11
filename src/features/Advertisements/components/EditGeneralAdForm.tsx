@@ -61,6 +61,8 @@ export default function EditGeneralAdForm({
 
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
+    } else if (formData.title.length > 200) {
+      newErrors.title = "Title must be less than 200 characters";
     }
 
     if (!formData.url.trim()) {
@@ -232,6 +234,7 @@ export default function EditGeneralAdForm({
                         style={errors.title ? insetErrorStyle : insetStyle}
                         placeholder="Enter advertisement title"
                         disabled={isSubmitting}
+                        maxLength={200}
                       />
                       {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
                     </div>
