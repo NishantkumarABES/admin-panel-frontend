@@ -29,9 +29,9 @@ export const notificationService = {
     /**
      * Get paginated list of all notifications
      */
-    async getAll(page: number = 1): Promise<NotificationListResponse> {
+    async getAll(page: number = 1, pageSize: number = 5): Promise<NotificationListResponse> {
         const response = await api.get<NotificationListResponse>(
-            `/admin/notifications/?page=${page}`
+            `/admin/notifications/?page=${page}&page_size=${pageSize}`
         );
         return response.data;
     },

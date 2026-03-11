@@ -61,6 +61,7 @@ export default function AddEditIDIModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // AI Extract state
   const [addMode, setAddMode] = useState<AddMode>("manual");
@@ -154,6 +155,21 @@ export default function AddEditIDIModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate character limits
+    const errors: Record<string, string> = {};
+    if (formData.drugNameGeneric.length > 50) {
+      errors.drugNameGeneric = "Drug Name (Generic) cannot exceed 50 characters";
+    }
+    if (formData.brandsInIndia.length > 100) {
+      errors.brandsInIndia = "Brands in India cannot exceed 100 characters";
+    }
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
+
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -454,13 +470,22 @@ export default function AddEditIDIModal({
                         <input
                           type="text"
                           required
-                          maxLength={MAX_CHARS_255}
+                          maxLength={50}
                           value={formData.drugNameGeneric}
-                          onChange={(e) => setFormData({ ...formData, drugNameGeneric: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, drugNameGeneric: e.target.value });
+                            if (validationErrors.drugNameGeneric) setValidationErrors({ ...validationErrors, drugNameGeneric: "" });
+                          }}
                           className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                          style={inputStyle()}
+                          style={inputStyle(!!validationErrors.drugNameGeneric)}
                           placeholder="e.g., Metformin"
                         />
+                        {validationErrors.drugNameGeneric && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                            <p className="text-xs text-red-600">{validationErrors.drugNameGeneric}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -576,13 +601,22 @@ export default function AddEditIDIModal({
                         <input
                           type="text"
                           required
-                          maxLength={MAX_CHARS_255}
+                          maxLength={100}
                           value={formData.brandsInIndia}
-                          onChange={(e) => setFormData({ ...formData, brandsInIndia: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, brandsInIndia: e.target.value });
+                            if (validationErrors.brandsInIndia) setValidationErrors({ ...validationErrors, brandsInIndia: "" });
+                          }}
                           className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                          style={inputStyle()}
+                          style={inputStyle(!!validationErrors.brandsInIndia)}
                           placeholder="e.g., Glycomet, Glucophage, Obimet"
                         />
+                        {validationErrors.brandsInIndia && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                            <p className="text-xs text-red-600">{validationErrors.brandsInIndia}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">

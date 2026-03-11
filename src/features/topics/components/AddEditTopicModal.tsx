@@ -11,6 +11,7 @@ import RichTextEditor from "../../settings/components/RichTextEditor";
 import { stripHtml } from "../../../utils/stripHtml";
 
 const MAX_DESCRIPTION_CHARS = 500;
+const MAX_TITLE_CHARS = 150;
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
@@ -276,6 +277,12 @@ export default function AddEditTopicModal({
     // Validate required fields
     if (!formData.title?.trim()) {
       alert("Title is required");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (formData.title.length > MAX_TITLE_CHARS) {
+      alert(`Title must be ${MAX_TITLE_CHARS} characters or less`);
       setIsSubmitting(false);
       return;
     }
@@ -804,6 +811,7 @@ export default function AddEditTopicModal({
                       style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)" }}
                       placeholder="Enter topic title"
                       required
+                      maxLength={MAX_TITLE_CHARS}
                     />
                   </div>
 

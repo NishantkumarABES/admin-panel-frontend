@@ -6,7 +6,7 @@ import malePatientPlaceholder from "../../../assets/placeholders/male_patient.jp
 import femalePatientPlaceholder from "../../../assets/placeholders/female_patient.jpg";
 
 type SortDirection = "asc" | "desc" | null;
-type PatientSortField = "full_name" | "email" | "phone" | "is_active";
+type PatientSortField = "full_name" | "email" | "phone" | "is_active" | "gender" | "date_of_birth" | "created_at";
 
 interface PatientTableProps {
     patients: PatientUser[];
@@ -85,14 +85,32 @@ export default function PatientTable({
                                     {getSortIcon("is_active")}
                                 </div>
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Gender
+                            <th
+                                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                                onClick={() => onSort?.("gender")}
+                            >
+                                <div className="flex items-center gap-1">
+                                    Gender
+                                    {getSortIcon("gender")}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Age
+                            <th
+                                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                                onClick={() => onSort?.("date_of_birth")}
+                            >
+                                <div className="flex items-center gap-1">
+                                    Age
+                                    {getSortIcon("date_of_birth")}
+                                </div>
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Registration Date
+                            <th
+                                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-gray-100 select-none"
+                                onClick={() => onSort?.("created_at")}
+                            >
+                                <div className="flex items-center gap-1">
+                                    Registration Date
+                                    {getSortIcon("created_at")}
+                                </div>
                             </th>
                             <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 Actions

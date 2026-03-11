@@ -108,7 +108,14 @@ export default function AddEditBannerModal({
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
-        if (!title.trim()) newErrors.title = "Title is required";
+        if (!title.trim()) {
+            newErrors.title = "Title is required";
+        } else if (title.length > 50) {
+            newErrors.title = "Title cannot exceed 50 characters";
+        }
+        if (subtitle.length > 50) {
+            newErrors.subtitle = "Subtitle cannot exceed 50 characters";
+        }
         if (!isEditMode && !imageFile) newErrors.image = "Image is required";
         if (!redirectCategory) newErrors.redirect_category = "Redirect category is required";
         if (order < 1 || order > maxOrder) {
@@ -337,6 +344,7 @@ export default function AddEditBannerModal({
                                         className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                                         style={inputStyle(!!errors.title)}
                                         placeholder="e.g., Summer Sale Banner"
+                                        maxLength={50}
                                     />
                                     {errors.title && (
                                         <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
@@ -353,12 +361,26 @@ export default function AddEditBannerModal({
                                     </label>
                                     <textarea
                                         value={subtitle}
-                                        onChange={(e) => setSubtitle(e.target.value)}
+                                        onChange={(e) => {
+                                            setSubtitle(e.target.value);
+                                            if (errors.subtitle)
+                                                setErrors((prev) => ({
+                                                    ...prev,
+                                                    subtitle: "",
+                                                }));
+                                        }}
                                         className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                                        style={inputStyle(false)}
+                                        style={inputStyle(!!errors.subtitle)}
                                         rows={2}
                                         placeholder="Optional subtitle text"
+                                        maxLength={50}
                                     />
+                                    {errors.subtitle && (
+                                        <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.subtitle}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

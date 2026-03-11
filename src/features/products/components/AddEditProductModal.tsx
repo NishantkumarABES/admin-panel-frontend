@@ -43,6 +43,8 @@ export default function AddEditProductModal({
   const [existingImageCount, setExistingImageCount] = useState(0);
   const [existingImageIds, setExistingImageIds] = useState<string[]>([]);
   const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
+  const [productNameError, setProductNameError] = useState<string | null>(null);
+  const [brandError, setBrandError] = useState<string | null>(null);
 
   // Add scrollbar styles
   useEffect(() => {
@@ -103,6 +105,8 @@ export default function AddEditProductModal({
     }
     setSubmitSuccess(false);
     setSubmitError(null);
+    setProductNameError(null);
+    setBrandError(null);
     setErrors({});
   }, [product, isOpen]);
 
@@ -123,13 +127,26 @@ export default function AddEditProductModal({
 
   const MAX_IMAGES = 5;
 
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     const currentTotal = imagePreviews.length;
     const remainingSlots = MAX_IMAGES - currentTotal;
     if (remainingSlots <= 0) return;
-    const allowedFiles = files.slice(0, remainingSlots);
+    const slicedFiles = files.slice(0, remainingSlots);
+
+    const oversizedFiles = slicedFiles.filter(file => file.size > MAX_IMAGE_SIZE);
+    if (oversizedFiles.length > 0) {
+      setErrors(prev => ({ ...prev, images: `Each image must be less than 2MB. ${oversizedFiles.length} image(s) exceeded the limit.` }));
+    } else {
+      setErrors(prev => ({ ...prev, images: "" }));
+    }
+
+    const allowedFiles = slicedFiles.filter(file => file.size <= MAX_IMAGE_SIZE);
+    if (allowedFiles.length === 0) { e.target.value = ""; return; }
+
     setFormData(prev => ({ ...prev, images: [...(prev.images || []), ...allowedFiles] }));
     const newPreviews = allowedFiles.map(file => URL.createObjectURL(file));
     setImagePreviews(prev => [...prev, ...newPreviews]);
@@ -172,6 +189,8 @@ export default function AddEditProductModal({
     }
     if (formData.stock_quantity === undefined || formData.stock_quantity < 0) {
       newErrors.stock_quantity = "Stock quantity must be 0 or greater";
+    } else if (!product && formData.stock_quantity === 0) {
+      newErrors.stock_quantity = "Stock quantity must be greater than 0 when adding a product";
     }
     if (!formData.for_patients && !formData.for_doctors) {
       newErrors.for_patients = "Product must be for patients, doctors, or both";
@@ -185,6 +204,8 @@ export default function AddEditProductModal({
     if (!validateForm()) return;
     setIsSubmitting(true);
     setSubmitError(null);
+    setProductNameError(null);
+    setBrandError(null);
     try {
       const submitData = { ...formData, deleted_image_ids: deletedImageIds.length > 0 ? deletedImageIds : undefined };
       const result = await onSubmit(submitData);
@@ -304,8 +325,8 @@ export default function AddEditProductModal({
                   Basic Details
                 </h3>
 
-                {/* Product Name & Brand - Side by Side */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* Product Name & Brand - Stacked Vertically */}
+                <div className="grid grid-cols-1 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Product Name *
@@ -313,22 +334,29 @@ export default function AddEditProductModal({
                     <input
                       type="text"
                       value={formData.name}
+                      maxLength={50}
                       onChange={(e) => {
-                        setFormData({ ...formData, name: e.target.value });
+                        const val = e.target.value;
+                        setFormData({ ...formData, name: val });
                         if (errors.name) setErrors({ ...errors, name: "" });
+                        if (val.length >= 50) {
+                          setProductNameError("Name cannot be more than 50 characters");
+                        } else {
+                          setProductNameError(null);
+                        }
                       }}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:outline-none transition-all ${productNameError ? 'focus:ring-red-500' : 'focus:ring-gray-900'}`}
                       style={{
                         background: "#ffffff",
-                        border: errors.name ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        border: productNameError || errors.name ? "1px solid #ef4444" : "1px solid #e5e7eb",
                         boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                       }}
                       placeholder="Enter product name"
                     />
-                    {errors.name && (
+                    {(productNameError || errors.name) && (
                       <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
-                        {errors.name}
+                        {productNameError || errors.name}
                       </p>
                     )}
                   </div>
@@ -339,22 +367,29 @@ export default function AddEditProductModal({
                     <input
                       type="text"
                       value={formData.brand}
+                      maxLength={50}
                       onChange={(e) => {
-                        setFormData({ ...formData, brand: e.target.value });
+                        const val = e.target.value;
+                        setFormData({ ...formData, brand: val });
                         if (errors.brand) setErrors({ ...errors, brand: "" });
+                        if (val.length >= 50) {
+                          setBrandError("Brand cannot be more than 50 characters");
+                        } else {
+                          setBrandError(null);
+                        }
                       }}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:outline-none transition-all ${brandError ? 'focus:ring-red-500' : 'focus:ring-gray-900'}`}
                       style={{
                         background: "#ffffff",
-                        border: errors.brand ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        border: brandError || errors.brand ? "1px solid #ef4444" : "1px solid #e5e7eb",
                         boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                       }}
                       placeholder="Enter brand"
                     />
-                    {errors.brand && (
+                    {(brandError || errors.brand) && (
                       <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
-                        {errors.brand}
+                        {brandError || errors.brand}
                       </p>
                     )}
                   </div>
@@ -708,8 +743,14 @@ export default function AddEditProductModal({
                     {imagePreviews.length >= MAX_IMAGES ? "Maximum images reached" : "Upload Images"}
                   </button>
                   <p className="text-xs text-gray-400 text-center">
-                    {imagePreviews.length}/{MAX_IMAGES} images
+                    {imagePreviews.length}/{MAX_IMAGES} images (max 2MB each)
                   </p>
+                  {errors.images && (
+                    <p className="text-xs text-red-600 flex items-center justify-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.images}
+                    </p>
+                  )}
 
                   {imagePreviews.length > 0 && (
                     <div className="grid grid-cols-4 gap-3">
