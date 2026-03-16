@@ -18,7 +18,6 @@ interface AddEditArticleModalProps {
 const initialFormData: Omit<CreateArticleDTO, "user_id"> = {
     title: "", article_type: "original_research" as ArticleType, speciality: "",
     authors: "", institution: "", abstract: "", content: "",
-    year: new Date().getFullYear(),
     publication_date: new Date().toISOString().split("T")[0],
 };
 
@@ -57,7 +56,7 @@ export default function AddEditArticleModal({ isOpen, onClose, onSubmit, article
     useEffect(() => {
         if (isOpen) {
             if (article) {
-                setFormData({ title: article.title, article_type: article.article_type, speciality: article.speciality || "", authors: article.authors, institution: article.institution || "", abstract: article.abstract, content: article.content || "", year: article.year, publication_date: article.publication_date || new Date().toISOString().split("T")[0] });
+                setFormData({ title: article.title, article_type: article.article_type, speciality: article.speciality || "", authors: article.authors, institution: article.institution || "", abstract: article.abstract, content: article.content || "", publication_date: article.publication_date || new Date().toISOString().split("T")[0] });
                 setSelectedUser(null); setUserSearchTerm("");
             } else { setFormData(initialFormData); setSelectedUser(null); setUserSearchTerm(""); }
             setErrors({});
@@ -68,10 +67,13 @@ export default function AddEditArticleModal({ isOpen, onClose, onSubmit, article
         const e: Record<string, string> = {};
         if (!isEditMode && !selectedUser) e.user_id = "Please select a doctor user";
         if (!formData.title.trim()) e.title = "Title is required";
+        else if (formData.title.length > 60) e.title = "Title cannot exceed 60 characters";
         if (!formData.authors.trim()) e.authors = "Authors is required";
         if (!formData.speciality) e.speciality = "Specialty is required";
         if (!formData.abstract.trim()) e.abstract = "Abstract is required";
         if (!formData.article_type) e.article_type = "Article type is required";
+        if (formData.institution.length > 50) e.institution = "Institution cannot exceed 50 characters";
+        if (!formData.content.trim()) e.content = "Content is required";
         setErrors(e); return Object.keys(e).length === 0;
     };
 
@@ -128,10 +130,10 @@ export default function AddEditArticleModal({ isOpen, onClose, onSubmit, article
                                 </div>
                             )}
                             {isEditMode && <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Uploaded By</label><div className="px-4 py-2.5 text-sm rounded-xl text-gray-700" style={{ ...iS(), background: "#f8f9fb" }}>{article!.uploaded_by}</div></div>}
-                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Title *</label><input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.title)} placeholder="Enter article title" />{errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}</div>
+                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Title *</label><input type="text" maxLength={60} value={formData.title} onChange={(e) => { const val = e.target.value; setFormData({ ...formData, title: val }); if (val.length >= 60) setErrors(prev => ({ ...prev, title: "Title cannot exceed 60 characters" })); else setErrors(prev => { const { title, ...rest } = prev; return rest; }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.title)} placeholder="Enter article title" />{errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}</div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-sm font-medium text-gray-700 mb-2">Authors *</label><input type="text" value={formData.authors} onChange={(e) => setFormData({ ...formData, authors: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.authors)} placeholder="Author name(s)" />{errors.authors && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.authors}</p>}</div>
-                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Institution</label><input type="text" value={formData.institution} onChange={(e) => setFormData({ ...formData, institution: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} placeholder="Institution" /></div>
+                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Institution</label><input type="text" maxLength={50} value={formData.institution} onChange={(e) => { const val = e.target.value; setFormData({ ...formData, institution: val }); if (val.length >= 50) setErrors(prev => ({ ...prev, institution: "Institution cannot exceed 50 characters" })); else setErrors(prev => { const { institution, ...rest } = prev; return rest; }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.institution)} placeholder="Institution" />{errors.institution && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.institution}</p>}</div>
                             </div>
                         </div>
 
@@ -141,12 +143,11 @@ export default function AddEditArticleModal({ isOpen, onClose, onSubmit, article
                                 <div><label className="block text-sm font-medium text-gray-700 mb-2">Specialty *</label><select value={formData.speciality} onChange={(e) => setFormData({ ...formData, speciality: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.speciality)}><option value="">Select specialty</option>{SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}</select>{errors.speciality && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.speciality}</p>}</div>
                                 <div><label className="block text-sm font-medium text-gray-700 mb-2">Article Type *</label><select value={formData.article_type} onChange={(e) => setFormData({ ...formData, article_type: e.target.value as ArticleType })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.article_type)}>{ARTICLE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}</select>{errors.article_type && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.article_type}</p>}</div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Year</label><input type="number" value={formData.year} onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} min={1900} max={2100} /></div>
-                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Publication Date</label><input type="date" value={formData.publication_date} onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} /></div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Publication Date</label><input type="date" value={formData.publication_date} onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} />
                             </div>
-                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Abstract *</label><textarea value={formData.abstract} onChange={(e) => setFormData({ ...formData, abstract: e.target.value })} rows={3} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none resize-none" style={iS(!!errors.abstract)} placeholder="Enter abstract" />{errors.abstract && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.abstract}</p>}</div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-2">Content</label><RichTextEditor content={formData.content} onChange={(html) => setFormData({ ...formData, content: html })} editable={true} /></div>
+                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Abstract *</label><textarea value={formData.abstract} onChange={(e) => { if (e.target.value.length <= 1000) setFormData({ ...formData, abstract: e.target.value }); }} rows={3} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none resize-none" style={iS(!!errors.abstract)} placeholder="Enter abstract" maxLength={1000} /><div className="flex items-center justify-between mt-1.5"><div>{errors.abstract && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.abstract}</p>}</div><span className="text-xs" style={{ color: formData.abstract.length >= 1000 ? "#ef4444" : "#9ca3af" }}>{formData.abstract.length}/1000</span></div></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-2">Content *</label><RichTextEditor content={formData.content} onChange={(html) => setFormData({ ...formData, content: html })} editable={true} />{errors.content && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.content}</p>}</div>
                         </div>
                     </div>
                     <div className="sticky bottom-0 bg-white pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>

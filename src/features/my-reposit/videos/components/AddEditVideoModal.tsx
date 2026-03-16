@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Search, ChevronDown, AlertCircle } from "lucide-react";
+import { X, Search, ChevronDown, AlertCircle, Upload, Video, Image, RefreshCw } from "lucide-react";
 import type { Video as VideoType, CreateVideoDTO } from "../videos.types";
 import { SPECIALTIES } from "../../../Advertisements/advertisement.types";
 import * as doctorService from "../../../../services/doctor.service";
@@ -34,7 +34,10 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
     const [userSearchLoading, setUserSearchLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isReplacingVideo, setIsReplacingVideo] = useState(false);
     const userDropdownRef = useRef<HTMLDivElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
+    const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const style = document.createElement('style');
@@ -60,8 +63,8 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
         if (isOpen) {
             if (video) {
                 setFormData({ title: video.title, description: video.description || "", Institution: video.Institution || "", speciality: video.speciality || "", allow_download: video.allow_download, video_file: null, thumbnail: null });
-                setSelectedUser(null); setUserSearchTerm("");
-            } else { setFormData(initialFormData); setSelectedUser(null); setUserSearchTerm(""); }
+                setSelectedUser(null); setUserSearchTerm(""); setIsReplacingVideo(false);
+            } else { setFormData(initialFormData); setSelectedUser(null); setUserSearchTerm(""); setIsReplacingVideo(false); }
             setErrors({});
         }
     }, [isOpen, video]);
@@ -70,7 +73,9 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
         const e: Record<string, string> = {};
         if (!isEditMode && !selectedUser) e.user_id = "Please select a doctor user";
         if (!formData.title.trim()) e.title = "Title is required";
+        else if (formData.title.length > 60) e.title = "Title cannot exceed 60 characters";
         if (!formData.description.trim()) e.description = "Description is required";
+        if (formData.Institution.length > 50) e.Institution = "Institution cannot exceed 50 characters";
         if (!formData.speciality) e.speciality = "Specialty is required";
         if (!isEditMode && !formData.video_file) e.video_file = "Video file is required";
         setErrors(e); return Object.keys(e).length === 0;
@@ -134,22 +139,140 @@ export default function AddEditVideoModal({ isOpen, onClose, onSubmit, video }: 
                                 </div>
                             )}
                             {isEditMode && <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Uploaded By</label><div className="px-4 py-2.5 text-sm rounded-xl text-gray-700" style={{ ...iS(), background: "#f8f9fb" }}>{video!.uploaded_by}</div></div>}
-                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Title *</label><input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.title)} placeholder="Enter video title" />{errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}</div>
+                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Title *</label><input type="text" maxLength={60} value={formData.title} onChange={(e) => { const val = e.target.value; setFormData({ ...formData, title: val }); if (val.length >= 60) setErrors(prev => ({ ...prev, title: "Title cannot exceed 60 characters" })); else setErrors(prev => { const { title, ...rest } = prev; return rest; }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.title)} placeholder="Enter video title" />{errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}</div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Institution</label><input type="text" value={formData.Institution} onChange={(e) => setFormData({ ...formData, Institution: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} placeholder="Institution" /></div>
+                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Institution</label><input type="text" maxLength={50} value={formData.Institution} onChange={(e) => { const val = e.target.value; setFormData({ ...formData, Institution: val }); if (val.length >= 50) setErrors(prev => ({ ...prev, Institution: "Institution cannot exceed 50 characters" })); else setErrors(prev => { const { Institution, ...rest } = prev; return rest; }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.Institution)} placeholder="Institution" />{errors.Institution && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.Institution}</p>}</div>
                                 <div><label className="block text-sm font-medium text-gray-700 mb-2">Specialty *</label><select value={formData.speciality} onChange={(e) => setFormData({ ...formData, speciality: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.speciality)}><option value="">Select specialty</option>{SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}</select>{errors.speciality && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.speciality}</p>}</div>
                             </div>
                         </div>
 
                         <div className="rounded-xl px-5 py-4" style={secS}>
                             <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Content</h3>
-                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Description *</label><textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none resize-none" style={iS(!!errors.description)} placeholder="Enter description" />{errors.description && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.description}</p>}</div>
+                            <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Description *</label><textarea value={formData.description} onChange={(e) => { if (e.target.value.length <= 500) setFormData({ ...formData, description: e.target.value }); }} rows={4} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none resize-none" style={iS(!!errors.description)} placeholder="Enter description" maxLength={500} /><div className="flex items-center justify-between mt-1.5"><div>{errors.description && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.description}</p>}</div><span className="text-xs" style={{ color: formData.description.length >= 500 ? "#ef4444" : "#9ca3af" }}>{formData.description.length}/500</span></div></div>
+
+                            {/* Video File Upload */}
                             {!isEditMode && (
-                                <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Video File *</label><input type="file" accept="video/*" onChange={(e) => setFormData({ ...formData, video_file: e.target.files?.[0] || null })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS(!!errors.video_file)} />{errors.video_file && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.video_file}</p>}</div>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Video File *</label>
+                                    <input type="file" ref={videoInputRef} accept="video/*" onChange={(e) => { setFormData({ ...formData, video_file: e.target.files?.[0] || null }); if (e.target.files?.[0]) setErrors(prev => { const { video_file, ...rest } = prev; return rest; }); }} className="hidden" />
+                                    <div
+                                        onClick={() => videoInputRef.current?.click()}
+                                        className="relative cursor-pointer rounded-xl transition-all duration-200 hover:border-gray-400"
+                                        style={{ border: errors.video_file ? "2px dashed #ef4444" : "2px dashed #d1d5db", background: errors.video_file ? "rgba(239,68,68,0.02)" : "#fafbfc" }}
+                                    >
+                                        <div className="flex flex-col items-center justify-center py-6 px-4">
+                                            {formData.video_file ? (
+                                                <>
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(79, 207, 165, 0.1)" }}>
+                                                        <Video className="w-5 h-5" style={{ color: "#4fcfa5" }} />
+                                                    </div>
+                                                    <p className="text-sm font-medium text-gray-900 text-center truncate max-w-full">{formData.video_file.name}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{(formData.video_file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, video_file: null }); if (videoInputRef.current) videoInputRef.current.value = ""; }} className="mt-2 text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+                                                        <Upload className="w-5 h-5" style={{ color: "#6b96ff" }} />
+                                                    </div>
+                                                    <p className="text-sm font-medium text-gray-700">Click to upload video</p>
+                                                    <p className="text-xs text-gray-400 mt-0.5">MP4, MOV, AVI, etc.</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {errors.video_file && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.video_file}</p>}
+                                </div>
                             )}
+
+                            {/* Replace Video File (Edit Mode) */}
                             {isEditMode && (
-                                <div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail</label><input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, thumbnail: e.target.files?.[0] || null })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none" style={iS()} /></div>
+                                <div className="mb-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">Video File</label>
+                                        {!isReplacingVideo && (
+                                            <button type="button" onClick={() => setIsReplacingVideo(true)} className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg transition-all hover:opacity-80" style={{ color: "#6b96ff", background: "rgba(107, 150, 255, 0.08)" }}>
+                                                <RefreshCw className="w-3 h-3" /> Replace
+                                            </button>
+                                        )}
+                                    </div>
+                                    {isReplacingVideo ? (
+                                        <>
+                                            <input type="file" ref={videoInputRef} accept="video/*" onChange={(e) => setFormData({ ...formData, video_file: e.target.files?.[0] || null })} className="hidden" />
+                                            <div
+                                                onClick={() => videoInputRef.current?.click()}
+                                                className="relative cursor-pointer rounded-xl transition-all duration-200 hover:border-gray-400"
+                                                style={{ border: "2px dashed #d1d5db", background: "#fafbfc" }}
+                                            >
+                                                <div className="flex flex-col items-center justify-center py-6 px-4">
+                                                    {formData.video_file ? (
+                                                        <>
+                                                            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(79, 207, 165, 0.1)" }}>
+                                                                <Video className="w-5 h-5" style={{ color: "#4fcfa5" }} />
+                                                            </div>
+                                                            <p className="text-sm font-medium text-gray-900 text-center truncate max-w-full">{formData.video_file.name}</p>
+                                                            <p className="text-xs text-gray-500 mt-0.5">{(formData.video_file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, video_file: null }); if (videoInputRef.current) videoInputRef.current.value = ""; }} className="mt-2 text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+                                                                <Upload className="w-5 h-5" style={{ color: "#6b96ff" }} />
+                                                            </div>
+                                                            <p className="text-sm font-medium text-gray-700">Click to upload new video</p>
+                                                            <p className="text-xs text-gray-400 mt-0.5">MP4, MOV, AVI, etc.</p>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button type="button" onClick={() => { setIsReplacingVideo(false); setFormData({ ...formData, video_file: null }); if (videoInputRef.current) videoInputRef.current.value = ""; }} className="mt-1.5 text-xs text-gray-500 hover:text-gray-700 font-medium">Cancel replace</button>
+                                        </>
+                                    ) : (
+                                        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ ...iS(), background: "#f8f9fb" }}>
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+                                                <Video className="w-4 h-4" style={{ color: "#6b96ff" }} />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm text-gray-700 truncate">Current video file</p>
+                                                <p className="text-xs text-gray-400">Use the Replace button to upload a new video</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             )}
+
+                            {/* Thumbnail Upload */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail{!isEditMode && ""}</label>
+                                <input type="file" ref={thumbnailInputRef} accept="image/*" onChange={(e) => setFormData({ ...formData, thumbnail: e.target.files?.[0] || null })} className="hidden" />
+                                <div
+                                    onClick={() => thumbnailInputRef.current?.click()}
+                                    className="relative cursor-pointer rounded-xl transition-all duration-200 hover:border-gray-400"
+                                    style={{ border: "2px dashed #d1d5db", background: "#fafbfc" }}
+                                >
+                                    <div className="flex flex-col items-center justify-center py-6 px-4">
+                                        {formData.thumbnail ? (
+                                            <>
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(79, 207, 165, 0.1)" }}>
+                                                    <Image className="w-5 h-5" style={{ color: "#4fcfa5" }} />
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-900 text-center truncate max-w-full">{formData.thumbnail.name}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{(formData.thumbnail.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, thumbnail: null }); if (thumbnailInputRef.current) thumbnailInputRef.current.value = ""; }} className="mt-2 text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: "rgba(107, 150, 255, 0.08)" }}>
+                                                    <Image className="w-5 h-5" style={{ color: "#6b96ff" }} />
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-700">Click to upload thumbnail</p>
+                                                <p className="text-xs text-gray-400 mt-0.5">PNG, JPG, WEBP, etc.</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
                                 <input type="checkbox" id="allow_download" checked={formData.allow_download} onChange={(e) => setFormData({ ...formData, allow_download: e.target.checked })} className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900" />
                                 <label htmlFor="allow_download" className="text-sm font-medium text-gray-700">Allow Download</label>

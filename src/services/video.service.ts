@@ -70,6 +70,7 @@ export const updateVideo = async (id: string, data: UpdateVideoDTO) => {
     if (data.description !== undefined) formData.append("description", data.description);
     if (data.Institution !== undefined) formData.append("Institution", data.Institution);
     if (data.speciality !== undefined) formData.append("speciality", data.speciality);
+    if (data.video_file) formData.append("video_file", data.video_file);
     if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
     if (data.allow_download !== undefined) formData.append("allow_download", data.allow_download.toString());
 

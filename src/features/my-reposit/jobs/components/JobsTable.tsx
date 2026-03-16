@@ -301,7 +301,7 @@ export default function JobsTable({
                                                     </button>
 
                                                     {/* Move to Review (draft only) */}
-                                                    {job.status === "draft" && (
+                                                    {job.status === "draft" && !job.is_deleted && (
                                                         <button
                                                             onClick={() => setMovingToReview(job)}
                                                             disabled={isSubmitting}

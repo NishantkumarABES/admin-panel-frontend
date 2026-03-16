@@ -282,8 +282,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                             {/* Title */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                                <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.title)} placeholder="Enter book title" />
-                                {errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}
+                                <input type="text" value={formData.title} onChange={(e) => { if (e.target.value.length <= 60) setFormData({ ...formData, title: e.target.value }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.title || formData.title.length >= 60)} placeholder="Enter book title" maxLength={60} />
+                                {(errors.title || formData.title.length >= 60) && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title || "Title cannot exceed 60 characters"}</p>}
                             </div>
 
                             {/* Authors & Publisher */}
@@ -295,8 +295,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Publisher *</label>
-                                    <input type="text" value={formData.publisher} onChange={(e) => setFormData({ ...formData, publisher: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.publisher)} placeholder="Enter publisher" />
-                                    {errors.publisher && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.publisher}</p>}
+                                    <input type="text" value={formData.publisher} onChange={(e) => { if (e.target.value.length <= 50) setFormData({ ...formData, publisher: e.target.value }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.publisher || formData.publisher.length >= 50)} placeholder="Enter publisher" maxLength={50} />
+                                    {(errors.publisher || formData.publisher.length >= 50) && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.publisher || "Publisher cannot exceed 50 characters"}</p>}
                                 </div>
                             </div>
                         </div>
@@ -319,8 +319,8 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">ISBN</label>
-                                    <input type="text" value={formData.isbn} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 13); setFormData({ ...formData, isbn: v }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.isbn)} placeholder="ISBN number (13 digits)" maxLength={13} />
-                                    {errors.isbn && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.isbn}</p>}
+                                    <input type="text" value={formData.isbn} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 13); setFormData({ ...formData, isbn: v }); }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.isbn || formData.isbn.length >= 13)} placeholder="ISBN number (13 digits)" maxLength={13} />
+                                    {(errors.isbn || formData.isbn.length >= 13) && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.isbn || "ISBN has reached the 13-digit limit"}</p>}
                                 </div>
                             </div>
 

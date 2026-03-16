@@ -68,6 +68,7 @@ export interface UpdateVideoDTO {
     description?: string;
     Institution?: string;
     speciality?: string;
+    video_file?: File;
     thumbnail?: File;
     allow_download?: boolean;
 }

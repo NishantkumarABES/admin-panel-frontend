@@ -62,6 +62,7 @@ export default function VideosView() {
     const handleAddOrEditVideo = async (data: CreateVideoDTO) => {
         if (editingVideo) {
             const updateData: UpdateVideoDTO = { title: data.title, description: data.description, Institution: data.Institution, speciality: data.speciality, allow_download: data.allow_download };
+            if (data.video_file) { updateData.video_file = data.video_file; }
             if (data.thumbnail) { updateData.thumbnail = data.thumbnail; }
             await videoService.updateVideo(editingVideo.id, updateData);
             toast.success("Video updated successfully");

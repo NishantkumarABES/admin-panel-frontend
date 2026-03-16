@@ -54,7 +54,6 @@ export interface CreateArticleDTO {
     institution: string;
     abstract: string;
     content: string;
-    year: number;
     publication_date: string;
 }
 
@@ -66,7 +65,6 @@ export interface UpdateArticleDTO {
     institution?: string;
     abstract?: string;
     content?: string;
-    year?: number;
     publication_date?: string;
 }
 
