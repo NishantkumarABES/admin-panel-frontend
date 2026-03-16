@@ -160,21 +160,21 @@ export default function ArticlesTable({
                                                         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}>
                                                         <Pencil className="w-4 h-4" />
                                                     </button>
-                                                    {article.status === "draft" && (
+                                                    {!article.is_deleted && article.status === "draft" && (
                                                         <button onClick={() => setMovingToReview(article)} disabled={isSubmitting} title="Move to Review" className="p-1.5 rounded-lg transition-all duration-200 disabled:opacity-50" style={{ color: "#ff9f47" }}
                                                             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255, 159, 71, 0.08)"; e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)"; }}
                                                             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}>
                                                             <ArrowRight className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    {(article.status === "draft" || article.status === "review") && (
+                                                    {!article.is_deleted && (article.status === "draft" || article.status === "review") && (
                                                         <button onClick={() => setPublishingArticle(article)} disabled={isSubmitting} title="Publish" className="p-1.5 rounded-lg transition-all duration-200 disabled:opacity-50" style={{ color: "#4fcfa5" }}
                                                             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(79, 207, 165, 0.08)"; e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)"; }}
                                                             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}>
                                                             <Check className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    {(article.status === "draft" || article.status === "review") && (
+                                                    {!article.is_deleted && (article.status === "draft" || article.status === "review") && (
                                                         <button onClick={() => setRejectingArticle(article)} disabled={isSubmitting} title="Reject" className="p-1.5 rounded-lg transition-all duration-200 disabled:opacity-50" style={{ color: "#ff7070" }}
                                                             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255, 112, 112, 0.08)"; e.currentTarget.style.boxShadow = "inset 2px 2px 4px rgba(0, 0, 0, 0.06), inset -2px -2px 4px rgba(255, 255, 255, 0.5)"; }}
                                                             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}>

@@ -63,7 +63,7 @@ export default function ArticlesView() {
 
     const handleAddOrEditArticle = async (data: CreateArticleDTO) => {
         if (editingArticle) {
-            const updateData: UpdateArticleDTO = { title: data.title, article_type: data.article_type, speciality: data.speciality, authors: data.authors, institution: data.institution, abstract: data.abstract, content: data.content, year: data.year, publication_date: data.publication_date };
+            const updateData: UpdateArticleDTO = { title: data.title, article_type: data.article_type, speciality: data.speciality, authors: data.authors, institution: data.institution, abstract: data.abstract, content: data.content, publication_date: data.publication_date };
             await articleService.updateArticle(editingArticle.id, updateData);
             toast.success("Article updated successfully");
         } else { await articleService.createArticle(data); toast.success("Article added successfully"); }

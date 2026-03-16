@@ -252,12 +252,12 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
-                                    <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.title)} placeholder="e.g. Senior Cardiologist" />
+                                    <input type="text" maxLength={50} value={formData.title} onChange={(e) => { setFormData({ ...formData, title: e.target.value }); if (e.target.value.length >= 50) { setErrors(prev => ({ ...prev, title: 'Job title cannot exceed 50 characters' })); } else { setErrors(prev => { const { title, ...rest } = prev; return rest; }); } }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.title)} placeholder="e.g. Senior Cardiologist" />
                                     {errors.title && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
-                                    <input type="text" value={formData.company_name} onChange={(e) => setFormData({ ...formData, company_name: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.company_name)} placeholder="e.g. City Hospital" />
+                                    <input type="text" maxLength={50} value={formData.company_name} onChange={(e) => { setFormData({ ...formData, company_name: e.target.value }); if (e.target.value.length >= 50) { setErrors(prev => ({ ...prev, company_name: 'Company name cannot exceed 50 characters' })); } else { setErrors(prev => { const { company_name, ...rest } = prev; return rest; }); } }} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.company_name)} placeholder="e.g. City Hospital" />
                                     {errors.company_name && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.company_name}</p>}
                                 </div>
                             </div>
