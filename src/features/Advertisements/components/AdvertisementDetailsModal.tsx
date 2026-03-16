@@ -66,7 +66,7 @@ export default function AdvertisementDetailsModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Advertisement Details" size="sm">
+        <Modal isOpen={isOpen} onClose={onClose} title="Advertisement Details" size="md">
             <div className="space-y-4">
                 {/* Header with Image & Title */}
                 <div className="flex items-start gap-3 pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>

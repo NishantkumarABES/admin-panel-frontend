@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Eye, Filter, ChevronLeft, ChevronRight, HelpCircle, Megaphone, CheckCircle, XCircle } from "lucide-react";
-import type { GeneralAdvertisement } from "./advertisement.types";
+import type { GeneralAdvertisement, AdvertisementMetrics } from "./advertisement.types";
 import { mockGeneralAds } from "./advertisement.types";
 import { advertisementService } from "../../services/advertisement.service";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
@@ -27,6 +27,13 @@ export default function AdvertisementsView() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<GeneralAdvertisement | null>(null);
+
+  // Metrics state
+  const [metrics, setMetrics] = useState<AdvertisementMetrics>({
+    total_ads: 0,
+    enabled_ads: 0,
+    disabled_ads: 0,
+  });
 
   const fetchGeneralAds = async () => {
     try {
@@ -62,13 +69,26 @@ export default function AdvertisementsView() {
     }
   };
 
+  const fetchAdMetrics = async () => {
+    try {
+      const response = await advertisementService.getAdMetrics();
+      setMetrics(response.data);
+    } catch (error) {
+      console.error("Failed to fetch ad metrics:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdMetrics();
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => { fetchGeneralAds(); }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm, statusFilter, currentPage, pageSize]);
 
-  const handleAddSuccess = () => { setIsAddModalOpen(false); fetchGeneralAds(); };
-  const handleEditSuccess = () => { setIsEditModalOpen(false); setSelectedAd(null); fetchGeneralAds(); };
+  const handleAddSuccess = () => { setIsAddModalOpen(false); fetchGeneralAds(); fetchAdMetrics(); };
+  const handleEditSuccess = () => { setIsEditModalOpen(false); setSelectedAd(null); fetchGeneralAds(); fetchAdMetrics(); };
   const handleEdit = (ad: GeneralAdvertisement) => { setSelectedAd(ad); setIsEditModalOpen(true); };
   const handleViewDetails = (ad: GeneralAdvertisement) => { setSelectedAd(ad); setIsDetailsModalOpen(true); };
 
@@ -88,9 +108,9 @@ export default function AdvertisementsView() {
   };
 
   const stats = {
-    total: generalAds.length,
-    enabled: generalAds.filter(ad => ad.status === "enabled").length,
-    disabled: generalAds.filter(ad => ad.status === "disabled").length,
+    total: metrics.total_ads,
+    enabled: metrics.enabled_ads,
+    disabled: metrics.disabled_ads,
   };
 
   const handleClearFilters = () => { setSearchTerm(""); setStatusFilter("all"); };

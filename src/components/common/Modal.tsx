@@ -7,6 +7,7 @@ interface ModalProps {
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  contentClassName?: string;
 }
 
 export default function Modal({
@@ -16,6 +17,7 @@ export default function Modal({
   children,
   size = "md",
   className = "",
+  contentClassName = "overflow-y-auto",
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -72,7 +74,7 @@ export default function Modal({
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
+          <div className={`px-6 py-4 flex-1 ${contentClassName}`}>{children}</div>
         </div>
       </div>
     </div>

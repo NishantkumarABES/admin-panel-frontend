@@ -47,7 +47,7 @@ export default function VideosView() {
             setLoading(true);
             const filters = { search: searchTerm || undefined, speciality: specialtyFilter || undefined, status: (statusFilter as VideoStatus) || undefined, page: currentPage, page_size: pageSize };
             const data = await videoService.getVideos(filters);
-            setVideos(data || []); setTotalCount(data.length); setHasNext(false); setHasPrevious(currentPage > 1);
+            setVideos(data.results || []); setTotalCount(data.count); setHasNext(!!data.next); setHasPrevious(!!data.previous);
         } catch (error) { console.error("Failed to fetch videos:", error); toast.error("Failed to fetch videos"); }
         finally { setLoading(false); }
     }, [searchTerm, specialtyFilter, statusFilter, currentPage, pageSize]);

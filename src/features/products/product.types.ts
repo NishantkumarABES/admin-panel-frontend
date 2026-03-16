@@ -19,6 +19,7 @@ export interface Product {
   tax_percentage: string;
   is_active: boolean;
   stock_quantity: number;
+  max_user_quantity: number | null;
   for_patients: boolean;
   for_doctors: boolean;
   is_refundable: boolean;
@@ -53,6 +54,7 @@ export interface CreateProductDTO {
   tax_percentage: string;
   is_active: boolean;
   stock_quantity: number;
+  max_quantity_per_user?: number | null;
   for_patients: boolean;
   for_doctors: boolean;
   is_refundable: boolean;
@@ -78,6 +80,7 @@ export const mockProducts: Product[] = [
     tax_percentage: "5.00",
     is_active: true,
     stock_quantity: 500,
+    max_user_quantity: null,
     for_patients: true,
     for_doctors: false,
     is_refundable: false,
@@ -97,6 +100,7 @@ export const mockProducts: Product[] = [
     tax_percentage: "5.00",
     is_active: true,
     stock_quantity: 300,
+    max_user_quantity: null,
     for_patients: false,
     for_doctors: true,
     is_refundable: true,
@@ -116,6 +120,7 @@ export const mockProducts: Product[] = [
     tax_percentage: "12.00",
     is_active: false,
     stock_quantity: 0,
+    max_user_quantity: null,
     for_patients: true,
     for_doctors: true,
     is_refundable: false,

@@ -17,6 +17,17 @@ export interface Video {
     is_deleted: boolean;
     allow_download: boolean;
     created_at: string;
+    updated_at: string;
+    is_bookmarked: boolean;
+    is_liked: boolean;
+    like_count: number;
+}
+
+export interface PaginatedVideoResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Video[];
 }
 
 export interface VideoFilters {

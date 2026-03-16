@@ -266,11 +266,34 @@ export default function AddEditEventModal({
     const newSpeakers = [...(formData.speakers || [])];
     newSpeakers[index] = { ...newSpeakers[index], [field]: value };
     setFormData({ ...formData, speakers: newSpeakers });
+
+    // Real-time character limit validation for name and title
+    if (field === 'name') {
+      if (value.length >= 50) {
+        setValidationErrors(prev => ({ ...prev, [`speaker_name_${index}`]: "Speaker name cannot exceed 50 characters" }));
+      } else {
+        setValidationErrors(prev => { const next = { ...prev }; delete next[`speaker_name_${index}`]; return next; });
+      }
+    }
+    if (field === 'title') {
+      if (value.length >= 50) {
+        setValidationErrors(prev => ({ ...prev, [`speaker_title_${index}`]: "Speaker title cannot exceed 50 characters" }));
+      } else {
+        setValidationErrors(prev => { const next = { ...prev }; delete next[`speaker_title_${index}`]; return next; });
+      }
+    }
   };
 
   const handleSpeakerImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        setValidationErrors(prev => ({ ...prev, [`speaker_image_${index}`]: "Speaker image must be less than 2 MB" }));
+        e.target.value = "";
+        return;
+      }
+      setValidationErrors(prev => { const next = { ...prev }; delete next[`speaker_image_${index}`]; return next; });
+
       const newSpeakers = [...(formData.speakers || [])];
       newSpeakers[index] = { ...newSpeakers[index], image: file };
       setFormData({ ...formData, speakers: newSpeakers });
@@ -298,7 +321,7 @@ export default function AddEditEventModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={event ? "Edit Event" : "Add Event"}
-      size="lg"
+      size="md"
     >
       <div className="flex flex-col h-full">
         {/* Close Button */}
@@ -884,11 +907,17 @@ export default function AddEditEventModal({
                               value={speaker.name}
                               onChange={(e) => handleSpeakerChange(index, 'name', e.target.value)}
                               className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                              style={inputStyle()}
+                              style={inputStyle(!!validationErrors[`speaker_name_${index}`])}
                               placeholder="Dr. John Doe"
                               required
                               maxLength={50}
                             />
+                            {validationErrors[`speaker_name_${index}`] && (
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                <p className="text-xs text-red-600">{validationErrors[`speaker_name_${index}`]}</p>
+                              </div>
+                            )}
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
@@ -897,11 +926,17 @@ export default function AddEditEventModal({
                               value={speaker.title}
                               onChange={(e) => handleSpeakerChange(index, 'title', e.target.value)}
                               className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                              style={inputStyle()}
+                              style={inputStyle(!!validationErrors[`speaker_title_${index}`])}
                               placeholder="Chief Cardiologist, AIIMS"
                               required
                               maxLength={50}
                             />
+                            {validationErrors[`speaker_title_${index}`] && (
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                <p className="text-xs text-red-600">{validationErrors[`speaker_title_${index}`]}</p>
+                              </div>
+                            )}
                           </div>
                           <div className="col-span-2">
                             <label className="block text-xs font-medium text-gray-600 mb-1">Bio</label>
@@ -944,8 +979,15 @@ export default function AddEditEventModal({
                               }}
                             >
                               <Upload className="w-4 h-4" />
-                              Upload Speaker Image
+                              Upload Speaker Image (max 2 MB)
                             </button>
+
+                            {validationErrors[`speaker_image_${index}`] && (
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                <p className="text-xs text-red-600">{validationErrors[`speaker_image_${index}`]}</p>
+                              </div>
+                            )}
 
                             {speakerImagePreviews[index] && (
                               <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden group" style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>

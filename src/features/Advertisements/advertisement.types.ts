@@ -49,6 +49,12 @@ export interface AdFilters {
   search?: string;
 }
 
+export interface AdvertisementMetrics {
+  total_ads: number;
+  enabled_ads: number;
+  disabled_ads: number;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

@@ -298,7 +298,8 @@ export default function AddEditIDIModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={IDI ? "Edit Drug Information" : "Add New Drug"}
-      size="lg"
+      size="md"
+      contentClassName="overflow-hidden"
     >
       <div className="flex flex-col h-full">
         {/* Close Button */}
@@ -373,7 +374,11 @@ export default function AddEditIDIModal({
             {/* AI Extract Panel */}
             {isAddMode && addMode === "extract" && (
               <div className="flex flex-col h-full">
-                <div className="flex-1 space-y-5">
+                <div className="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar" style={{
+                  maxHeight: 'calc(80vh - 140px)',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#cbd5e1 transparent'
+                }}>
                   <div className="rounded-xl p-4" style={{ background: "rgba(107, 150, 255, 0.06)", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)" }}>
                     <p className="text-sm text-blue-800">
                       Paste a paragraph containing drug information below.
@@ -449,8 +454,12 @@ export default function AddEditIDIModal({
 
             {/* Manual Form */}
             {(!isAddMode || addMode === "manual") && (
-              <form onSubmit={handleSubmit} className="flex flex-col h-full">
-                <div className="flex-1 space-y-5">
+              <form id="idi-form" onSubmit={handleSubmit} className="flex flex-col h-full">
+                <div className="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar" style={{
+                  maxHeight: 'calc(80vh - 140px)',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#cbd5e1 transparent'
+                }}>
                   {/* Submit Error */}
                   {submitError && (
                     <div className="flex items-start gap-3 p-3 rounded-xl" style={{

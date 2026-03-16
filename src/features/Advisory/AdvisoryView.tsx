@@ -157,6 +157,7 @@ export default function AdvisoryView() {
     } catch (error: any) {
       console.error("Failed to save advisory member:", error);
       const errorMessage =
+        error?.response?.data?.detail ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
