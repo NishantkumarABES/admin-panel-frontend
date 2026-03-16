@@ -76,3 +76,8 @@ export const updateProduct = async (productData: UpdateProductDTO): Promise<{ da
     const response = await api.patch<Product>(`/commerce/admin/products/${productData.id}/`, formData);
     return { data: response.data };
 }
+
+export const getProductById = async (id: string): Promise<{ data: Product }> => {
+    const response = await api.get<Product>(`/commerce/admin/products/${id}/details/`);
+    return { data: response.data };
+};

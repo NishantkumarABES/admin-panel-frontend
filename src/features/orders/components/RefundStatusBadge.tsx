@@ -12,7 +12,12 @@ export default function RefundStatusBadge({ status, size = "md" }: RefundStatusB
         md: "px-3 py-1 text-sm",
     };
 
-    const config = REFUND_STATUS_CONFIG[status];
+    const config = REFUND_STATUS_CONFIG[status] ?? {
+        label: status ?? "Unknown",
+        color: "text-gray-700",
+        bgColor: "bg-gray-50",
+        borderColor: "border-gray-200",
+    };
 
     return (
         <span

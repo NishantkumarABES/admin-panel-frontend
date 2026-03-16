@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Eye, Edit } from "lucide-react";
 import type { Product } from "../product.types";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -5,11 +6,11 @@ import productPlaceholder from "../../../assets/placeholders/product.png";
 
 interface ProductTableProps {
   products: Product[];
-  onView: (product: Product) => void;
   onEdit: (product: Product) => void;
 }
 
-export default function ProductTable({ products, onView, onEdit }: ProductTableProps) {
+export default function ProductTable({ products, onEdit }: ProductTableProps) {
+  const navigate = useNavigate();
   if (products.length === 0) {
     return (
       <div className="clay-card" style={{ textAlign: "center", padding: "48px" }}>
@@ -80,9 +81,12 @@ export default function ProductTable({ products, onView, onEdit }: ProductTableP
                       className="w-10 h-10 rounded object-cover"
                     />
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <button
+                        onClick={() => navigate(`/products/${product.id}`)}
+                        className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors text-left cursor-pointer"
+                      >
                         {product.name}
-                      </div>
+                      </button>
                       {product.description && (
                         <div className="text-xs text-gray-500 max-w-xs truncate">
                           {product.description}
@@ -131,7 +135,7 @@ export default function ProductTable({ products, onView, onEdit }: ProductTableP
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => onView(product)}
+                      onClick={() => navigate(`/products/${product.id}`)}
                       className="p-1.5 rounded-lg transition-all duration-200"
                       title="View Details"
                       style={{ color: "#6b96ff" }}

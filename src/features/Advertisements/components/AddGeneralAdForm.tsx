@@ -72,8 +72,8 @@ export default function AddGeneralAdForm({
 
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
-    } else if (formData.title.length > 200) {
-      newErrors.title = "Title must be less than 200 characters";
+    } else if (formData.title.length > 50) {
+      newErrors.title = "Title must be less than 50 characters";
     }
 
     if (!formData.url.trim()) {
@@ -109,6 +109,8 @@ export default function AddGeneralAdForm({
     setErrors(prev => ({ ...prev, specialties: "" }));
   };
 
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -118,6 +120,14 @@ export default function AddGeneralAdForm({
       setErrors(prev => ({
         ...prev,
         image: `Only ${allowedExtensions.join(", ")} files are allowed`,
+      }));
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setErrors(prev => ({
+        ...prev,
+        image: "Image size must be less than 2MB",
       }));
       return;
     }
@@ -168,9 +178,22 @@ export default function AddGeneralAdForm({
       }, 1500);
     } catch (error: any) {
       console.error("Failed to create advertisement:", error);
-      setErrors({
-        submit: error.response?.data?.message || "Failed to create advertisement. Please try again.",
-      });
+      const detail = error.response?.data?.detail;
+      if (detail && typeof detail === "string") {
+        const fieldMatch = detail.match(/^(\w+):\s*(.+)$/);
+        if (fieldMatch) {
+          const [, field, message] = fieldMatch;
+          const fieldMap: Record<string, string> = { title: "title", url: "url", image: "image", specializations: "specialties" };
+          const mappedField = fieldMap[field.toLowerCase()] || field.toLowerCase();
+          setErrors(prev => ({ ...prev, [mappedField]: message.trim() }));
+        } else {
+          setErrors({ submit: detail });
+        }
+      } else {
+        setErrors({
+          submit: "Failed to create advertisement. Please try again.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -267,13 +290,19 @@ export default function AddGeneralAdForm({
                       type="text"
                       value={formData.title}
                       onChange={(e) => {
-                        setFormData({ ...formData, title: e.target.value });
-                        if (errors.title) setErrors({ ...errors, title: "" });
+                        const value = e.target.value;
+                        setFormData({ ...formData, title: value });
+                        if (value.length >= 50) {
+                          setErrors({ ...errors, title: "Title must be less than 50 characters" });
+                        } else if (errors.title) {
+                          setErrors({ ...errors, title: "" });
+                        }
                       }}
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                       style={inputStyle(!!errors.title)}
                       placeholder="Enter advertisement title"
                       disabled={isSubmitting}
+                      maxLength={50}
                     />
                     {errors.title && (
                       <div className="flex items-center gap-1.5 mt-1.5">
@@ -427,7 +456,7 @@ export default function AddGeneralAdForm({
               <div className="rounded-xl px-5 py-4" style={sectionStyle}>
                 <h3 className="text-sm font-semibold text-gray-900 mb-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Advertisement Image *</h3>
                 <p className="text-xs text-gray-500 mb-3">
-                  Supported formats: {allowedExtensions.join(", ").toUpperCase()}
+                  Supported formats: {allowedExtensions.join(", ").toUpperCase()} | Max size: 2MB
                 </p>
 
                 {!imagePreview ? (

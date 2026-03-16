@@ -120,33 +120,6 @@ export default function CouponView() {
 
             {/* Active Coupons Section */}
             <div className="clay-card overflow-hidden" style={{ padding: 0 }}>
-                {/* Header */}
-                <div
-                    className="px-5 py-3 flex items-center justify-between gap-2"
-                    style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-                >
-                    <div className="flex items-center gap-2">
-                        <div className="clay-circle" style={{ background: "rgba(162, 133, 255, 0.08)", width: "32px", height: "32px" }}>
-                            <Tag className="w-4 h-4" style={{ color: "#a285ff" }} />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-semibold text-gray-900">Coupons Management</h2>
-                            <p className="text-xs text-gray-500">Manage discount coupons for your store</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleCreateCoupon}
-                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
-                        style={{
-                            background: "#1f2937",
-                            boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-                        }}
-                    >
-                        <Plus className="w-4 h-4" />
-                        Create Coupon
-                    </button>
-                </div>
-
                 {/* Filters */}
                 <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#fafbfc" }}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
@@ -203,6 +176,19 @@ export default function CouponView() {
                                 Clear Filters
                             </button>
                         )}
+
+                        {/* Create Coupon Button */}
+                        <button
+                            onClick={handleCreateCoupon}
+                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
+                            style={{
+                                background: "#1f2937",
+                                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                            }}
+                        >
+                            <Plus className="w-4 h-4" />
+                            Create Coupon
+                        </button>
                     </div>
                 </div>
 
@@ -210,12 +196,12 @@ export default function CouponView() {
                 <div className="p-5">
                     {couponsLoading ? (
                         /* Skeleton Loaders */
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {[...Array(6)].map((_, i) => (
                                 <div
                                     key={i}
                                     className="clay-skeleton overflow-hidden"
-                                    style={{ borderRadius: "18px", height: "280px" }}
+                                    style={{ borderRadius: "14px", height: "220px" }}
                                 >
                                     <div
                                         className="w-full animate-pulse"
@@ -268,7 +254,7 @@ export default function CouponView() {
                         <>
                             {/* Active Coupons Grid */}
                             {activeCoupons.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {activeCoupons.map((coupon) => (
                                         <CouponCard
                                             key={coupon.id}
@@ -329,7 +315,7 @@ export default function CouponView() {
                     {/* Expired Coupons Grid */}
                     {isExpiredSectionOpen && (
                         <div className="p-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {expiredCoupons.map((coupon) => (
                                     <CouponCard
                                         key={coupon.id}

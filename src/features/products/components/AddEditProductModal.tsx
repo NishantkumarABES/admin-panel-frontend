@@ -20,6 +20,7 @@ const initialFormData: CreateProductDTO = {
   tax_percentage: "0",
   is_active: true,
   stock_quantity: 0,
+  max_quantity_per_user: null,
   for_patients: false,
   for_doctors: false,
   is_refundable: false,
@@ -82,6 +83,7 @@ export default function AddEditProductModal({
         tax_percentage: product.tax_percentage,
         is_active: product.is_active,
         stock_quantity: product.stock_quantity,
+        max_quantity_per_user: product.max_user_quantity,
         for_patients: product.for_patients,
         for_doctors: product.for_doctors,
         is_refundable: product.is_refundable,
@@ -191,6 +193,9 @@ export default function AddEditProductModal({
       newErrors.stock_quantity = "Stock quantity must be 0 or greater";
     } else if (!product && formData.stock_quantity === 0) {
       newErrors.stock_quantity = "Stock quantity must be greater than 0 when adding a product";
+    }
+    if (formData.max_quantity_per_user !== null && formData.max_quantity_per_user !== undefined && formData.max_quantity_per_user < 1) {
+      newErrors.max_quantity_per_user = "Max quantity per user must be at least 1";
     }
     if (!formData.for_patients && !formData.for_doctors) {
       newErrors.for_patients = "Product must be for patients, doctors, or both";
@@ -603,33 +608,63 @@ export default function AddEditProductModal({
                   Stock & Availability
                 </h3>
 
-                {/* Stock Quantity */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Quantity *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.stock_quantity}
-                    onChange={(e) => {
-                      setFormData({ ...formData, stock_quantity: parseInt(e.target.value, 10) || 0 });
-                      if (errors.stock_quantity) setErrors({ ...errors, stock_quantity: "" });
-                    }}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                    style={{
-                      background: "#ffffff",
-                      border: errors.stock_quantity ? "1px solid #ef4444" : "1px solid #e5e7eb",
-                      boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
-                    }}
-                    placeholder="0"
-                    min="0"
-                  />
-                  {errors.stock_quantity && (
-                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.stock_quantity}
-                    </p>
-                  )}
+                {/* Stock Quantity & Max Quantity Per User */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Stock Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.stock_quantity}
+                      onChange={(e) => {
+                        setFormData({ ...formData, stock_quantity: parseInt(e.target.value, 10) || 0 });
+                        if (errors.stock_quantity) setErrors({ ...errors, stock_quantity: "" });
+                      }}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.stock_quantity ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
+                      placeholder="0"
+                      min="0"
+                    />
+                    {errors.stock_quantity && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.stock_quantity}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Max Qty Per User
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.max_quantity_per_user ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, max_quantity_per_user: val === "" ? null : parseInt(val, 10) });
+                        if (errors.max_quantity_per_user) setErrors({ ...errors, max_quantity_per_user: "" });
+                      }}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{
+                        background: "#ffffff",
+                        border: errors.max_quantity_per_user ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
+                      placeholder="No limit"
+                      min="1"
+                    />
+                    {errors.max_quantity_per_user && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.max_quantity_per_user}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* User Classification */}

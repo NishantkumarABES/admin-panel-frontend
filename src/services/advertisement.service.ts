@@ -1,7 +1,7 @@
 import { api } from "./api";
 import type {
   GeneralAdvertisement, CreateGeneralAdDTO, UpdateGeneralAdDTO,
-  PaginatedResponse, AdFilters,
+  PaginatedResponse, AdFilters, AdvertisementMetrics,
 } from "../features/Advertisements/advertisement.types";
 
 export interface PaginatedAdvertisements {
@@ -86,5 +86,9 @@ export const advertisementService = {
 
   deleteGeneralAd: (id: string) => {
     return api.delete(`/advertisements${id}`);
+  },
+
+  getAdMetrics: () => {
+    return api.get<AdvertisementMetrics>("/analytics/admin/advertisements/metrics/");
   },
 };

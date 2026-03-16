@@ -5,6 +5,7 @@ import DashboardView from "../features/dashboard/DashboardView";
 import DoctorsView from "../features/doctors/DoctorsView";
 import PatientsView from "../features/patients/PatientsView";
 import ProductsView from "../features/products/ProductsView";
+import ProductDetailView from "../features/products/ProductDetailView";
 import CouponView from "../features/coupon/CouponView";
 import BannersView from "../features/banners/BannersView";
 import TopicsView from "../features/topics/TopicsView";
@@ -27,6 +28,7 @@ export default function AppRoutes() {
       <Route path="/" element={<DashboardView />} />
       <Route path="/doctors" element={<DoctorsView />} />
       <Route path="/patients" element={<PatientsView />} />
+      <Route path="/products/:id" element={<ProductDetailView />} />
       <Route path="/products" element={<ProductsView />} />
       <Route path="/coupons" element={<CouponView />} />
       <Route path="/banners" element={<BannersView />} />

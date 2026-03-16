@@ -138,16 +138,27 @@ export default function AddEditAdvisoryModal({
     }
   };
 
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setValidationErrors(prev => ({
+        ...prev,
+        image: "Image size must be less than 2MB",
+      }));
+      return;
     }
+
+    setImageFile(file);
+    setValidationErrors(prev => ({ ...prev, image: "" }));
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
@@ -401,9 +412,10 @@ export default function AddEditAdvisoryModal({
                 <>
                   {/* Image Upload */}
                   <div className="rounded-xl px-5 py-4" style={sectionStyle}>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                       Profile Image
                     </h3>
+                    <p className="text-xs text-gray-500 mb-3">Max size: 2MB</p>
                     {imagePreview ? (
                       <div className="relative inline-block">
                         <img
@@ -443,6 +455,12 @@ export default function AddEditAdvisoryModal({
                         />
                       </label>
                     )}
+                    {validationErrors.image && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                        <p className="text-xs text-red-600">{validationErrors.image}</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Personal Information */}
@@ -458,8 +476,13 @@ export default function AddEditAdvisoryModal({
                           maxLength={MAX_CHARS_NAME}
                           value={formData.full_name}
                           onChange={(e) => {
-                            setFormData({ ...formData, full_name: e.target.value });
-                            if (validationErrors.full_name) setValidationErrors({ ...validationErrors, full_name: "" });
+                            const value = e.target.value;
+                            setFormData({ ...formData, full_name: value });
+                            if (value.length >= MAX_CHARS_NAME) {
+                              setValidationErrors({ ...validationErrors, full_name: `Full Name cannot exceed ${MAX_CHARS_NAME} characters` });
+                            } else if (validationErrors.full_name) {
+                              setValidationErrors({ ...validationErrors, full_name: "" });
+                            }
                           }}
                           className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                           style={inputStyle(!!validationErrors.full_name)}
@@ -497,8 +520,13 @@ export default function AddEditAdvisoryModal({
                             maxLength={MAX_CHARS_PHONE}
                             value={formData.phone}
                             onChange={(e) => {
-                              setFormData({ ...formData, phone: e.target.value });
-                              if (validationErrors.phone) setValidationErrors({ ...validationErrors, phone: "" });
+                              const value = e.target.value.replace(/\D/g, '');
+                              setFormData({ ...formData, phone: value });
+                              if (value.length >= MAX_CHARS_PHONE) {
+                                setValidationErrors({ ...validationErrors, phone: `Phone cannot exceed ${MAX_CHARS_PHONE} characters` });
+                              } else if (validationErrors.phone) {
+                                setValidationErrors({ ...validationErrors, phone: "" });
+                              }
                             }}
                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                             style={inputStyle(!!validationErrors.phone)}

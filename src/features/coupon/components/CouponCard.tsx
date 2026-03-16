@@ -39,7 +39,7 @@ export default function CouponCard({
         >
             {/* Gradient Header */}
             <div
-                className="relative px-5 py-5 overflow-hidden"
+                className="relative px-4 py-3.5 overflow-hidden"
                 style={{
                     background: isExpired
                         ? "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)"
@@ -52,16 +52,16 @@ export default function CouponCard({
                 <div
                     className="absolute -right-4 -top-4 rounded-full"
                     style={{
-                        width: "80px",
-                        height: "80px",
+                        width: "60px",
+                        height: "60px",
                         background: "rgba(255,255,255,0.08)",
                     }}
                 />
                 <div
                     className="absolute -right-2 bottom-0 rounded-full"
                     style={{
-                        width: "48px",
-                        height: "48px",
+                        width: "36px",
+                        height: "36px",
                         background: "rgba(255,255,255,0.05)",
                     }}
                 />
@@ -75,7 +75,7 @@ export default function CouponCard({
                         Coupon Code
                     </p>
                     <p
-                        className="text-lg font-bold text-white tracking-wider"
+                        className="text-sm font-bold text-white tracking-wider"
                         style={{ letterSpacing: "0.08em" }}
                     >
                         {coupon.code}
@@ -84,7 +84,7 @@ export default function CouponCard({
 
                 {/* Discount Badge */}
                 <div
-                    className="absolute top-4 right-4 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                    className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
                     style={{
                         background: "rgba(255,255,255,0.2)",
                         color: "#fff",
@@ -102,7 +102,7 @@ export default function CouponCard({
                 {/* Status Badge */}
                 <button
                     onClick={() => onToggleStatus(coupon)}
-                    className="absolute bottom-4 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
+                    className="absolute bottom-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors cursor-pointer"
                     style={
                         isExpired
                             ? {
@@ -133,7 +133,7 @@ export default function CouponCard({
             </div>
 
             {/* Content Section */}
-            <div className="p-4 flex-1 flex flex-col gap-3">
+            <div className="p-3 flex-1 flex flex-col gap-2">
                 {/* Description */}
                 {coupon.description && (
                     <p

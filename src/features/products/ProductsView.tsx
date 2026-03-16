@@ -3,7 +3,6 @@ import { Plus, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, X, HelpCi
 import type { Product, CreateProductDTO, ProductAnalytics, ProductStatus } from "./product.types";
 import { mockProducts, PRODUCT_CATEGORIES, PRODUCT_CATEGORY_LABELS } from "./product.types";
 import ProductTable from "./components/ProductTable";
-import ProductDetailsModal from "./components/ProductDetailsModal";
 import AddEditProductModal from "./components/AddEditProductModal";
 import * as productService from "../../services/product.service";
 
@@ -31,7 +30,6 @@ export default function ProductsView() {
 
   // Modal states
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
 
 
@@ -145,7 +143,6 @@ export default function ProductsView() {
   }, [isCategoryDropdownOpen]);
 
   // Handlers
-  const handleView = (product: Product) => { setSelectedProduct(product); setIsDetailsModalOpen(true); };
   const handleAdd = () => { setSelectedProduct(null); setIsAddEditModalOpen(true); };
   const handleEdit = (product: Product) => { setSelectedProduct(product); setIsAddEditModalOpen(true); };
 
@@ -495,7 +492,6 @@ export default function ProductsView() {
           <>
             <ProductTable
               products={products}
-              onView={handleView}
               onEdit={handleEdit}
             />
 
@@ -582,13 +578,6 @@ export default function ProductsView() {
           </>
         )}
       </div>
-
-      {/* Modals */}
-      <ProductDetailsModal
-        product={selectedProduct}
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-      />
 
       <AddEditProductModal
         product={selectedProduct}
