@@ -64,7 +64,6 @@ export const createArticle = async (data: CreateArticleDTO) => {
     formData.append("institution", data.institution);
     formData.append("abstract", data.abstract);
     formData.append("content", data.content);
-    formData.append("year", data.year.toString());
     formData.append("publication_date", data.publication_date);
 
     const response = await api.post("/articles/admin/create/", formData, {
@@ -84,7 +83,6 @@ export const updateArticle = async (id: string, data: UpdateArticleDTO) => {
     if (data.institution !== undefined) formData.append("institution", data.institution);
     if (data.abstract !== undefined) formData.append("abstract", data.abstract);
     if (data.content !== undefined) formData.append("content", data.content);
-    if (data.year !== undefined) formData.append("year", data.year.toString());
     if (data.publication_date !== undefined) formData.append("publication_date", data.publication_date);
 
     const response = await api.patch(`/articles/admin/${id}/update/`, formData, {
