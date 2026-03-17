@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { 
+import type {
     PaginatedResponse, CreateEventDTO, UpdateEventDTO, Event, EventAnalytics
 } from "../features/events/event.types";
 
@@ -15,13 +15,13 @@ export interface EventFilters {
 }
 
 export const getEventsAnalytics = () =>
-  api.get<EventAnalytics>("/analytics/admin/events/metrics/");
+    api.get<EventAnalytics>("/analytics/admin/events/metrics/");
 
 export const getEvents = async (filters: EventFilters = {}): Promise<{ data: PaginatedResponse<Event> }> => {
     const params = new URLSearchParams();
 
     if (filters.page) {
-      params.append("page", filters.page.toString());
+        params.append("page", filters.page.toString());
     }
     if (filters.page_size) {
         params.append("page_size", filters.page_size.toString());
@@ -55,21 +55,36 @@ export const getEvents = async (filters: EventFilters = {}): Promise<{ data: Pag
 
 export const createEvent = async (eventData: CreateEventDTO): Promise<{ data: Event }> => {
     const formData = new FormData();
+
     Object.entries(eventData).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
             value.forEach(file => formData.append("images", file));
-        } else if (key === "speakers" && Array.isArray(value)) {
-            formData.append("speakers", JSON.stringify(value));
-        } else if (value !== undefined && value !== null) {
+        }
+
+        else if (key === "speakers" && Array.isArray(value)) {
+            value.forEach((speaker: any, index: number) => {
+                formData.append(`speakers[${index}][name]`, speaker.name);
+                formData.append(`speakers[${index}][title]`, speaker.title);
+                formData.append(`speakers[${index}][bio]`, speaker.bio || "");
+
+                if (speaker.image instanceof File) {
+                    formData.append(`speakers[${index}][image]`, speaker.image);
+                }
+            });
+        }
+
+        else if (value !== undefined && value !== null) {
             formData.append(key, String(value));
         }
     });
+
     const response = await api.post<Event>("/events/", formData);
     return { data: response.data };
 };
 
 export const updateEvent = async (eventData: UpdateEventDTO): Promise<{ data: Event }> => {
     const formData = new FormData();
+
     Object.entries(eventData).forEach(([key, value]) => {
 
         if (key === "images" && Array.isArray(value)) {
@@ -78,12 +93,20 @@ export const updateEvent = async (eventData: UpdateEventDTO): Promise<{ data: Ev
                     formData.append("images", file);
                 }
             });
-        } 
-        
+        }
+
         else if (key === "speakers" && Array.isArray(value)) {
-            formData.append("speakers", JSON.stringify(value));
-        } 
-        
+            value.forEach((speaker: any, index: number) => {
+                formData.append(`speakers[${index}][name]`, speaker.name);
+                formData.append(`speakers[${index}][title]`, speaker.title);
+                formData.append(`speakers[${index}][bio]`, speaker.bio || "");
+
+                if (speaker.image instanceof File) {
+                    formData.append(`speakers[${index}][image]`, speaker.image);
+                }
+            });
+        }
+
         else if (value !== undefined && value !== null && key !== "id") {
             formData.append(key, String(value));
         }

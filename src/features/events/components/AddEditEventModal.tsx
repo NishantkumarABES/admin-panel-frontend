@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { Event, CreateEventDTO, EventType, EventFormat, SpeakerFormData } from "../event.types";
 import { EVENT_TYPES, EVENT_FORMATS, SPECIALIZATIONS } from "../event.types";
-import { ChevronDown, Search, AlertCircle, X, Upload, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, Search, AlertCircle, X, Upload, Plus, Trash2, RefreshCw } from "lucide-react";
 import Modal from "../../../components/common/Modal";
 
 interface AddEditEventModalProps {
@@ -124,10 +124,10 @@ export default function AddEditEventModal({
         })) || [],
       });
       if (event.images && event.images.length > 0) {
-        setImagePreviews(event.images.map(img => img.image));
+        setImagePreviews(event.images.map(img => img.image_url));
       }
       if (event.speakers && event.speakers.length > 0) {
-        setSpeakerImagePreviews(event.speakers.map(speaker => speaker.image || null));
+        setSpeakerImagePreviews(event.speakers.map(speaker => speaker.image_url || null));
       }
     } else {
       setFormData(initialFormData);
@@ -154,10 +154,31 @@ export default function AddEditEventModal({
   );
 
   const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+  const MAX_EVENT_IMAGES = 5;
+  const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
+  const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
+  const isAllowedImageFile = (file: File): boolean => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    return ALLOWED_EXTENSIONS.includes(ext) && ALLOWED_MIME_TYPES.includes(file.type);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      const invalidFiles = files.filter(file => !isAllowedImageFile(file));
+      if (invalidFiles.length > 0) {
+        setValidationErrors(prev => ({ ...prev, images: "Only PNG, JPG, JPEG, and WebP images are allowed" }));
+        e.target.value = "";
+        return;
+      }
+      const currentCount = imagePreviews.length;
+      const totalAfterAdd = currentCount + files.length;
+      if (totalAfterAdd > MAX_EVENT_IMAGES) {
+        setValidationErrors(prev => ({ ...prev, images: `You can upload a maximum of ${MAX_EVENT_IMAGES} images. You already have ${currentCount}.` }));
+        e.target.value = "";
+        return;
+      }
       const oversizedFiles = files.filter(file => file.size > MAX_IMAGE_SIZE);
       if (oversizedFiles.length > 0) {
         setValidationErrors(prev => ({ ...prev, images: "Each image must be less than 2 MB" }));
@@ -165,9 +186,33 @@ export default function AddEditEventModal({
         return;
       }
       setValidationErrors(prev => ({ ...prev, images: "" }));
-      setFormData({ ...formData, images: files });
-      const previews = files.map(file => URL.createObjectURL(file));
-      setImagePreviews(previews);
+      const newImages = [...(formData.images || []), ...files];
+      setFormData({ ...formData, images: newImages });
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  const handleReplaceImage = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!isAllowedImageFile(file)) {
+        setValidationErrors(prev => ({ ...prev, images: "Only PNG, JPG, JPEG, and WebP images are allowed" }));
+        e.target.value = "";
+        return;
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        setValidationErrors(prev => ({ ...prev, images: "Each image must be less than 2 MB" }));
+        e.target.value = "";
+        return;
+      }
+      setValidationErrors(prev => ({ ...prev, images: "" }));
+      const newImages = [...(formData.images || [])];
+      newImages[index] = file;
+      setFormData({ ...formData, images: newImages });
+      const newPreviews = [...imagePreviews];
+      newPreviews[index] = URL.createObjectURL(file);
+      setImagePreviews(newPreviews);
     }
   };
 
@@ -287,6 +332,11 @@ export default function AddEditEventModal({
   const handleSpeakerImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!isAllowedImageFile(file)) {
+        setValidationErrors(prev => ({ ...prev, [`speaker_image_${index}`]: "Only PNG, JPG, JPEG, and WebP images are allowed" }));
+        e.target.value = "";
+        return;
+      }
       if (file.size > MAX_IMAGE_SIZE) {
         setValidationErrors(prev => ({ ...prev, [`speaker_image_${index}`]: "Speaker image must be less than 2 MB" }));
         e.target.value = "";
@@ -963,48 +1013,80 @@ export default function AddEditEventModal({
                             <label className="block text-xs font-medium text-gray-600 mb-1">Speaker Image</label>
                             <input
                               type="file"
-                              accept="image/*"
+                              accept=".png,.jpg,.jpeg,.webp"
                               onChange={(e) => handleSpeakerImageUpload(index, e)}
                               className="hidden"
                               id={`speaker-image-${index}`}
                             />
-                            <button
-                              type="button"
-                              onClick={() => document.getElementById(`speaker-image-${index}`)?.click()}
-                              className="w-full px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700"
-                              style={{
-                                background: "#ffffff",
-                                border: "2px dashed rgba(0,0,0,0.12)",
-                                boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
-                              }}
-                            >
-                              <Upload className="w-4 h-4" />
-                              Upload Speaker Image (max 2 MB)
-                            </button>
+                            <input
+                              type="file"
+                              accept=".png,.jpg,.jpeg,.webp"
+                              onChange={(e) => handleSpeakerImageUpload(index, e)}
+                              className="hidden"
+                              id={`speaker-image-replace-${index}`}
+                            />
+
+                            {speakerImagePreviews[index] ? (
+                              <div className="mt-1 flex items-start gap-3">
+                                <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0" style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
+                                  <img
+                                    src={speakerImagePreviews[index]?.startsWith('http') || speakerImagePreviews[index]?.startsWith('blob:')
+                                      ? speakerImagePreviews[index]!
+                                      : BackendBaseURL + speakerImagePreviews[index]}
+                                    alt={`${speaker.name}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => document.getElementById(`speaker-image-replace-${index}`)?.click()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-all"
+                                    style={{
+                                      background: "#f8f9fb",
+                                      border: "1px solid #e5e7eb",
+                                      boxShadow: "1px 1px 3px rgba(0, 0, 0, 0.04)",
+                                    }}
+                                  >
+                                    <RefreshCw className="w-3 h-3" />
+                                    Replace
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveSpeakerImage(index)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 rounded-lg hover:bg-red-50 transition-all"
+                                    style={{
+                                      background: "#fff5f5",
+                                      border: "1px solid #fecaca",
+                                      boxShadow: "1px 1px 3px rgba(0, 0, 0, 0.04)",
+                                    }}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => document.getElementById(`speaker-image-${index}`)?.click()}
+                                className="w-full px-4 py-2.5 rounded-xl flex flex-col items-center justify-center gap-1.5 text-sm text-gray-500 transition-all hover:text-gray-700 hover:border-gray-300"
+                                style={{
+                                  background: "#ffffff",
+                                  border: "2px dashed rgba(0,0,0,0.12)",
+                                  boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                                }}
+                              >
+                                <Upload className="w-4 h-4" />
+                                <span>Upload Speaker Image</span>
+                                <span className="text-[10px] text-gray-400">PNG, JPG, JPEG, WebP · Max 2 MB</span>
+                              </button>
+                            )}
 
                             {validationErrors[`speaker_image_${index}`] && (
                               <div className="flex items-center gap-1.5 mt-1.5">
                                 <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                                 <p className="text-xs text-red-600">{validationErrors[`speaker_image_${index}`]}</p>
-                              </div>
-                            )}
-
-                            {speakerImagePreviews[index] && (
-                              <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden group" style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
-                                <img
-                                  src={speakerImagePreviews[index]?.startsWith('http') || speakerImagePreviews[index]?.startsWith('blob:')
-                                    ? speakerImagePreviews[index]!
-                                    : BackendBaseURL + speakerImagePreviews[index]}
-                                  alt={`${speaker.name}`}
-                                  className="w-full h-full object-cover"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveSpeakerImage(index)}
-                                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
                               </div>
                             )}
                           </div>
@@ -1021,29 +1103,37 @@ export default function AddEditEventModal({
 
               {/* Event Images */}
               <div className="rounded-xl px-5 py-4" style={sectionStyle}>
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>Event Images</h3>
+                <div className="flex items-center justify-between mb-4 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  <h3 className="text-sm font-semibold text-gray-900">Event Images</h3>
+                  <span className="text-xs text-gray-400">{imagePreviews.length}/{MAX_EVENT_IMAGES} images</span>
+                </div>
                 <div className="space-y-3">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".png,.jpg,.jpeg,.webp"
                     multiple
                     onChange={handleImageUpload}
                     className="hidden"
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700"
-                    style={{
-                      background: "#ffffff",
-                      border: "2px dashed rgba(0,0,0,0.12)",
-                      boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
-                    }}
-                  >
-                    <Upload className="w-5 h-5" />
-                    Upload Images (max 2 MB each)
-                  </button>
+
+                  {imagePreviews.length < MAX_EVENT_IMAGES && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full px-4 py-4 rounded-xl flex flex-col items-center justify-center gap-1.5 text-sm text-gray-500 transition-all hover:text-gray-700 hover:border-gray-300"
+                      style={{
+                        background: "#ffffff",
+                        border: "2px dashed rgba(0,0,0,0.12)",
+                        boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                      }}
+                    >
+                      <Upload className="w-5 h-5" />
+                      <span>Click to upload images</span>
+                      <span className="text-[10px] text-gray-400">PNG, JPG, JPEG, WebP · Max 2 MB each · Up to {MAX_EVENT_IMAGES} images</span>
+                    </button>
+                  )}
+
                   {validationErrors.images && (
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <AlertCircle className="w-3.5 h-3.5 text-red-500" />
@@ -1052,7 +1142,7 @@ export default function AddEditEventModal({
                   )}
 
                   {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       {imagePreviews.map((preview, index) => (
                         <div
                           key={index}
@@ -1060,17 +1150,40 @@ export default function AddEditEventModal({
                           style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
                         >
                           <img
-                            src={BackendBaseURL + preview}
+                            src={preview.startsWith('http') || preview.startsWith('blob:')
+                              ? preview
+                              : BackendBaseURL + preview}
                             alt={`Preview ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
+                          {/* Overlay with action buttons */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                            <input
+                              type="file"
+                              accept=".png,.jpg,.jpeg,.webp"
+                              onChange={(e) => handleReplaceImage(index, e)}
+                              className="hidden"
+                              id={`event-image-replace-${index}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById(`event-image-replace-${index}`)?.click()}
+                              className="p-1.5 bg-white/90 text-gray-700 rounded-lg hover:bg-white transition-all" title="Replace image"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="p-1.5 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-all" title="Delete image"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          {/* Image index badge */}
+                          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/50 text-white text-[10px] font-medium rounded">
+                            {index + 1}
+                          </div>
                         </div>
                       ))}
                     </div>
