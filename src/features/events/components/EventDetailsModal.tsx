@@ -63,7 +63,7 @@ const insetSectionStyle = {
 export default function EventDetailsModal({ event, isOpen, onClose }: EventDetailsModalProps) {
   if (!isOpen || !event) return null;
 
-  const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000';
+
 
   const InfoRow = ({
     icon: Icon, label, value,
@@ -170,12 +170,20 @@ export default function EventDetailsModal({ event, isOpen, onClose }: EventDetai
                   <div className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Speakers</div>
                   <div className="space-y-2">
                     {event.speakers.map((speaker) => (
-                      <div key={speaker.id} className="flex items-start gap-3 p-3 rounded-xl" style={insetSectionStyle}>
-                        <User className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                      <div key={speaker.id} className="flex items-start gap-4 p-3 rounded-xl" style={insetSectionStyle}>
+                        {speaker.image_url ? (
+                          <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-gray-100 shadow-sm">
+                            <img src={speaker.image_url} alt={speaker.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shrink-0 border border-gray-200">
+                            <User className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900">{speaker.name}</div>
                           <div className="text-xs text-gray-600">{speaker.title}</div>
-                          {speaker.bio && <div className="text-xs text-gray-500 mt-1">{speaker.bio}</div>}
+                          {speaker.bio && <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">{speaker.bio}</div>}
                         </div>
                       </div>
                     ))}
@@ -200,7 +208,7 @@ export default function EventDetailsModal({ event, isOpen, onClose }: EventDetai
                   <div className="grid grid-cols-3 gap-3">
                     {event.images.map((image) => (
                       <div key={image.id} className="aspect-square rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                        <img src={BackendBaseURL + image.image} alt={event.title} className="w-full h-full object-cover" />
+                        <img src={image.image_url} alt={event.title} className="w-full h-full object-cover" />
                       </div>
                     ))}
                   </div>

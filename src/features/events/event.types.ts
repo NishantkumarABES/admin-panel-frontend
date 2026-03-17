@@ -8,12 +8,12 @@ export interface EventSpeaker {
   name: string;
   title: string;
   bio?: string;
-  image?: string;
+  image_url?: string;
 }
 
 export interface EventImage {
   id: string;
-  image: string;
+  image_url: string;
   created_at: string;
 }
 
