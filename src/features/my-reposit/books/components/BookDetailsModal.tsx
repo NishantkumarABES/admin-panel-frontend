@@ -65,7 +65,7 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
             {/* Modal container */}
             <div className="flex min-h-full items-center justify-center p-4">
                 <div
-                    className="relative bg-white rounded-[18px] w-full max-w-lg max-h-[90vh] flex flex-col"
+                    className="relative bg-white rounded-[18px] w-full max-w-2xl max-h-[90vh] flex flex-col"
                     style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
                     onClick={(e) => e.stopPropagation()}
                 >

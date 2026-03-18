@@ -8,7 +8,7 @@ interface AddEditBannerModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CreateBannerDTO | UpdateBannerDTO) => Promise<{ error?: string }>;
-    activeBannerCount: number;
+    BannerCount: number;
 }
 
 export default function AddEditBannerModal({
@@ -16,7 +16,7 @@ export default function AddEditBannerModal({
     isOpen,
     onClose,
     onSubmit,
-    activeBannerCount,
+    BannerCount,
 }: AddEditBannerModalProps) {
     const isEditMode = !!banner;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,7 +104,7 @@ export default function AddEditBannerModal({
         onClose();
     };
 
-    const maxOrder = isEditMode ? activeBannerCount : activeBannerCount + 1;
+    const maxOrder = isEditMode ? BannerCount : BannerCount + 1;
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};

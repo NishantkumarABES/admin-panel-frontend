@@ -122,7 +122,11 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
         if (!formData.job_location.trim()) newErrors.job_location = "Location is required";
         if (!formData.speciality) newErrors.speciality = "Specialty is required";
         if (!formData.required_degrees.trim()) newErrors.required_degrees = "Required degrees is required";
+        if (formData.required_degrees.length > 50) newErrors.required_degrees = "Required degrees cannot exceed 50 characters";
         if (!formData.must_have_skills.trim()) newErrors.must_have_skills = "Skills are required";
+        if (formData.must_have_skills.length > 500) newErrors.must_have_skills = "Must have skills cannot exceed 500 characters";
+        if (!formData.application_deadline) newErrors.application_deadline = "Application deadline is required";
+        if ((formData.recruiter_name ?? '').length > 50) newErrors.recruiter_name = "Recruiter name cannot exceed 50 characters";
         if (formData.apply_method === "external_link" && !formData.external_apply_link) newErrors.external_apply_link = "External link is required";
         if (formData.apply_method === "email" && !formData.application_email) {
             newErrors.application_email = "Email is required";
@@ -316,11 +320,47 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
-                                    <input type="text" value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="e.g. 5+ years" />
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={100}
+                                            value={formData.experience}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || (/^\d+$/.test(val) && val.length <= 2)) {
+                                                    setFormData({ ...formData, experience: val });
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all pr-16"
+                                            style={inputStyle()}
+                                            placeholder="e.g. 5"
+                                        />
+
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
+                                            {parseInt(formData.experience ?? '') === 1 ? 'year' : 'years'}
+                                        </span>
+
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Required Degrees *</label>
-                                    <input type="text" value={formData.required_degrees} onChange={(e) => setFormData({ ...formData, required_degrees: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle(!!errors.required_degrees)} placeholder="e.g. MD, MBBS" />
+                                    <input
+                                        type="text"
+                                        maxLength={50}
+                                        value={formData.required_degrees}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, required_degrees: e.target.value });
+                                            if (e.target.value.length >= 50) {
+                                                setErrors(prev => ({ ...prev, required_degrees: 'Required degrees cannot exceed 50 characters' }));
+                                            } else {
+                                                setErrors(prev => { const { required_degrees, ...rest } = prev; return rest; });
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                        style={inputStyle(!!errors.required_degrees)}
+                                        placeholder="e.g. MD, MBBS"
+                                    />
                                     {errors.required_degrees && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.required_degrees}</p>}
                                 </div>
                             </div>
@@ -332,8 +372,30 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Must Have Skills *</label>
-                                <textarea value={formData.must_have_skills} onChange={(e) => setFormData({ ...formData, must_have_skills: e.target.value })} rows={3} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all resize-none" style={inputStyle(!!errors.must_have_skills)} placeholder="List required skills..." />
-                                {errors.must_have_skills && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.must_have_skills}</p>}
+                                <textarea
+                                    value={formData.must_have_skills}
+                                    onChange={(e) => {
+                                        if (e.target.value.length <= 500) {
+                                            setFormData({ ...formData, must_have_skills: e.target.value });
+                                            if (errors.must_have_skills && e.target.value.trim()) {
+                                                setErrors(prev => { const { must_have_skills, ...rest } = prev; return rest; });
+                                            }
+                                        }
+                                    }}
+                                    rows={3}
+                                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all resize-none"
+                                    style={inputStyle(!!errors.must_have_skills)}
+                                    placeholder="List required skills..."
+                                    maxLength={500}
+                                />
+                                <div className="flex items-center justify-between mt-1">
+                                    <div>
+                                        {errors.must_have_skills && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.must_have_skills}</p>}
+                                    </div>
+                                    <span className={`text-xs ${formData.must_have_skills.length >= 500 ? 'text-red-500' : formData.must_have_skills.length >= 450 ? 'text-amber-500' : 'text-gray-400'}`}>
+                                        {formData.must_have_skills.length}/500
+                                    </span>
+                                </div>
                             </div>
 
                             <div>
@@ -350,12 +412,40 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
-                                    <input type="date" value={formData.application_deadline} onChange={(e) => setFormData({ ...formData, application_deadline: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} />
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline *</label>
+                                    <input
+                                        type="date"
+                                        value={formData.application_deadline}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, application_deadline: e.target.value });
+                                            if (e.target.value) {
+                                                setErrors(prev => { const { application_deadline, ...rest } = prev; return rest; });
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                        style={inputStyle(!!errors.application_deadline)}
+                                    />
+                                    {errors.application_deadline && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.application_deadline}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Recruiter Name</label>
-                                    <input type="text" value={formData.recruiter_name} onChange={(e) => setFormData({ ...formData, recruiter_name: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="Name of recruiter" />
+                                    <input
+                                        type="text"
+                                        maxLength={50}
+                                        value={formData.recruiter_name}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, recruiter_name: e.target.value });
+                                            if (e.target.value.length >= 50) {
+                                                setErrors(prev => ({ ...prev, recruiter_name: 'Recruiter name cannot exceed 50 characters' }));
+                                            } else {
+                                                setErrors(prev => { const { recruiter_name, ...rest } = prev; return rest; });
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                        style={inputStyle(!!errors.recruiter_name)}
+                                        placeholder="Name of recruiter"
+                                    />
+                                    {errors.recruiter_name && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.recruiter_name}</p>}
                                 </div>
                             </div>
 
@@ -386,7 +476,23 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-                                <input type="text" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="Comma separated tags e.g. remote, urgent" />
+                                <input
+                                    type="text"
+                                    maxLength={100}
+                                    value={formData.tags}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, tags: e.target.value });
+                                        if (e.target.value.length >= 100) {
+                                            setErrors(prev => ({ ...prev, tags: 'Tags cannot exceed 100 characters' }));
+                                        } else {
+                                            setErrors(prev => { const { tags, ...rest } = prev; return rest; });
+                                        }
+                                    }}
+                                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                                    style={inputStyle(!!errors.tags)}
+                                    placeholder="Comma separated tags e.g. remote, urgent"
+                                />
+                                {errors.tags && <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.tags}</p>}
                             </div>
                         </div>
                     </div>
