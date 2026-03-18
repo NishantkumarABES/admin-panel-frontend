@@ -95,7 +95,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile = false 
       <NavLink
         key={item.path}
         to={item.path}
-        end
+        end={item.path === "/"}
         title={isCollapsed ? item.label : ""}
         className={({ isActive }) =>
           `sidebar-nav-item flex items-center ${isCollapsed ? "justify-center" : "gap-3"

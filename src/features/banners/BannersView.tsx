@@ -316,7 +316,7 @@ export default function BannersView() {
                     setSelectedBanner(null);
                 }}
                 onSubmit={handleSubmit}
-                activeBannerCount={banners.filter((b) => b.is_active).length}
+                BannerCount={banners.length}
             />
 
             <ConfirmDialog

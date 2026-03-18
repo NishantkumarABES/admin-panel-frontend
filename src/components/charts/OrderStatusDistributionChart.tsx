@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ORDER_STATUS_CONFIG, type OrderStatus } from '../../features/orders/order.types';
-import { ShoppingBag, CreditCard, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, CreditCard, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
 
 export interface OrderStatusData {
     status: OrderStatus;
@@ -24,6 +24,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 
 export default function OrderStatusDistributionChart({ data }: OrderStatusDistributionChartProps) {
     const totalCount = data.reduce((sum, item) => sum + item.count, 0);
+    const pendingPaymentCount = data.find(d => d.status === 'pending_payment')?.count ?? 0;
     const paidCount = data.find(d => d.status === 'paid')?.count ?? 0;
     const refundedCount = data.find(d => d.status === 'refunded')?.count ?? 0;
     const deliveredCount = data.find(d => d.status === 'delivered')?.count ?? 0;
@@ -49,6 +50,7 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
         return null;
     };
 
+    const pendingPaymentPct = totalCount > 0 ? ((pendingPaymentCount / totalCount) * 100).toFixed(1) : '0';
     const paidPct = totalCount > 0 ? ((paidCount / totalCount) * 100).toFixed(1) : '0';
     const refundedPct = totalCount > 0 ? ((refundedCount / totalCount) * 100).toFixed(1) : '0';
     const deliveredPct = totalCount > 0 ? ((deliveredCount / totalCount) * 100).toFixed(1) : '0';
@@ -56,15 +58,45 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
 
     return (
         <div className="clay-card h-full" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Header */}
-            <div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: "18px", marginBottom: "4px" }}>Order Status Distribution</h3>
-                <p className="text-sm" style={{ color: "#6b7280" }}>Distribution of orders across processing stages</p>
+            {/* Header with Total Records badge */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                    <h3 className="font-semibold text-gray-900" style={{ fontSize: "18px", marginBottom: "4px" }}>Order Status Distribution</h3>
+                    <p className="text-sm" style={{ color: "#6b7280" }}>Distribution of orders across processing stages</p>
+                </div>
+                {/* Total Records pill */}
+                <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '6px 12px', borderRadius: '999px',
+                    background: 'rgba(107, 150, 255, 0.10)',
+                    border: '1px solid rgba(107, 150, 255, 0.20)',
+                    whiteSpace: 'nowrap'
+                }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#6b96ff' }}>{totalCount.toLocaleString()}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Total Orders</span>
+                </div>
             </div>
 
-            {/* Stat Cards Row */}
-            <div className="grid grid-cols-5 gap-3">
-                {/* Total Orders */}
+            {/* Stat Cards — 2 rows × 2-3 cols via auto-fill */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+
+                {/* Pending Payment */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(255, 197, 84, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(255, 197, 84, 0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <Clock style={{ width: '18px', height: '18px', color: '#ffc554' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{pendingPaymentCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Pending Payment</div>
+                    <div className="text-xs font-medium" style={{ color: '#ffc554', marginTop: '2px' }}>{pendingPaymentPct}%</div>
+                </div>
+
+                {/* Paid Orders */}
                 <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(107, 150, 255, 0.04)' }}>
                     <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
                         <div style={{
@@ -72,43 +104,12 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
                             background: 'rgba(107, 150, 255, 0.12)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}>
-                            <ShoppingBag style={{ width: '18px', height: '18px', color: '#6b96ff' }} />
-                        </div>
-                    </div>
-                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{totalCount.toLocaleString()}</div>
-                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Total Orders</div>
-                </div>
-
-                {/* Paid Orders */}
-                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(79, 207, 165, 0.04)' }}>
-                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
-                        <div style={{
-                            width: '36px', height: '36px', borderRadius: '50%',
-                            background: 'rgba(79, 207, 165, 0.12)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                            <CreditCard style={{ width: '18px', height: '18px', color: '#4fcfa5' }} />
+                            <CreditCard style={{ width: '18px', height: '18px', color: '#6b96ff' }} />
                         </div>
                     </div>
                     <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{paidCount.toLocaleString()}</div>
                     <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Paid Orders</div>
-                    <div className="text-xs font-medium" style={{ color: '#4fcfa5', marginTop: '2px' }}>{paidPct}%</div>
-                </div>
-
-                {/* Refunded Orders */}
-                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(139, 149, 163, 0.04)' }}>
-                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
-                        <div style={{
-                            width: '36px', height: '36px', borderRadius: '50%',
-                            background: 'rgba(139, 149, 163, 0.12)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                            <RotateCcw style={{ width: '18px', height: '18px', color: '#8b95a3' }} />
-                        </div>
-                    </div>
-                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{refundedCount.toLocaleString()}</div>
-                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Refunded Orders</div>
-                    <div className="text-xs font-medium" style={{ color: '#ff7070', marginTop: '2px' }}>{refundedPct}%</div>
+                    <div className="text-xs font-medium" style={{ color: '#6b96ff', marginTop: '2px' }}>{paidPct}%</div>
                 </div>
 
                 {/* Delivered Orders */}
@@ -127,6 +128,22 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
                     <div className="text-xs font-medium" style={{ color: '#4fcfa5', marginTop: '2px' }}>{deliveredPct}%</div>
                 </div>
 
+                {/* Refunded Orders */}
+                <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(139, 149, 163, 0.04)' }}>
+                    <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            background: 'rgba(139, 149, 163, 0.12)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <RotateCcw style={{ width: '18px', height: '18px', color: '#8b95a3' }} />
+                        </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900" style={{ lineHeight: 1.2 }}>{refundedCount.toLocaleString()}</div>
+                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Refunded</div>
+                    <div className="text-xs font-medium" style={{ color: '#8b95a3', marginTop: '2px' }}>{refundedPct}%</div>
+                </div>
+
                 {/* Cancelled Orders */}
                 <div className="clay-inset" style={{ padding: '14px', textAlign: 'center', background: 'rgba(255, 112, 112, 0.04)' }}>
                     <div className="flex items-center justify-center" style={{ marginBottom: '8px' }}>
@@ -142,6 +159,7 @@ export default function OrderStatusDistributionChart({ data }: OrderStatusDistri
                     <div className="text-xs" style={{ color: '#6b7280', marginTop: '2px' }}>Cancelled</div>
                     <div className="text-xs font-medium" style={{ color: '#ff7070', marginTop: '2px' }}>{cancelledPct}%</div>
                 </div>
+
             </div>
 
             {/* Chart + Legend Row */}
