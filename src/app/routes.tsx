@@ -21,6 +21,7 @@ import BooksView from "../features/my-reposit/books/BooksView";
 import ArticlesView from "../features/my-reposit/articles/ArticlesView";
 import VideosView from "../features/my-reposit/videos/VideosView";
 import JobsView from "../features/my-reposit/jobs/JobsView";
+import JobDetailView from "../features/my-reposit/jobs/JobDetailView";
 
 export default function AppRoutes() {
   return (
@@ -44,6 +45,7 @@ export default function AppRoutes() {
       <Route path="/my-reposit/books" element={<BooksView />} />
       <Route path="/my-reposit/articles" element={<ArticlesView />} />
       <Route path="/my-reposit/videos" element={<VideosView />} />
+      <Route path="/my-reposit/jobs/:id" element={<JobDetailView />} />
       <Route path="/my-reposit/jobs" element={<JobsView />} />
     </Routes>
   );

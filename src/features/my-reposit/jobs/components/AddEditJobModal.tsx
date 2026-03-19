@@ -367,7 +367,7 @@ export default function AddEditJobModal({ isOpen, onClose, onSubmit, job }: AddE
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
-                                <input type="text" value={formData.salary_range} onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="e.g. $100k - $150k" />
+                                <input type="text" value={formData.salary_range} onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="e.g. ₹100k - ₹150k" />
                             </div>
 
                             <div className="mb-4">

@@ -39,7 +39,7 @@ export const getJobs = async (filters?: JobFilters): Promise<PaginatedJobsData> 
 
 // Get a single job
 export const getJob = async (id: string): Promise<JobPost> => {
-    const response = await api.get<JobPost>(`/jobs/admin/${id}/`);
+    const response = await api.get<JobPost>(`/jobs/admin/jobs/${id}/`);
     return response.data;
 };
 

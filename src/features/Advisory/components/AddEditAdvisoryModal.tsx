@@ -140,15 +140,28 @@ export default function AddEditAdvisoryModal({
 
   const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 
+  const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+  const ALLOWED_IMAGE_LABEL = 'PNG, JPG, JPEG, or WEBP';
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setValidationErrors(prev => ({
+        ...prev,
+        image: `Invalid file type. Only ${ALLOWED_IMAGE_LABEL} images are allowed.`,
+      }));
+      e.target.value = '';
+      return;
+    }
 
     if (file.size > MAX_IMAGE_SIZE) {
       setValidationErrors(prev => ({
         ...prev,
         image: "Image size must be less than 2MB",
       }));
+      e.target.value = '';
       return;
     }
 
@@ -415,7 +428,7 @@ export default function AddEditAdvisoryModal({
                     <h3 className="text-sm font-semibold text-gray-900 mb-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                       Profile Image
                     </h3>
-                    <p className="text-xs text-gray-500 mb-3">Max size: 2MB</p>
+                    <p className="text-xs text-gray-500 mb-3">Accepted formats: PNG, JPG, JPEG, WEBP &nbsp;·&nbsp; Max size: 2MB</p>
                     {imagePreview ? (
                       <div className="relative inline-block">
                         <img
@@ -449,7 +462,7 @@ export default function AddEditAdvisoryModal({
                         </span>
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/png,image/jpeg,image/webp"
                           onChange={handleImageChange}
                           className="hidden"
                         />

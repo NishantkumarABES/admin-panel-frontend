@@ -135,7 +135,7 @@ export default function ArticlesTable({
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-start gap-2">
-                                                            <div className="text-sm font-medium text-gray-900 break-words whitespace-normal">{article.title}</div>
+                                                            <div className="text-sm font-medium text-gray-900 truncate">{article.title}</div>
                                                             {article.is_deleted && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 shrink-0">Deleted</span>}
                                                         </div>
                                                         <div className="text-xs text-gray-500 mt-0.5">{article.institution || "—"}</div>

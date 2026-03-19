@@ -12,6 +12,9 @@ import { stripHtml } from "../../../utils/stripHtml";
 
 const MAX_DESCRIPTION_CHARS = 500;
 const MAX_TITLE_CHARS = 150;
+const MAX_IMAGE_SIZE_MB = 5;
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ALLOWED_IMAGE_LABEL = "PNG, JPG, JPEG or WebP";
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
@@ -81,7 +84,9 @@ export default function AddEditTopicModal({
   const [processingError, setProcessingError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageError, setImageError] = useState("");
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [sourceUrlError, setSourceUrlError] = useState("");
 
   // URL real-time validation
   const [urlValid, setUrlValid] = useState<boolean | null>(null);
@@ -107,6 +112,7 @@ export default function AddEditTopicModal({
       setProcessingError("");
       setImagePreview("");
       setHasAttemptedSubmit(false);
+      setSourceUrlError("");
       setUrlValid(null);
       setAiMessageIndex(0);
     } else if (isOpen && topic) {
@@ -129,6 +135,7 @@ export default function AddEditTopicModal({
       });
       setImagePreview(topic.image || "");
       setHasAttemptedSubmit(false);
+      setSourceUrlError("");
     }
   }, [topic, isOpen]);
 
@@ -234,17 +241,32 @@ export default function AddEditTopicModal({
   // Handle manual image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, image_file: file, image_url: undefined });
-      setImagePreview(URL.createObjectURL(file));
-      setSelectedImageIndex(null); // Deselect any extracted image
+    if (!file) return;
+
+    // Format validation
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setImageError(`Invalid format. Please upload a ${ALLOWED_IMAGE_LABEL} file.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
+    // Size validation
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      setImageError(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setImageError("");
+    setFormData({ ...formData, image_file: file, image_url: undefined });
+    setImagePreview(URL.createObjectURL(file));
+    setSelectedImageIndex(null);
   };
 
   // Remove uploaded/selected image
   const handleRemoveImage = () => {
     setFormData({ ...formData, image_url: undefined, image_file: undefined });
     setImagePreview("");
+    setImageError("");
     setSelectedImageIndex(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -300,6 +322,33 @@ export default function AddEditTopicModal({
       return;
     }
 
+    // Validate image is required (except for video topics)
+    if (!topic?.video_url && !formData.image_url && !formData.image_file) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate source URL is required (except for video topics)
+    if (!topic?.video_url) {
+      if (!formData.source_url?.trim()) {
+        setSourceUrlError("Source URL is required");
+        setIsSubmitting(false);
+        return;
+      }
+      try {
+        const urlObj = new URL(formData.source_url);
+        if (!["http:", "https:"].includes(urlObj.protocol)) {
+          setSourceUrlError("URL must start with http:// or https://");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch {
+        setSourceUrlError("Please enter a valid URL");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     // Cleanup unselected images if there are extracted images
     if (extractedImages.length > 0) {
       const unselectedImages = extractedImages.filter((_, index) => index !== selectedImageIndex);
@@ -323,6 +372,7 @@ export default function AddEditTopicModal({
     setIsSubmitting(false);
     setImagePreview("");
     setHasAttemptedSubmit(false);
+    setSourceUrlError("");
   };
 
   // Close modal
@@ -343,6 +393,7 @@ export default function AddEditTopicModal({
     setIsSubmitting(false);
     setImagePreview("");
     setHasAttemptedSubmit(false);
+    setSourceUrlError("");
     onClose();
   };
 
@@ -387,20 +438,19 @@ export default function AddEditTopicModal({
   const showFooter = mode === "ai_success" || mode === "manual";
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 transition-opacity" />
 
       {/* Modal container */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className="relative bg-white rounded-[18px] w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-          style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div
+        className="relative bg-white rounded-[18px] w-full max-w-4xl max-h-[90vh] flex flex-col z-10"
+        style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
           {/* Sticky Header */}
           <div
-            className="flex items-center justify-between px-6 py-4 sticky top-0 bg-white z-10"
+            className="flex items-center justify-between px-6 py-4 shrink-0 bg-white rounded-t-[18px] z-10"
             style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
             <h2 className="text-lg font-semibold text-gray-900">
@@ -421,7 +471,7 @@ export default function AddEditTopicModal({
           </div>
 
           {/* Scrollable Body */}
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 overflow-y-auto flex-1">
             <div className="space-y-5">
 
               {/* Workflow Step Indicator (new topics only) */}
@@ -610,13 +660,13 @@ export default function AddEditTopicModal({
 
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">Title *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2.5 text-sm rounded-xl outline-none transition-all focus:ring-2 focus:ring-gray-900"
-                      style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)" }}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)" }}
                       placeholder="Enter topic title"
                       required
                     />
@@ -624,7 +674,7 @@ export default function AddEditTopicModal({
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Description (max {MAX_DESCRIPTION_CHARS} characters) *
                     </label>
                     <RichTextEditor
@@ -658,7 +708,7 @@ export default function AddEditTopicModal({
 
                   {/* Images */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Topic Image {extractedImages.length === 0 && "*"}
                     </label>
 
@@ -713,7 +763,7 @@ export default function AddEditTopicModal({
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept=".jpg,.jpeg,.png,.webp"
                           onChange={handleImageUpload}
                           className="hidden"
                         />
@@ -736,15 +786,16 @@ export default function AddEditTopicModal({
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="w-full px-4 py-8 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all"
+                            className="w-full px-4 py-8 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700"
                             style={{
-                              background: "#eff1f5",
-                              boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.06), inset -2px -2px 5px rgba(255,255,255,0.5)",
-                              border: "2px dashed rgba(0,0,0,0.12)",
+                              background: "#ffffff",
+                              border: "2px dashed #d1d5db",
+                              boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.03)",
                             }}
                           >
                             <Upload className="w-8 h-8 text-gray-400" />
                             <span>Click to upload image</span>
+                            <span className="text-xs text-gray-400">Max 5MB · JPG, PNG, JPEG or WebP</span>
                           </button>
                         )}
                       </div>
@@ -802,13 +853,13 @@ export default function AddEditTopicModal({
 
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">Title *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2.5 text-sm rounded-xl outline-none transition-all focus:ring-2 focus:ring-gray-900"
-                      style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)" }}
+                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)" }}
                       placeholder="Enter topic title"
                       required
                       maxLength={MAX_TITLE_CHARS}
@@ -818,7 +869,7 @@ export default function AddEditTopicModal({
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Article Content / Description (max {MAX_DESCRIPTION_CHARS} characters) *
                     </label>
                     <RichTextEditor
@@ -848,18 +899,18 @@ export default function AddEditTopicModal({
                   {/* Image Upload - hidden for video topics */}
                   {!topic?.video_url && (
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-3">
-                        Topic Image (Optional but recommended)
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Topic Image *
                       </label>
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept=".jpg,.jpeg,.png,.webp"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
                       {imagePreview ? (
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden" style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
                           <img
                             src={imagePreview}
                             alt="Uploaded preview"
@@ -877,35 +928,48 @@ export default function AddEditTopicModal({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-full py-8 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all"
-                          style={{ background: "#eff1f5", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.06), inset -2px -2px 5px rgba(255,255,255,0.5)", border: "2px dashed rgba(0,0,0,0.12)" }}
+                          className="w-full py-8 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700"
+                          style={{ background: "#ffffff", border: "2px dashed #d1d5db", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.03)" }}
                         >
                           <Upload className="w-8 h-8 text-gray-400" />
                           <span>Click to upload image</span>
+                          <span className="text-xs text-gray-400">Max 5MB · JPG, PNG, JPEG or WebP</span>
                         </button>
+                      )}
+                      {imageError && (
+                        <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {imageError}
+                        </p>
                       )}
                     </div>
                   )}
 
-                  {/* Source URL (Optional) - hidden for video topics */}
+                  {/* Source URL - hidden for video topics */}
                   {!topic?.video_url && (
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">Source URL (Optional)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Source URL *</label>
                       <div className="relative">
                         <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="url"
                           value={formData.source_url}
-                          onChange={(e) => setFormData({ ...formData, source_url: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, source_url: e.target.value });
+                            if (sourceUrlError) setSourceUrlError("");
+                          }}
                           readOnly={!!topic}
-                          className="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl outline-none transition-all focus:ring-2 focus:ring-gray-900"
-                          style={{ background: topic ? "#e8eaed" : "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)", cursor: topic ? "not-allowed" : "text", color: topic ? "#9ca3af" : undefined }}
+                          className="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                          style={{ background: topic ? "#e8eaed" : "#ffffff", border: sourceUrlError ? "1px solid #ef4444" : "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)", cursor: topic ? "not-allowed" : "text", color: topic ? "#9ca3af" : undefined }}
                           placeholder="https://example.com/article-source"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Add a reference link if this topic is based on an external article.
-                      </p>
+                      {sourceUrlError && (
+                        <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {sourceUrlError}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -920,7 +984,7 @@ export default function AddEditTopicModal({
           {/* Sticky Footer */}
           {showFooter && (
             <div
-              className="flex items-center justify-end gap-3 px-6 py-4 sticky bottom-0 bg-white"
+              className="flex items-center justify-end gap-3 px-6 py-4 shrink-0 bg-white rounded-b-[18px]"
               style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
             >
               <button
@@ -935,7 +999,7 @@ export default function AddEditTopicModal({
               <button
                 type="submit"
                 form={activeFormId}
-                disabled={isSubmitting || (mode === "ai_success" && hasNoImage)}
+                disabled={isSubmitting || hasNoImage}
                 className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: "#1f2937", boxShadow: "4px 4px 8px rgba(0,0,0,0.12), -2px -2px 6px rgba(255,255,255,0.04)" }}
               >
@@ -947,7 +1011,6 @@ export default function AddEditTopicModal({
               </button>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
