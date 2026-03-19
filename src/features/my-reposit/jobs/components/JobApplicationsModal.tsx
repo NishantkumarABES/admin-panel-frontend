@@ -125,7 +125,7 @@ export default function JobApplicationsModal({ isOpen, onClose, job }: JobApplic
                                             <div className="flex flex-col gap-2 shrink-0">
                                                 {app.resume && (
                                                     <a href={app.resume} target="_blank" rel="noopener noreferrer"
-                                                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90"
+                                                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium !text-white rounded-xl transition-all hover:opacity-90"
                                                         style={{ background: "#1f2937", boxShadow: "2px 2px 6px rgba(0,0,0,0.08)" }}>
                                                         <FileText className="w-4 h-4" /> View Resume
                                                     </a>

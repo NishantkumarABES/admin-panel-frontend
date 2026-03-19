@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Check, X, Briefcase, ArrowRight, Eye, Pencil, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import type { JobPost, JobPostStatus } from "../jobs.types";
 import ConfirmDialog from "../../../../components/common/ConfirmDialog";
-import JobDetailsModal from "./JobDetailsModal";
 import * as jobService from "../../../../services/job.service";
 import toast from "react-hot-toast";
 
@@ -59,6 +59,7 @@ export default function JobsTable({
     onEdit,
     onViewApplications,
 }: JobsTableProps) {
+    const navigate = useNavigate();
     // Approve confirm state
     const [approvingJob, setApprovingJob] = useState<JobPost | null>(null);
     // Move to review confirm state
@@ -67,8 +68,6 @@ export default function JobsTable({
     const [rejectingJob, setRejectingJob] = useState<JobPost | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // View details modal
-    const [viewingJob, setViewingJob] = useState<JobPost | null>(null);
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -214,7 +213,12 @@ export default function JobsTable({
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="text-sm font-medium text-gray-900">{job.title}</div>
+                                                            <button
+                                                                onClick={() => navigate(`/my-reposit/jobs/${job.id}`)}
+                                                                className="text-sm font-medium text-gray-900 hover:text-blue-700 hover:underline transition-colors text-left"
+                                                            >
+                                                                {job.title}
+                                                            </button>
                                                             {job.is_deleted && (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                                                     Deleted
@@ -248,7 +252,7 @@ export default function JobsTable({
                                                 <div className="flex items-center justify-end gap-1">
                                                     {/* View Details */}
                                                     <button
-                                                        onClick={() => setViewingJob(job)}
+                                                        onClick={() => navigate(`/my-reposit/jobs/${job.id}`)}
                                                         title="View Details"
                                                         className="p-1.5 rounded-lg transition-all duration-200"
                                                         style={{ color: "#6b96ff" }}
@@ -542,12 +546,6 @@ export default function JobsTable({
                 </div>
             )}
 
-            {/* Job Details Modal */}
-            <JobDetailsModal
-                job={viewingJob}
-                isOpen={!!viewingJob}
-                onClose={() => setViewingJob(null)}
-            />
         </>
     );
 }
