@@ -275,7 +275,7 @@ export default function RichTextEditor({
 
       <div
         onClick={() => editor.commands.focus()}
-        className={`prose prose-sm max-w-none p-4 min-h-[400px] max-h-[500px] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
+        className={`prose prose-sm max-w-none p-4 min-h-[400px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
         style={{
           background: editable ? "#ffffff" : "#f8f9fb",
         }}

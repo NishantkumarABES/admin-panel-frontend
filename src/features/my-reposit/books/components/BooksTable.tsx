@@ -156,7 +156,7 @@ export default function BooksTable({
                                             <td className="px-4 py-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">{book.book_type}</span></td>
                                             <td className="px-4 py-2 text-sm text-gray-700">{book.speciality || "—"}</td>
                                             <td className="px-4 py-2">{getStatusBadge(book.status)}</td>
-                                            <td className="px-4 py-2 text-sm text-gray-700">{book.publication_year}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{book.publishing_date}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button onClick={() => setViewingBook(book)} title="View Details" className="p-1.5 rounded-lg transition-all duration-200" style={{ color: "#6b96ff" }}

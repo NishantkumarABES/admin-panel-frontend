@@ -62,8 +62,8 @@ export default function AdminLayout({ children }: Props) {
         />
 
         {/* Page Content */}
-        <main className="main-content-area flex-1 p-5 overflow-y-auto overflow-x-hidden min-w-0 mt-14">
-          <div className="max-w-full min-w-0">
+        <main className="main-content-area flex-1 p-5 overflow-y-auto overflow-x-hidden min-w-0 mt-14 flex flex-col">
+          <div className="max-w-full min-w-0 flex-1 flex flex-col">
             {children}
           </div>
         </main>

@@ -13,7 +13,7 @@ export interface Book {
     authors: string;
     publisher: string;
     edition: string;
-    publication_year: number;
+    publishing_date: string;
     isbn: string;
     speciality: string | null;
     book_type: BookType;
@@ -63,7 +63,7 @@ export interface CreateBookDTO {
     authors: string;
     publisher: string;
     edition: string;
-    publication_year: number;
+    publishing_date: string;
     isbn: string;
     speciality: string;
     book_type: BookType;
@@ -80,7 +80,7 @@ export interface UpdateBookDTO {
     authors?: string;
     publisher?: string;
     edition?: string;
-    publication_year?: number;
+    publishing_date?: string;
     isbn?: string;
     speciality?: string;
     book_type?: BookType;

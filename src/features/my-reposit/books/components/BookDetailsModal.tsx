@@ -155,7 +155,7 @@ export default function BookDetailsModal({ book, isOpen, onClose }: BookDetailsM
                                 <InfoItem icon={BookOpen} label="Uploaded By" value={book.uploaded_by} />
                                 <InfoItem icon={BookOpen} label="Publisher" value={book.publisher} />
                                 <InfoItem icon={BookOpen} label="Edition" value={book.edition} />
-                                <InfoItem icon={BookOpen} label="Publication Year" value={book.publication_year?.toString()} />
+                                <InfoItem icon={BookOpen} label="Publishing Date" value={book.publishing_date} />
                                 <InfoItem icon={BookOpen} label="ISBN" value={book.isbn} />
                                 <InfoItem icon={BookOpen} label="Specialty" value={book.speciality} />
                                 <InfoItem icon={BookOpen} label="Price" value={`₹${book.price}`} />
