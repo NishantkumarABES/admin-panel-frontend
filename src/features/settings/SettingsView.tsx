@@ -103,7 +103,7 @@ export default function SettingsView() {
   const currentSetting = settings[activeTab];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1, minHeight: 0 }} className="min-w-0 max-w-full">
 
       {/* Error Message */}
       {error && (
@@ -119,7 +119,7 @@ export default function SettingsView() {
       )}
 
       {/* Tabs */}
-      <div className="clay-card" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="clay-card" style={{ padding: 0, overflow: "hidden", flex: 1, display: "flex", flexDirection: "column" as const, minHeight: 0 }}>
         <div
           style={{
             borderBottom: "1px solid rgba(0,0,0,0.06)",
@@ -147,7 +147,7 @@ export default function SettingsView() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-6" style={{ flex: 1, display: "flex", flexDirection: "column" as const, minHeight: 0 }}>
           {activeTab === 'contact_us' ? (
             <ContactTable
               type={activeTab}

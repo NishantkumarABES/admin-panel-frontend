@@ -77,8 +77,6 @@ function formatCurrency(amount: number) {
 
 // ─── Component ───────────────────────────────────────────────────────────
 export default function BookPurchaseView() {
-    const PAGE_SIZE = 5;
-
     // Data states
     const [purchases, setPurchases] = useState<BookPurchase[]>([]);
     const [loading, setLoading] = useState(true);
@@ -88,6 +86,7 @@ export default function BookPurchaseView() {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
     const [totalCount, setTotalCount] = useState(0);
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
@@ -120,7 +119,7 @@ export default function BookPurchaseView() {
                 payment_method: paymentFilter || undefined,
                 search: searchTerm || undefined,
                 page: currentPage,
-                page_size: PAGE_SIZE,
+                page_size: pageSize,
             };
 
             try {
@@ -149,8 +148,8 @@ export default function BookPurchaseView() {
                     );
                 }
 
-                const start = (currentPage - 1) * PAGE_SIZE;
-                const end = start + PAGE_SIZE;
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
                 setTotalCount(filteredData.length);
                 setHasNext(end < filteredData.length);
                 setHasPrevious(currentPage > 1);
@@ -172,14 +171,14 @@ export default function BookPurchaseView() {
             fetchPurchases();
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchTerm, statusFilter, paymentFilter, currentPage]);
+    }, [searchTerm, statusFilter, paymentFilter, currentPage, pageSize]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, statusFilter, paymentFilter]);
+    }, [searchTerm, statusFilter, paymentFilter, pageSize]);
 
-    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const start = (currentPage - 1) * pageSize;
 
     const hasActiveFilters = searchTerm || statusFilter || paymentFilter;
 
@@ -360,7 +359,15 @@ export default function BookPurchaseView() {
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                                     <div className="flex items-center gap-4">
                                         <div className="text-xs text-gray-600">
-                                            Showing {start + 1} to {Math.min(start + PAGE_SIZE, totalCount)} of {totalCount} purchases
+                                            Showing {start + 1} to {Math.min(start + pageSize, totalCount)} of {totalCount} purchases
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <label htmlFor="purchasePageSize" className="text-xs text-gray-600">Per page:</label>
+                                            <select id="purchasePageSize" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}
+                                                className="px-2 py-1 rounded-lg text-xs focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                                style={{ background: "#ffffff", border: "none", boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.06), -2px -2px 4px rgba(255, 255, 255, 0.5)" }}>
+                                                <option value={5}>5</option><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option><option value={100}>100</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5">

@@ -19,7 +19,7 @@ const initialFormData: Omit<CreateBookDTO, "user_id" | "book_file"> = {
     authors: "",
     publisher: "",
     edition: "",
-    publication_year: new Date().getFullYear(),
+    publishing_date: new Date().toISOString().split('T')[0],
     isbn: "",
     speciality: "",
     book_type: "textbook" as BookType,
@@ -93,7 +93,7 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
             if (book) {
                 setFormData({
                     title: book.title, authors: book.authors, publisher: book.publisher,
-                    edition: book.edition, publication_year: book.publication_year,
+                    edition: book.edition, publishing_date: book.publishing_date || new Date().toISOString().split('T')[0],
                     isbn: book.isbn, speciality: book.speciality || "",
                     book_type: book.book_type, access_level: book.access_level,
                     copyright_status: book.copyright_status, description: book.description,
@@ -307,15 +307,15 @@ export default function AddEditBookModal({ isOpen, onClose, onSubmit, book }: Ad
                                 Book Details
                             </h3>
 
-                            {/* Edition, Year, ISBN */}
+                            {/* Edition, Publishing Date, ISBN */}
                             <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Edition</label>
                                     <input type="text" value={formData.edition} onChange={(e) => setFormData({ ...formData, edition: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} placeholder="e.g. 3rd" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Publication Year</label>
-                                    <input type="number" value={formData.publication_year} onChange={(e) => setFormData({ ...formData, publication_year: Number(e.target.value) })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} min={1900} max={2100} />
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Publishing Date</label>
+                                    <input type="date" value={formData.publishing_date} onChange={(e) => setFormData({ ...formData, publishing_date: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all" style={inputStyle()} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">ISBN</label>

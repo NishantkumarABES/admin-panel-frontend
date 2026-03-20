@@ -110,7 +110,7 @@ export default function BooksView() {
         if (editingBook) {
             const updateData: UpdateBookDTO = {
                 title: data.title, authors: data.authors, publisher: data.publisher,
-                edition: data.edition, publication_year: data.publication_year, isbn: data.isbn,
+                edition: data.edition, publishing_date: data.publishing_date, isbn: data.isbn,
                 speciality: data.speciality, book_type: data.book_type, description: data.description,
                 price: data.price, book_file: data.book_file, book_cover: data.book_cover,
             };
