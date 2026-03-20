@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   User, Lock, LogOut, Eye, EyeOff, CheckCircle2, Bell, X,
   Shield, BadgeCheck, Clock, ChevronRight, Sparkles, Camera, Loader2,
+  Trash2, RefreshCw,
 } from "lucide-react";
 import { api } from "../../services/api";
 import toast from "react-hot-toast";
@@ -21,6 +22,7 @@ export default function ProfileView() {
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isRemovingImage, setIsRemovingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [passwordData, setPasswordData] = useState({
@@ -167,6 +169,20 @@ export default function ProfileView() {
     }
   };
 
+  const handleRemoveProfileImage = async () => {
+    setIsRemovingImage(true);
+    try {
+      await api.delete("/profiles/admin/profile/");
+      updateUser({ profile_image: "" });
+      toast.success("Profile image removed!");
+    } catch (error: any) {
+      console.error("Error removing profile image:", error);
+      toast.error(error?.response?.data?.detail || "Failed to remove image. Please try again.");
+    } finally {
+      setIsRemovingImage(false);
+    }
+  };
+
   const isPasswordValid = Object.values(passwordStrength).every((v) => v) &&
     passwordData.newPassword === passwordData.confirmPassword &&
     passwordData.currentPassword.length > 0;
@@ -228,7 +244,7 @@ export default function ProfileView() {
                       position: "relative",
                       overflow: "hidden",
                     }}
-                    onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+                    onClick={() => !(isUploadingImage || isRemovingImage) && !user?.profile_image && fileInputRef.current?.click()}
                   >
                     {user?.profile_image ? (
                       <img
@@ -240,7 +256,7 @@ export default function ProfileView() {
                     ) : (
                       <User className="w-11 h-11 text-gray-400" />
                     )}
-                    {/* Camera overlay on hover */}
+                    {/* Hover overlay */}
                     <div
                       className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       style={{
@@ -248,13 +264,37 @@ export default function ProfileView() {
                         borderRadius: "50%",
                       }}
                     >
-                      {isUploadingImage ? (
+                      {isUploadingImage || isRemovingImage ? (
                         <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      ) : user?.profile_image ? (
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            title="Replace Image"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
+                            className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
+                          >
+                            <RefreshCw className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Remove Image"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveProfileImage();
+                            }}
+                            className="p-1.5 rounded-full hover:bg-red-500/40 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
                       ) : (
                         <Camera className="w-5 h-5 text-white" />
                       )}
                     </div>
-
                   </div>
                 </div>
 
