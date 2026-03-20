@@ -69,7 +69,7 @@ export const createBook = async (data: CreateBookDTO) => {
   formData.append("authors", data.authors);
   formData.append("publisher", data.publisher);
   formData.append("edition", data.edition);
-  formData.append("publication_year", data.publication_year.toString());
+  // formData.append("publication_year", data.publication_year.toString());
   formData.append("isbn", data.isbn);
   formData.append("speciality", data.speciality);
   formData.append("book_type", data.book_type);
@@ -97,7 +97,7 @@ export const updateBook = async (id: string, data: UpdateBookDTO) => {
   if (data.authors !== undefined) formData.append("authors", data.authors);
   if (data.publisher !== undefined) formData.append("publisher", data.publisher);
   if (data.edition !== undefined) formData.append("edition", data.edition);
-  if (data.publication_year !== undefined) formData.append("publication_year", data.publication_year.toString());
+  // if (data.publication_year !== undefined) formData.append("publication_year", data.publication_year.toString());
   if (data.isbn !== undefined) formData.append("isbn", data.isbn);
   if (data.speciality !== undefined) formData.append("speciality", data.speciality);
   if (data.book_type !== undefined) formData.append("book_type", data.book_type);
