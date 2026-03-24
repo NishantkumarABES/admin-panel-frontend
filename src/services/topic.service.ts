@@ -99,7 +99,7 @@ export const updateTopic = async (data: UpdateTopicDTO) => {
   });
 
   const response = await api.patch<{ success: boolean; data: Topic }>(
-    `topics/admin/topics/${id}/`,
+    `topics/admin/topics/${id}/update/`,
     formData,
     {
       headers: {

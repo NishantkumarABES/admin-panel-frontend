@@ -9,6 +9,8 @@ import ProductDetailView from "../features/products/ProductDetailView";
 import CouponView from "../features/coupon/CouponView";
 import BannersView from "../features/banners/BannersView";
 import TopicsView from "../features/topics/TopicsView";
+import TopicDetailView from "../features/topics/TopicDetailView";
+import AddEditTopicPage from "../features/topics/AddEditTopicPage";
 import EventsView from "../features/events/EventsView";
 import OrdersView from "../features/orders/OrdersView";
 import RefundsView from "../features/orders/RefundsView";
@@ -35,6 +37,8 @@ export default function AppRoutes() {
       <Route path="/banners" element={<BannersView />} />
       <Route path="/orders" element={<OrdersView />} />
       <Route path="/refunds" element={<RefundsView />} />
+      <Route path="/topics/new" element={<AddEditTopicPage />} />
+      <Route path="/topics/:id" element={<TopicDetailView />} />
       <Route path="/topics" element={<TopicsView />} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/advertisements" element={<AdvertisementsView />} />
