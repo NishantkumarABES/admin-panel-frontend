@@ -5,7 +5,6 @@ import { mockOrders } from "./order.types";
 import OrderSummaryCards from "./components/OrderSummaryCards";
 import OrdersTable from "./components/OrdersTable";
 import RevenueSidePanel from "./components/RevenueSidePanel";
-import OrderDetailsModal from "./components/OrderDetailsModal";
 import UpdateStatusModal from "./components/UpdateStatusModal";
 import AddOrderModal from "./components/AddOrderModal";
 import * as orderService from "../../services/order.service";
@@ -32,7 +31,6 @@ export default function OrdersView() {
 
   // Modal states
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState(false);
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
 
@@ -123,10 +121,7 @@ export default function OrdersView() {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, dateFrom, dateTo]);
 
-  const handleViewDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setIsDetailsModalOpen(true);
-  };
+
 
   const handleUpdateStatus = (order: Order) => {
     setSelectedOrder(order);
@@ -356,7 +351,6 @@ export default function OrdersView() {
               <>
                 <OrdersTable
                   orders={orders}
-                  onView={handleViewDetails}
                   onUpdateStatus={handleUpdateStatus}
                 />
 
@@ -451,15 +445,7 @@ export default function OrdersView() {
         </div>
       </div>
 
-      {/* Modals */}
-      <OrderDetailsModal
-        order={selectedOrder}
-        isOpen={isDetailsModalOpen}
-        onClose={() => {
-          setIsDetailsModalOpen(false);
-          setSelectedOrder(null);
-        }}
-      />
+
 
       <UpdateStatusModal
         order={selectedOrder}

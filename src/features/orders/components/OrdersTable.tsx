@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Eye, RefreshCw, RotateCcw } from "lucide-react";
 import type { Order } from "../order.types";
 import { mockRefundRequests } from "../order.types";
@@ -6,11 +7,11 @@ import OrderStatusBadge from "./OrderStatusBadge";
 
 interface OrdersTableProps {
   orders: Order[];
-  onView: (order: Order) => void;
   onUpdateStatus: (order: Order) => void;
 }
 
-export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTableProps) {
+export default function OrdersTable({ orders, onUpdateStatus }: OrdersTableProps) {
+  const navigate = useNavigate();
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-IN", {
@@ -127,7 +128,7 @@ export default function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTa
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => onView(order)}
+                      onClick={() => navigate(`/orders/${order.id}`)}
                       className="p-1.5 rounded-lg transition-all duration-200"
                       title="View details"
                       style={{ color: "#6b96ff" }}

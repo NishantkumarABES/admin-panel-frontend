@@ -1,14 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { Eye, ClipboardCheck, CheckCircle, XCircle } from "lucide-react";
 import type { RefundRequest } from "../order.types";
 import RefundStatusBadge from "./RefundStatusBadge";
 
 interface RefundsTableProps {
     refunds: RefundRequest[];
-    onView: (refund: RefundRequest) => void;
     onReview: (refund: RefundRequest) => void;
 }
 
-export default function RefundsTable({ refunds, onView, onReview }: RefundsTableProps) {
+export default function RefundsTable({ refunds, onReview }: RefundsTableProps) {
+    const navigate = useNavigate();
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat("en-IN", {
@@ -96,7 +97,11 @@ export default function RefundsTable({ refunds, onView, onReview }: RefundsTable
 
                                 {/* Order ID */}
                                 <td className="px-4 py-4 whitespace-nowrap">
-                                    <span className="text-sm font-mono" style={{ color: "#6b96ff" }}>
+                                    <span
+                                        className="text-sm font-mono cursor-pointer hover:underline"
+                                        style={{ color: "#6b96ff" }}
+                                        onClick={() => navigate(`/orders/${refund.order_id}`)}
+                                    >
                                         {refund.order_number || refund.order_id}
                                     </span>
                                 </td>
@@ -139,7 +144,7 @@ export default function RefundsTable({ refunds, onView, onReview }: RefundsTable
                                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex items-center justify-end gap-2">
                                         <button
-                                            onClick={() => onView(refund)}
+                                            onClick={() => navigate(`/refunds/${refund.id}`)}
                                             className="p-1.5 rounded-lg transition-all duration-200"
                                             title="View details"
                                             style={actionBtnStyle("#6b96ff")}
