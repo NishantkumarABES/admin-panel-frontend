@@ -4,7 +4,6 @@ import type { RefundRequest, RefundAnalytics, RefundStatus, RefundType } from ".
 import { mockRefundRequests } from "./order.types";
 import RefundSummaryCards from "./components/RefundSummaryCards";
 import RefundsTable from "./components/RefundsTable";
-import RefundDetailsModal from "./components/RefundDetailsModal";
 import ReviewRefundModal from "./components/ReviewRefundModal";
 import * as refundService from "../../services/refund.service";
 
@@ -30,7 +29,6 @@ export default function RefundsView() {
 
   // Modal states
   const [selectedRefund, setSelectedRefund] = useState<RefundRequest | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Compute analytics from mock data
@@ -138,10 +136,7 @@ export default function RefundsView() {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, typeFilter, dateFrom, dateTo]);
 
-  const handleViewDetails = (refund: RefundRequest) => {
-    setSelectedRefund(refund);
-    setIsDetailsModalOpen(true);
-  };
+
 
   const handleReview = (refund: RefundRequest) => {
     setSelectedRefund(refund);
@@ -350,7 +345,6 @@ export default function RefundsView() {
           <>
             <RefundsTable
               refunds={refunds}
-              onView={handleViewDetails}
               onReview={handleReview}
             />
 
@@ -442,16 +436,7 @@ export default function RefundsView() {
         )}
       </div>
 
-      {/* Modals */}
-      <RefundDetailsModal
-        refund={selectedRefund}
-        isOpen={isDetailsModalOpen}
-        onClose={() => {
-          setIsDetailsModalOpen(false);
-          setSelectedRefund(null);
-        }}
-        onReview={handleReview}
-      />
+
 
       <ReviewRefundModal
         refund={selectedRefund}

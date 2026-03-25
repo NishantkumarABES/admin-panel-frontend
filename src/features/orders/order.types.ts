@@ -39,6 +39,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  order_number: string;
   user: {
     id: string;
     name: string;
@@ -170,6 +171,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 export const mockOrders: Order[] = [
   {
     id: "ORD-2024-001",
+    order_number: "ORD-2024-001",
     user: {
       id: "USR-001",
       name: "Dr. Rajesh Kumar",
@@ -214,6 +216,7 @@ export const mockOrders: Order[] = [
   },
   {
     id: "ORD-2024-002",
+    order_number: "ORD-2024-002",
     user: {
       id: "USR-002",
       name: "Dr. Priya Sharma",
@@ -257,6 +260,7 @@ export const mockOrders: Order[] = [
   },
   {
     id: "ORD-2024-003",
+    order_number: "ORD-2024-003",
     user: {
       id: "USR-003",
       name: "Dr. Amit Patel",
@@ -297,6 +301,7 @@ export const mockOrders: Order[] = [
   },
   {
     id: "ORD-2024-004",
+    order_number: "ORD-2024-004",
     user: {
       id: "USR-004",
       name: "Dr. Sneha Reddy",

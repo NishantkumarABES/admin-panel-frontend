@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, ChevronLeft, ChevronRight, X,
-  HelpCircle, BookOpen, Globe, EyeOff,
+  HelpCircle, BookOpen, Globe, EyeOff, FileText, Video,
 } from "lucide-react";
-import type { Topic, CreateTopicDTO, TopicsAnalytics } from "./topic.types";
+import type { Topic, TopicsAnalytics, CreateTopicDTO } from "./topic.types";
 import TopicTable from "./components/TopicTable";
-import TopicDetailsModal from "./components/TopicDetailsModal";
 import AddEditTopicModal from "./components/AddEditTopicModal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import * as topicService from "../../services/topic.service";
@@ -36,11 +36,23 @@ const inactivePillStyle = {
   boxShadow: "4px 4px 8px rgba(0,0,0,0.10), -4px -4px 8px rgba(255,255,255,0.7)",
 };
 
+type TopicTab = "admin" | "doctor";
+
+const TABS: { value: TopicTab; label: string; icon: typeof FileText; description: string }[] = [
+  { value: "admin", label: "Admin Created", icon: FileText, description: "Articles created by admins" },
+  { value: "doctor", label: "Doctor Created", icon: Video, description: "Videos uploaded by doctors" },
+];
+
 export default function TopicsView() {
+  const navigate = useNavigate();
+
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TopicTab>("admin");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,23 +66,16 @@ export default function TopicsView() {
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | "admin" | "doctor">("all");
 
-  // Modal states
+  // Confirm dialog states
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isTranscriptionWarningOpen, setIsTranscriptionWarningOpen] = useState(false);
 
-  // Keep selectedTopic in sync with latest data from topics array
-  useEffect(() => {
-    if (selectedTopic) {
-      const updated = topics.find((t) => t.id === selectedTopic.id);
-      if (updated) setSelectedTopic(updated);
-    }
-  }, [topics]);
+  // Edit modal state
+  const [editTopic, setEditTopic] = useState<Topic | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Fetch analytics
   const fetchAnalytics = async () => {
@@ -91,7 +96,7 @@ export default function TopicsView() {
       setLoading(true);
       const response = await topicService.getTopics({
         status: statusFilter !== "all" ? statusFilter : undefined,
-        topic_type: typeFilter !== "all" ? typeFilter : undefined,
+        topic_type: activeTab,
         page: currentPage,
         page_size: pageSize,
         search: searchTerm || undefined,
@@ -113,7 +118,7 @@ export default function TopicsView() {
   useEffect(() => {
     fetchAnalytics();
     fetchTopics();
-  }, [currentPage, pageSize, statusFilter, typeFilter]);
+  }, [currentPage, pageSize, statusFilter, activeTab]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -123,11 +128,31 @@ export default function TopicsView() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Reset page when switching tabs
+  const handleTabChange = (tab: TopicTab) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
   // Handlers
-  const handleView = (topic: Topic) => { setSelectedTopic(topic); setIsDetailsModalOpen(true); };
-  const handleAdd = () => { setSelectedTopic(null); setIsAddEditModalOpen(true); };
-  const handleEdit = (topic: Topic) => { setSelectedTopic(topic); setIsAddEditModalOpen(true); };
+  const handleAdd = () => navigate("/topics/new");
   const handleDelete = (topic: Topic) => { setSelectedTopic(topic); setIsDeleteDialogOpen(true); };
+  const handleEdit = (topic: Topic) => { setEditTopic(topic); setIsEditModalOpen(true); };
+
+  const handleEditSubmit = async (data: CreateTopicDTO) => {
+    if (!editTopic) return;
+    try {
+      await topicService.updateTopic({ ...data, id: editTopic.id });
+      await fetchTopics();
+      setIsEditModalOpen(false);
+      setEditTopic(null);
+    } catch (error) {
+      console.error("Failed to update topic:", error);
+      alert("Failed to update topic. Please try again.");
+    }
+  };
 
   const handlePublish = (topic: Topic) => {
     setSelectedTopic(topic);
@@ -140,22 +165,6 @@ export default function TopicsView() {
       return;
     }
     setIsPublishDialogOpen(true);
-  };
-
-  const handleAddEditSubmit = async (data: CreateTopicDTO) => {
-    try {
-      if (selectedTopic) {
-        await topicService.updateTopic({ ...data, id: selectedTopic.id });
-      } else {
-        await topicService.createTopic(data);
-      }
-      await fetchTopics();
-      await fetchAnalytics();
-      setIsAddEditModalOpen(false);
-    } catch (error) {
-      console.error("Failed to save topic:", error);
-      alert("Failed to save topic. Please try again.");
-    }
   };
 
   const handleConfirmDelete = async () => {
@@ -187,10 +196,9 @@ export default function TopicsView() {
   const handleClearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
-    setTypeFilter("all");
   };
 
-  const hasActiveFilters = searchTerm || statusFilter !== "all" || typeFilter !== "all";
+  const hasActiveFilters = searchTerm || statusFilter !== "all";
 
   const stats = analytics
     ? {
@@ -203,8 +211,6 @@ export default function TopicsView() {
       published: topics.filter((t) => t.publish_status).length,
       unpublished: topics.filter((t) => !t.publish_status).length,
     };
-
-
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -222,17 +228,6 @@ export default function TopicsView() {
       pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
     }
     return pages;
-  };
-
-  // Handle details modal actions
-  const handleDetailsEdit = (topic: Topic) => {
-    setIsDetailsModalOpen(false);
-    handleEdit(topic);
-  };
-
-  const handleDetailsPublish = (topic: Topic) => {
-    setIsDetailsModalOpen(false);
-    handlePublish(topic);
   };
 
   return (
@@ -320,6 +315,44 @@ export default function TopicsView() {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div
+        className="min-w-0"
+        style={{
+          background: "#eff1f5",
+          borderRadius: "16px",
+          padding: "5px",
+          boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)",
+        }}
+      >
+        <div className="flex gap-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.value;
+            const Icon = tab.icon;
+            const accentColor = tab.value === "admin" ? "#6b96ff" : "#a285ff";
+            return (
+              <button
+                key={tab.value}
+                onClick={() => handleTabChange(tab.value)}
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all"
+                style={{
+                  borderRadius: "12px",
+                  color: isActive ? "#1f2937" : "#9ca3af",
+                  background: isActive ? "#ffffff" : "transparent",
+                  boxShadow: isActive
+                    ? "3px 3px 8px rgba(0,0,0,0.08), -2px -2px 6px rgba(255,255,255,0.8)"
+                    : "none",
+                }}
+              >
+                <Icon className="w-4 h-4" style={{
+                  color: isActive ? accentColor : "#9ca3af",
+                }} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Filters and Actions */}
       <div className="clay-card min-w-0" style={{ padding: "14px 18px" }}>
@@ -372,25 +405,6 @@ export default function TopicsView() {
                 ))}
               </div>
 
-              {/* Type Pill Group */}
-              <div className="flex items-center rounded-xl overflow-hidden" style={{ boxShadow: "inset 1px 1px 3px rgba(0,0,0,0.06), inset -1px -1px 3px rgba(255,255,255,0.5)" }}>
-                {([
-                  { value: "all" as const, label: "All" },
-                  { value: "admin" as const, label: "Admin Articles" },
-                  { value: "doctor" as const, label: "Doctor Videos" },
-                ]).map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTypeFilter(opt.value)}
-                    className="px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
-                    style={typeFilter === opt.value ? activePillStyle : inactivePillStyle}
-                    title={`Filter by ${opt.label}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
               {/* Clear Filters */}
               {hasActiveFilters && (
                 <button
@@ -404,20 +418,22 @@ export default function TopicsView() {
             </div>
           </div>
 
-          {/* Right: Add Topic Button */}
-          <div className="flex justify-end lg:justify-normal shrink-0">
-            <button
-              onClick={handleAdd}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
-              style={{
-                background: "#1f2937",
-                boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
-              }}
-            >
-              <Plus className="w-4 h-4" />
-              Add Topic
-            </button>
-          </div>
+          {/* Right: Add Topic Button — only for Admin tab */}
+          {activeTab === "admin" && (
+            <div className="flex justify-end lg:justify-normal shrink-0">
+              <button
+                onClick={handleAdd}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all whitespace-nowrap shrink-0"
+                style={{
+                  background: "#1f2937",
+                  boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.12), -2px -2px 6px rgba(255, 255, 255, 0.04)",
+                }}
+              >
+                <Plus className="w-4 h-4" />
+                Add Topic
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -433,7 +449,6 @@ export default function TopicsView() {
               <div className="flex items-center gap-4">
                 <div className="w-8 h-3 bg-gray-200 rounded animate-pulse" />
                 <div className="w-32 h-3 bg-gray-200 rounded animate-pulse" />
-                <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
                 <div className="w-24 h-3 bg-gray-200 rounded animate-pulse" />
                 <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
                 <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
@@ -446,29 +461,19 @@ export default function TopicsView() {
                 className="flex items-center gap-4 px-4 py-4 animate-pulse"
                 style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}
               >
-                {/* Index */}
                 <div className="w-6 h-4 bg-gray-200 rounded" />
-                {/* Thumbnail */}
                 <div className="w-11 h-11 bg-gray-200 rounded-lg shrink-0" />
-                {/* Title + subtitle */}
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="w-48 h-4 bg-gray-200 rounded" />
                   <div className="w-64 h-3 bg-gray-100 rounded" />
                 </div>
-                {/* Type badge */}
-                <div className="w-24 h-6 bg-gray-200 rounded-lg" />
-                {/* Author */}
                 <div className="space-y-1">
                   <div className="w-20 h-3.5 bg-gray-200 rounded" />
                   <div className="w-28 h-3 bg-gray-100 rounded" />
                 </div>
-                {/* Status */}
                 <div className="w-20 h-6 bg-gray-200 rounded-full" />
-                {/* Date */}
                 <div className="w-20 h-3.5 bg-gray-200 rounded" />
-                {/* Actions */}
                 <div className="flex gap-1.5">
-                  <div className="w-7 h-7 bg-gray-200 rounded-lg" />
                   <div className="w-7 h-7 bg-gray-200 rounded-lg" />
                   <div className="w-7 h-7 bg-gray-200 rounded-lg" />
                 </div>
@@ -490,7 +495,7 @@ export default function TopicsView() {
             <h3 className="text-base font-semibold text-gray-700 mb-1">No topics found</h3>
             {hasActiveFilters ? (
               <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
-            ) : (
+            ) : activeTab === "admin" ? (
               <button
                 onClick={handleAdd}
                 className="mt-3 flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-xl hover:opacity-90 transition-all"
@@ -502,16 +507,20 @@ export default function TopicsView() {
                 <Plus className="w-4 h-4" />
                 Add your first topic
               </button>
+            ) : (
+              <p className="text-sm text-gray-400">Doctor video topics will appear here</p>
             )}
           </div>
         ) : (
           <>
             <TopicTable
               topics={topics}
-              onView={handleView}
-              onEdit={handleEdit}
               onDelete={handleDelete}
               onPublish={handlePublish}
+              onEdit={handleEdit}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              activeTab={activeTab}
             />
 
             {/* Pagination */}
@@ -602,23 +611,7 @@ export default function TopicsView() {
         )}
       </div>
 
-      {/* Modals */}
-      <TopicDetailsModal
-        topic={selectedTopic}
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        onRefresh={fetchTopics}
-        onEdit={handleDetailsEdit}
-        onPublish={handleDetailsPublish}
-      />
-
-      <AddEditTopicModal
-        topic={selectedTopic}
-        isOpen={isAddEditModalOpen}
-        onClose={() => setIsAddEditModalOpen(false)}
-        onSubmit={handleAddEditSubmit}
-      />
-
+      {/* Confirm Dialogs */}
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
@@ -652,6 +645,14 @@ export default function TopicsView() {
         confirmText="OK"
         variant="warning"
         hideCancelButton={true}
+      />
+
+      {/* Edit Topic Modal */}
+      <AddEditTopicModal
+        topic={editTopic}
+        isOpen={isEditModalOpen}
+        onClose={() => { setIsEditModalOpen(false); setEditTopic(null); }}
+        onSubmit={handleEditSubmit}
       />
     </div>
   );
