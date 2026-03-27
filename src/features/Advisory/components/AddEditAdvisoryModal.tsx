@@ -576,6 +576,8 @@ export default function AddEditAdvisoryModal({
                           <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
                           <input
                             type="date"
+                            min='1900-01-01'
+                            max={new Date().toISOString().split('T')[0]}
                             value={formData.date_of_birth}
                             onChange={(e) =>
                               setFormData({ ...formData, date_of_birth: e.target.value })

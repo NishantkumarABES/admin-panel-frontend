@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Eye, Edit } from "lucide-react";
 import type { Product } from "../product.types";
+import { PRODUCT_CATEGORY_LABELS } from "../product.types";
 import StatusBadge from "../../../components/common/StatusBadge";
 import productPlaceholder from "../../../assets/placeholders/product.png";
 
@@ -96,7 +97,8 @@ export default function ProductTable({ products, onEdit }: ProductTableProps) {
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{product.category}</div>
+                  <div className="text-sm text-gray-900">{PRODUCT_CATEGORY_LABELS[product.category]}</div>
+
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{product.brand || "—"}</div>

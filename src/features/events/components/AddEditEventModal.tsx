@@ -364,6 +364,59 @@ export default function AddEditEventModal({
     setSpeakerImagePreviews(newPreviews);
   };
 
+  // Helper: check if start and end dates are the same day
+  const isSameDay = formData.start_date && formData.end_date && formData.start_date === formData.end_date;
+
+  // Helper: get 24h hour from time string
+  const getHour24 = (time: string) => parseInt(time.split(":")[0], 10);
+  const getMinute = (time: string) => parseInt(time.split(":")[1], 10);
+
+  // Helper: compute minimum end time parts when same day
+  const startHour24 = formData.start_time ? getHour24(formData.start_time) : 0;
+  const startMinute = formData.start_time ? getMinute(formData.start_time) : 0;
+
+  // For end time: determine current end AM/PM
+  const endHour24 = formData.end_time ? getHour24(formData.end_time) : 0;
+  const endIsPM = endHour24 >= 12;
+
+  // Filter end time hours when same day
+  const getFilteredEndHours = () => {
+    if (!isSameDay || !formData.start_time) return Array.from({ length: 12 }, (_, i) => i + 1);
+    const allHours = Array.from({ length: 12 }, (_, i) => i + 1);
+    return allHours.filter((h12) => {
+      // Convert this 12h option to 24h based on current end AM/PM
+      let h24 = h12;
+      if (endIsPM && h12 !== 12) h24 = h12 + 12;
+      if (!endIsPM && h12 === 12) h24 = 0;
+      // If this hour is after start hour, always valid
+      if (h24 > startHour24) return true;
+      // If same hour, valid only if there are valid minutes
+      if (h24 === startHour24) return true;
+      return false;
+    });
+  };
+
+  // Filter end time minutes when same day and same hour
+  const getFilteredEndMinutes = () => {
+    const allMinutes = Array.from({ length: 12 }, (_, i) => i * 5);
+    if (!isSameDay || !formData.start_time) return allMinutes;
+    if (endHour24 === startHour24) {
+      return allMinutes.filter((m) => m >= startMinute);
+    }
+    if (endHour24 < startHour24) {
+      return []; // shouldn't happen if hour is filtered, but safety
+    }
+    return allMinutes;
+  };
+
+  // Filter end AM/PM options when same day
+  const getFilteredEndAmPm = () => {
+    if (!isSameDay || !formData.start_time) return ["AM", "PM"];
+    const startIsPM = startHour24 >= 12;
+    if (startIsPM) return ["PM"]; // can't go back to AM
+    return ["AM", "PM"];
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -575,9 +628,20 @@ export default function AddEditEventModal({
                     <input
                       type="date"
                       value={formData.start_date}
+                      min="1900-01-01"
+                      max="9999-12-31"
                       onChange={(e) => {
                         setFormData({ ...formData, start_date: e.target.value });
                         if (validationErrors.start_date) setValidationErrors({ ...validationErrors, start_date: "" });
+                      }}
+                      onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const parts = input.value.split("-");
+                        if (parts[0] && parts[0].length > 4) {
+                          parts[0] = parts[0].slice(0, 4);
+                          input.value = parts.join("-");
+                          setFormData({ ...formData, start_date: input.value });
+                        }
                       }}
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                       style={inputStyle(!!validationErrors.start_date)}
@@ -594,9 +658,20 @@ export default function AddEditEventModal({
                     <input
                       type="date"
                       value={formData.end_date}
+                      min={formData.start_date || "1900-01-01"}
+                      max="9999-12-31"
                       onChange={(e) => {
                         setFormData({ ...formData, end_date: e.target.value });
                         if (validationErrors.end_date) setValidationErrors({ ...validationErrors, end_date: "" });
+                      }}
+                      onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const parts = input.value.split("-");
+                        if (parts[0] && parts[0].length > 4) {
+                          parts[0] = parts[0].slice(0, 4);
+                          input.value = parts.join("-");
+                          setFormData({ ...formData, end_date: input.value });
+                        }
                       }}
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                       style={inputStyle(!!validationErrors.end_date)}
@@ -628,8 +703,15 @@ export default function AddEditEventModal({
                           let h24 = hour;
                           if (isPM && hour !== 12) h24 = hour + 12;
                           if (!isPM && hour === 12) h24 = 0;
-                          const newTime = `${String(h24).padStart(2, "0")}:${min || "00"}`;
-                          setFormData({ ...formData, start_time: newTime });
+                          const newStartTime = `${String(h24).padStart(2, "0")}:${min || "00"}`;
+                          const updates: Partial<CreateEventDTO> = { start_time: newStartTime };
+                          // Auto-correct end_time if same day and end_time is now before start_time
+                          if (formData.start_date && formData.end_date && formData.start_date === formData.end_date && formData.end_time) {
+                            if (formData.end_time < newStartTime) {
+                              updates.end_time = newStartTime;
+                            }
+                          }
+                          setFormData({ ...formData, ...updates });
                           if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
                         }}
                         className="w-20 px-2 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none"
@@ -644,8 +726,15 @@ export default function AddEditEventModal({
                         value={formData.start_time ? formData.start_time.split(":")[1] : ""}
                         onChange={(e) => {
                           const [h] = (formData.start_time || "00:00").split(":");
-                          const newTime = `${h || "00"}:${e.target.value}`;
-                          setFormData({ ...formData, start_time: newTime });
+                          const newStartTime = `${h || "00"}:${e.target.value}`;
+                          const updates: Partial<CreateEventDTO> = { start_time: newStartTime };
+                          // Auto-correct end_time if same day and end_time is now before start_time
+                          if (formData.start_date && formData.end_date && formData.start_date === formData.end_date && formData.end_time) {
+                            if (formData.end_time < newStartTime) {
+                              updates.end_time = newStartTime;
+                            }
+                          }
+                          setFormData({ ...formData, ...updates });
                           if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
                         }}
                         className="w-20 px-2 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none"
@@ -667,8 +756,15 @@ export default function AddEditEventModal({
                           let hour = parseInt(hStr, 10);
                           if (e.target.value === "PM" && hour < 12) hour += 12;
                           if (e.target.value === "AM" && hour >= 12) hour -= 12;
-                          const newTime = `${String(hour).padStart(2, "0")}:${min || "00"}`;
-                          setFormData({ ...formData, start_time: newTime });
+                          const newStartTime = `${String(hour).padStart(2, "0")}:${min || "00"}`;
+                          const updates: Partial<CreateEventDTO> = { start_time: newStartTime };
+                          // Auto-correct end_time if same day and end_time is now before start_time
+                          if (formData.start_date && formData.end_date && formData.start_date === formData.end_date && formData.end_time) {
+                            if (formData.end_time < newStartTime) {
+                              updates.end_time = newStartTime;
+                            }
+                          }
+                          setFormData({ ...formData, ...updates });
                           if (validationErrors.start_time) setValidationErrors({ ...validationErrors, start_time: "" });
                         }}
                         className="w-20 px-2 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none"
@@ -713,7 +809,7 @@ export default function AddEditEventModal({
                         style={inputStyle(!!validationErrors.end_time)}
                       >
                         <option value="" disabled>HH</option>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                        {getFilteredEndHours().map((h) => (
                           <option key={h} value={String(h)}>{String(h).padStart(2, "0")}</option>
                         ))}
                       </select>
@@ -729,7 +825,7 @@ export default function AddEditEventModal({
                         style={inputStyle(!!validationErrors.end_time)}
                       >
                         <option value="" disabled>MM</option>
-                        {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
+                        {getFilteredEndMinutes().map((m) => (
                           <option key={m} value={String(m).padStart(2, "0")}>{String(m).padStart(2, "0")}</option>
                         ))}
                       </select>
@@ -751,8 +847,9 @@ export default function AddEditEventModal({
                         className="w-20 px-2 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none"
                         style={inputStyle(!!validationErrors.end_time)}
                       >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
+                        {getFilteredEndAmPm().map((period) => (
+                          <option key={period} value={period}>{period}</option>
+                        ))}
                       </select>
                     </div>
                     {validationErrors.end_time && (

@@ -483,12 +483,12 @@ export default function AddGeneralAdForm({
                     </label>
                   </div>
                 ) : (
-                  <div className="relative">
+                  <div className="relative flex justify-center">
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="w-full h-48 object-cover rounded-xl"
-                      style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
+                      className="rounded-xl"
+                      style={{ width: "180px", height: "320px", objectFit: "contain", background: "#f1f5f9", boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}
                     />
                     <button
                       type="button"
