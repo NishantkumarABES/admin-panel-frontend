@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, Package, Tag, IndianRupee, Box, RefreshCw, Users, Calendar, FileText, ImageIcon } from "lucide-react";
+import { ArrowLeft, Edit, Package, Tag, IndianRupee, Box, RefreshCw, Calendar, FileText, ImageIcon, Stethoscope, Heart } from "lucide-react";
 import type { Product, CreateProductDTO } from "./product.types";
 import { PRODUCT_CATEGORY_LABELS, mockProducts } from "./product.types";
 import StatusBadge from "../../components/common/StatusBadge";
@@ -281,32 +281,37 @@ export default function ProductDetailView() {
             </div>
 
             {/* Audience badges */}
-            <div className="flex items-center gap-2">
-              {product.for_patients && (
-                <span
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-                  style={{
-                    background: "rgba(79, 207, 165, 0.08)",
-                    color: "#10b981",
-                  }}
-                >
-                  <Users className="w-3 h-3" />
-                  For Patients
-                </span>
-              )}
-              {product.for_doctors && (
-                <span
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-                  style={{
-                    background: "rgba(162, 133, 255, 0.08)",
-                    color: "#a285ff",
-                  }}
-                >
-                  <Users className="w-3 h-3" />
-                  For Doctors
-                </span>
-              )}
-            </div>
+            {(product.for_patients || product.for_doctors) && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 mr-0.5">Available for</span>
+                {product.for_patients && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                    style={{
+                      background: "rgba(79, 207, 165, 0.06)",
+                      color: "#0d9668",
+                      borderColor: "rgba(79, 207, 165, 0.25)",
+                    }}
+                  >
+                    <Heart className="w-3 h-3" />
+                    Patients
+                  </span>
+                )}
+                {product.for_doctors && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                    style={{
+                      background: "rgba(107, 150, 255, 0.06)",
+                      color: "#4b7cf3",
+                      borderColor: "rgba(107, 150, 255, 0.25)",
+                    }}
+                  >
+                    <Stethoscope className="w-3 h-3" />
+                    Doctors
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -73,8 +73,8 @@ export default function AdvertisementDetailsModal({
                     <img
                         src={advertisement.image}
                         alt={advertisement.title}
-                        className="w-24 h-16 rounded-xl object-cover"
-                        style={{ border: "1px solid rgba(0,0,0,0.06)" }}
+                        className="rounded-xl object-cover"
+                        style={{ aspectRatio: "9/9", width: "64px", border: "1px solid rgba(0,0,0,0.06)" }}
                         onError={(e) => {
                             e.currentTarget.src = "https://via.placeholder.com/96x64?text=Ad";
                         }}
