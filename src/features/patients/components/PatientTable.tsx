@@ -128,8 +128,8 @@ export default function PatientTable({
                                         {patient && (
                                             <img
                                                 src={
-                                                    patient.image
-                                                        ? patient.image
+                                                    patient.patient_profile?.profile_photo
+                                                        ? patient.patient_profile?.profile_photo
                                                         : patient.gender === "male"
                                                             ? malePatientPlaceholder
                                                             : femalePatientPlaceholder
