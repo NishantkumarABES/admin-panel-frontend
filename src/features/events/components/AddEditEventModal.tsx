@@ -364,6 +364,16 @@ export default function AddEditEventModal({
     setSpeakerImagePreviews(newPreviews);
   };
 
+  // Helper: get today's date as YYYY-MM-DD for min date constraint
+  const getTodayDateString = () => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const todayDate = getTodayDateString();
+
   // Helper: check if start and end dates are the same day
   const isSameDay = formData.start_date && formData.end_date && formData.start_date === formData.end_date;
 
@@ -628,10 +638,16 @@ export default function AddEditEventModal({
                     <input
                       type="date"
                       value={formData.start_date}
-                      min="1900-01-01"
+                      min={todayDate}
                       max="9999-12-31"
                       onChange={(e) => {
-                        setFormData({ ...formData, start_date: e.target.value });
+                        const newStartDate = e.target.value;
+                        const updates: Partial<CreateEventDTO> = { start_date: newStartDate };
+                        // Clear end_date if it's now before the new start_date
+                        if (formData.end_date && formData.end_date < newStartDate) {
+                          updates.end_date = "";
+                        }
+                        setFormData({ ...formData, ...updates });
                         if (validationErrors.start_date) setValidationErrors({ ...validationErrors, start_date: "" });
                       }}
                       onInput={(e) => {
@@ -658,8 +674,9 @@ export default function AddEditEventModal({
                     <input
                       type="date"
                       value={formData.end_date}
-                      min={formData.start_date || "1900-01-01"}
+                      min={formData.start_date || todayDate}
                       max="9999-12-31"
+                      disabled={!formData.start_date}
                       onChange={(e) => {
                         setFormData({ ...formData, end_date: e.target.value });
                         if (validationErrors.end_date) setValidationErrors({ ...validationErrors, end_date: "" });
@@ -673,7 +690,7 @@ export default function AddEditEventModal({
                           setFormData({ ...formData, end_date: input.value });
                         }
                       }}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+                      className={`w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all ${!formData.start_date ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={inputStyle(!!validationErrors.end_date)}
                     />
                     {validationErrors.end_date && (
