@@ -72,7 +72,7 @@ export default function DashboardActivityFeed({ metrics, loading }: DashboardAct
             icon: <BookOpen className="w-4 h-4" />,
             color: "#4fcfa5",
             bg: "rgba(79, 207, 165, 0.08)",
-            description: `${metrics.topics.total.toLocaleString()} published`,
+            description: `${metrics.topics.total.toLocaleString()} Created`,
         },
         {
             label: "Products",

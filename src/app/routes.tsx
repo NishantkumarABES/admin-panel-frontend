@@ -26,6 +26,9 @@ import ArticlesView from "../features/my-reposit/articles/ArticlesView";
 import VideosView from "../features/my-reposit/videos/VideosView";
 import JobsView from "../features/my-reposit/jobs/JobsView";
 import JobDetailView from "../features/my-reposit/jobs/JobDetailView";
+import OtherView from "../features/other/OtherView";
+import SoCouponView from "../features/other/so-coupon/SoCouponView";
+import AppCategoriesView from "../features/other/app-categories/AppCategoriesView";
 
 export default function AppRoutes() {
   return (
@@ -55,6 +58,9 @@ export default function AppRoutes() {
       <Route path="/my-reposit/videos" element={<VideosView />} />
       <Route path="/my-reposit/jobs/:id" element={<JobDetailView />} />
       <Route path="/my-reposit/jobs" element={<JobsView />} />
+      <Route path="/other" element={<OtherView />} />
+      <Route path="/other/so-coupons" element={<SoCouponView />} />
+      <Route path="/other/app-categories" element={<AppCategoriesView />} />
     </Routes>
   );
 }

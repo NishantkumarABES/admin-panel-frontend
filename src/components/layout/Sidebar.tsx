@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard, Stethoscope, Users, Package, BookOpen, Calendar, Settings, FileCheck,
   ChevronLeft, ChevronRight, User, LogOut, Megaphone, Pill, Lightbulb,
-  Library, FileText, Video, Briefcase, Tag, Image, RotateCcw
+  Library, FileText, Video, Briefcase, Tag, Image, RotateCcw, MoreHorizontal
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 
@@ -54,6 +54,13 @@ const navGroups = [
     items: [
       { label: "Settings", path: "/settings", icon: Settings },
       { label: "Advisory", path: "/advisory", icon: Lightbulb },
+    ],
+  },
+  {
+    key: "other",
+    label: "Other",
+    items: [
+      { label: "Other", path: "/other", icon: MoreHorizontal },
     ],
   },
 ];
