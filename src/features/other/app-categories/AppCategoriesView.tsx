@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, Search, LayoutGrid, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { AppCategory, CreateAppCategoryDTO, UpdateAppCategoryDTO } from "./app_categories.types";
@@ -9,6 +9,7 @@ import * as appCategoryService from "../../../services/app-category.service";
 
 export default function AppCategoriesView() {
     const navigate = useNavigate();
+    const isFirstSearchEffectRun = useRef(true);
     const [categories, setCategories] = useState<AppCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -42,6 +43,11 @@ export default function AppCategoriesView() {
     }, []);
 
     useEffect(() => {
+        if (isFirstSearchEffectRun.current) {
+            isFirstSearchEffectRun.current = false;
+            return;
+        }
+
         const timer = setTimeout(() => { fetchCategories(); }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);

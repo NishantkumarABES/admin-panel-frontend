@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Filter, Tag, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { type CreateSoCouponDTO, type SoCoupon, type UpdateSoCouponDTO } from "./so_coupon.types";
@@ -10,6 +10,7 @@ import * as soCouponService from "../../../services/so-coupon.service";
 
 export default function SoCouponView() {
     const navigate = useNavigate();
+    const isFirstFiltersEffectRun = useRef(true);
     const [coupons, setCoupons] = useState<SoCoupon[]>([]);
     const [couponsLoading, setCouponsLoading] = useState(true);
     const [couponSearchTerm, setCouponSearchTerm] = useState("");
@@ -49,6 +50,11 @@ export default function SoCouponView() {
     }, []);
 
     useEffect(() => {
+        if (isFirstFiltersEffectRun.current) {
+            isFirstFiltersEffectRun.current = false;
+            return;
+        }
+
         const timer = setTimeout(() => { fetchCoupons(); }, 300);
         return () => clearTimeout(timer);
     }, [couponSearchTerm, couponTypeFilter, couponStatusFilter]);

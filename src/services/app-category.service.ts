@@ -58,8 +58,16 @@ export const createAppCategory = async (data: CreateAppCategoryDTO): Promise<{ d
 
 export const updateAppCategory = async (data: UpdateAppCategoryDTO): Promise<{ data: AppCategory }> => {
   const { id, ...rest } = data;
-  let payload: Partial<CreateAppCategoryDTO> | FormData = rest;
+  const payloadData: Partial<CreateAppCategoryDTO> = {};
 
+  if (rest.key !== undefined) {
+    payloadData.key = rest.key;
+  }
+  if (rest.label !== undefined) {
+    payloadData.label = rest.label;
+  }
+
+  let payload: Partial<CreateAppCategoryDTO> | FormData = payloadData;
   if (rest.image instanceof File) {
     const formData = new FormData();
     if (rest.key !== undefined) {
