@@ -15,8 +15,8 @@ const initialFormData: CreateSoCouponDTO = {
     description: "",
     discount_type: "percentage",
     discount_value: "",
-    max_uses: undefined,
-    min_purchase_amount: undefined,
+    usage_limit: undefined,
+    minimum_order_amount: undefined,
     max_discount_amount: undefined,
     is_active: true,
     valid_from: new Date().toISOString().split("T")[0],
@@ -79,8 +79,8 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                 description: coupon.description,
                 discount_type: coupon.discount_type,
                 discount_value: coupon.discount_value,
-                max_uses: coupon.max_uses,
-                min_purchase_amount: coupon.min_purchase_amount,
+                usage_limit: coupon.usage_limit,
+                minimum_order_amount: coupon.minimum_order_amount,
                 max_discount_amount: coupon.max_discount_amount,
                 is_active: coupon.is_active,
                 valid_from: coupon.valid_from.split("T")[0],
@@ -114,11 +114,11 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
         } else if (formData.valid_from && new Date(formData.valid_until) <= new Date(formData.valid_from)) {
             newErrors.valid_until = "Valid until date must be after valid from date";
         }
-        if (formData.max_uses && formData.max_uses <= 0) {
-            newErrors.max_uses = "Max uses must be greater than 0";
+        if (formData.usage_limit && formData.usage_limit <= 0) {
+            newErrors.usage_limit = "Usage limit must be greater than 0";
         }
-        if (formData.min_purchase_amount && parseFloat(formData.min_purchase_amount) < 0) {
-            newErrors.min_purchase_amount = "Minimum purchase amount cannot be negative";
+        if (formData.minimum_order_amount && parseFloat(formData.minimum_order_amount) < 0) {
+            newErrors.minimum_order_amount = "Minimum order amount cannot be negative";
         }
         if (formData.max_discount_amount && parseFloat(formData.max_discount_amount) < 0) {
             newErrors.max_discount_amount = "Maximum discount amount cannot be negative";
@@ -197,7 +197,7 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                             background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                             boxShadow: "4px 4px 12px rgba(16, 185, 129, 0.2), -2px -2px 8px rgba(255, 255, 255, 0.1)"
                         }}>
-                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                             </div>
                             <div>
@@ -242,7 +242,7 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                                     background: "#fee",
                                     border: "1px solid #fcc"
                                 }}>
-                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                                     <p className="text-sm text-red-700">{submitError}</p>
                                 </div>
                             )}
@@ -477,8 +477,8 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                                         </label>
                                         <input
                                             type="number"
-                                            name="max_uses"
-                                            value={formData.max_uses || ""}
+                                            name="usage_limit"
+                                            value={formData.usage_limit || ""}
                                             onChange={handleChange}
                                             min="0"
                                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
@@ -504,23 +504,23 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                                         </label>
                                         <input
                                             type="number"
-                                            name="min_purchase_amount"
-                                            value={formData.min_purchase_amount || ""}
+                                            name="minimum_order_amount"
+                                            value={formData.minimum_order_amount || ""}
                                             onChange={handleChange}
                                             step="0.01"
                                             min="0"
                                             className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
                                             style={{
                                                 background: "#ffffff",
-                                                border: errors.min_purchase_amount ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                                                border: errors.minimum_order_amount ? "1px solid #ef4444" : "1px solid #e5e7eb",
                                                 boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                                             }}
                                             placeholder="No minimum"
                                         />
-                                        {errors.min_purchase_amount && (
+                                        {errors.minimum_order_amount && (
                                             <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
                                                 <AlertCircle className="w-3 h-3" />
-                                                {errors.min_purchase_amount}
+                                                {errors.minimum_order_amount}
                                             </p>
                                         )}
                                     </div>
@@ -532,10 +532,10 @@ export default function AddEditSoCouponModal({ coupon, isOpen, onClose, onSubmit
                                         background: "#fef3c7",
                                         border: "1px solid #fbbf24"
                                     }}>
-                                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                         <p className="text-xs text-amber-800">
-                                            This coupon has been used {coupon.current_uses} time{coupon.current_uses !== 1 ? "s" : ""}
-                                            {coupon.max_uses ? ` out of ${coupon.max_uses} maximum uses` : ""}.
+                                            This coupon has been used {coupon.used_count} time{coupon.used_count !== 1 ? "s" : ""}
+                                            {coupon.usage_limit ? ` out of ${coupon.usage_limit} maximum uses` : ""}.
                                         </p>
                                     </div>
                                 )}

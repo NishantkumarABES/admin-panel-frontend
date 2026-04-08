@@ -19,8 +19,8 @@ export default function SoCouponDetailsModal({ coupon, isOpen, onClose }: SoCoup
 
     const isExpired = new Date(coupon.valid_until) < new Date();
     const isNotYetValid = new Date(coupon.valid_from) > new Date();
-    const isMaxUsesReached = coupon.max_uses ? coupon.current_uses >= coupon.max_uses : false;
-    const usagePercent = coupon.max_uses ? Math.min((coupon.current_uses / coupon.max_uses) * 100, 100) : null;
+    const isMaxUsesReached = coupon.usage_limit ? coupon.used_count >= coupon.usage_limit : false;
+    const usagePercent = coupon.usage_limit ? Math.min((coupon.used_count / coupon.usage_limit) * 100, 100) : null;
 
     const InfoItem = ({
         icon: Icon, label, value,
@@ -105,11 +105,11 @@ export default function SoCouponDetailsModal({ coupon, isOpen, onClose }: SoCoup
                         </span>
                     }
                 />
-                <InfoItem icon={Hash} label="Max Uses" value={coupon.max_uses ? coupon.max_uses : "Unlimited"} />
+                <InfoItem icon={Hash} label="Usage Limit" value={coupon.usage_limit ? coupon.usage_limit : "Unlimited"} />
                 <InfoItem icon={Calendar} label="Valid From" value={formatDate(coupon.valid_from)} />
                 <InfoItem icon={Calendar} label="Valid Until" value={formatDate(coupon.valid_until)} />
-                {coupon.min_purchase_amount && (
-                    <InfoItem icon={IndianRupee} label="Min Purchase Amount" value={`₹${coupon.min_purchase_amount}`} />
+                {coupon.minimum_order_amount && (
+                    <InfoItem icon={IndianRupee} label="Minimum Order Amount" value={`₹${coupon.minimum_order_amount}`} />
                 )}
                 {coupon.max_discount_amount && (
                     <InfoItem icon={IndianRupee} label="Max Discount Amount" value={`₹${coupon.max_discount_amount}`} />
@@ -131,7 +131,7 @@ export default function SoCouponDetailsModal({ coupon, isOpen, onClose }: SoCoup
                     <BarChart2 className="w-4 h-4 text-gray-400" />
                     <div className="text-xs text-gray-500">Usage</div>
                     <span className="ml-auto text-sm font-medium text-gray-900">
-                        {coupon.current_uses} {coupon.max_uses ? `/ ${coupon.max_uses}` : "uses"}
+                        {coupon.used_count} {coupon.usage_limit ? `/ ${coupon.usage_limit}` : "uses"}
                     </span>
                 </div>
                 {usagePercent !== null && (

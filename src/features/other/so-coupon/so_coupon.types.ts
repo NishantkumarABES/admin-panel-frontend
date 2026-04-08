@@ -7,9 +7,9 @@ export interface SoCoupon {
     description?: string;
     discount_type: DiscountType;
     discount_value: string;
-    max_uses?: number;
-    current_uses: number;
-    min_purchase_amount?: string;
+    usage_limit?: number;
+    used_count: number;
+    minimum_order_amount?: string;
     max_discount_amount?: string;
     is_active: boolean;
     valid_from: string;
@@ -24,8 +24,8 @@ export interface CreateSoCouponDTO {
     description?: string;
     discount_type: DiscountType;
     discount_value: string;
-    max_uses?: number;
-    min_purchase_amount?: string;
+    usage_limit?: number;
+    minimum_order_amount?: string;
     max_discount_amount?: string;
     is_active: boolean;
     valid_from: string;

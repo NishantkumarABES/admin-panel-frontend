@@ -68,5 +68,5 @@ export const updateSoCoupon = async (couponData: UpdateSoCouponDTO): Promise<{ d
 };
 
 export const deleteSoCoupon = async (couponId: string): Promise<void> => {
-  await api.delete(`/second-opinion/admin/coupons/${couponId}/`);
+  await api.delete(`/second-opinion/admin/coupons/${couponId}/delete/`);
 };
