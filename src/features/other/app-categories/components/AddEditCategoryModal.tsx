@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { AlertCircle, Upload, X } from "lucide-react";
+import { AlertCircle, Upload, X, RefreshCw, Trash2 } from "lucide-react";
 import type { AppCategory, CreateAppCategoryDTO, UpdateAppCategoryDTO } from "../app_categories.types";
 import Modal from "../../../../components/common/Modal";
 
@@ -21,8 +21,10 @@ const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/webp", "image/jpeg"];
 
 export default function AddEditCategoryModal({ category, isOpen, onClose, onSubmit }: AddEditCategoryModalProps) {
+    const BackendBaseURL = import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:8000";
     const isEditMode = !!category;
-        const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const replaceInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState<CreateAppCategoryDTO | UpdateAppCategoryDTO>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -185,6 +187,18 @@ export default function AddEditCategoryModal({ category, isOpen, onClose, onSubm
         }
     };
 
+    const handleRemoveImage = () => {
+        setFormData((prev) => ({ ...prev, image: "" }));
+        setImagePreview("");
+        setErrors((prev) => ({ ...prev, image: "" }));
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+        if (replaceInputRef.current) {
+            replaceInputRef.current.value = "";
+        }
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -332,21 +346,6 @@ export default function AddEditCategoryModal({ category, isOpen, onClose, onSubm
                                         border: errors.image ? "1px solid #ef4444" : "1px solid #e5e7eb",
                                         boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)"
                                     }}>
-                                        {imagePreview ? (
-                                            <img
-                                                src={imagePreview}
-                                                alt="Category preview"
-                                                className="w-full h-44 object-contain rounded-lg"
-                                                style={{ background: "#f9fafb" }}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-44 rounded-lg flex flex-col items-center justify-center text-gray-400"
-                                                style={{ background: "#f9fafb" }}>
-                                                <Upload className="w-8 h-8 mb-2" />
-                                                <span className="text-xs">No image selected</span>
-                                            </div>
-                                        )}
-
                                         <input
                                             ref={fileInputRef}
                                             type="file"
@@ -354,20 +353,62 @@ export default function AddEditCategoryModal({ category, isOpen, onClose, onSubm
                                             onChange={handleImageSelect}
                                             className="hidden"
                                         />
+                                        <input
+                                            ref={replaceInputRef}
+                                            type="file"
+                                            accept=".png,.webp,.jpeg,.jpg,image/png,image/webp,image/jpeg"
+                                            onChange={handleImageSelect}
+                                            className="hidden"
+                                        />
 
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="mt-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2"
-                                            style={{
-                                                background: "#eff1f5",
-                                                color: "#1f2937",
-                                                boxShadow: "2px 2px 5px rgba(0, 0, 0, 0.08), -2px -2px 5px rgba(255, 255, 255, 0.6)"
-                                            }}
-                                        >
-                                            <Upload className="w-4 h-4" />
-                                            {imagePreview ? "Replace Image" : "Upload Image"}
-                                        </button>
+                                        {imagePreview ? (
+                                            <div
+                                                className="relative h-56 rounded-lg overflow-hidden group"
+                                                style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)", background: "#f9fafb" }}
+                                            >
+                                                <img
+                                                    src={imagePreview.startsWith("http") || imagePreview.startsWith("blob:")
+                                                        ? imagePreview
+                                                        : BackendBaseURL + imagePreview}
+                                                    alt="Category preview"
+                                                    className="w-full h-full object-contain"
+                                                />
+
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => replaceInputRef.current?.click()}
+                                                        className="p-2 bg-white/90 text-gray-700 rounded-lg hover:bg-white transition-all"
+                                                        title="Replace image"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveImage}
+                                                        className="p-2 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-all"
+                                                        title="Delete image"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="w-full px-4 py-5 rounded-xl flex flex-col items-center justify-center gap-1.5 text-sm text-gray-500 transition-all hover:text-gray-700 hover:border-gray-300"
+                                                style={{
+                                                    background: "#ffffff",
+                                                    border: "2px dashed rgba(0,0,0,0.12)",
+                                                    boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)",
+                                                }}
+                                            >
+                                                <Upload className="w-5 h-5" />
+                                                <span>Click to upload image</span>
+                                                <span className="text-[10px] text-gray-400">PNG, JPG, JPEG, WebP · Max 2 MB</span>
+                                            </button>
+                                        )}
                                     </div>
 
                                     {errors.image && (

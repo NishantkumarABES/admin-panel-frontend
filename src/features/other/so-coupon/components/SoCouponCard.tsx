@@ -28,8 +28,8 @@ export default function SoCouponCard({
         return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
     };
 
-    const usagePercent = coupon.max_uses
-        ? Math.min(100, Math.round((coupon.current_uses / coupon.max_uses) * 100))
+    const usagePercent = coupon.usage_limit
+        ? Math.min(100, Math.round((coupon.used_count / coupon.usage_limit) * 100))
         : 0;
 
     return (
@@ -146,7 +146,7 @@ export default function SoCouponCard({
 
                 {/* Info chips */}
                 <div className="flex flex-wrap gap-2">
-                    {coupon.min_purchase_amount && (
+                    {coupon.minimum_order_amount && (
                         <span
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
                             style={{
@@ -155,7 +155,7 @@ export default function SoCouponCard({
                             }}
                         >
                             <IndianRupee className="w-3 h-3" />
-                            Min ₹{parseFloat(coupon.min_purchase_amount).toFixed(0)}
+                            Min ₹{parseFloat(coupon.minimum_order_amount).toFixed(0)}
                         </span>
                     )}
                     {coupon.max_discount_amount && (
@@ -184,7 +184,7 @@ export default function SoCouponCard({
                 </div>
 
                 {/* Usage Progress */}
-                {coupon.max_uses && (
+                {coupon.usage_limit && (
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-[11px] text-gray-500 flex items-center gap-1">
@@ -192,7 +192,7 @@ export default function SoCouponCard({
                                 Usage
                             </span>
                             <span className="text-[11px] font-medium text-gray-700">
-                                {coupon.current_uses}/{coupon.max_uses}
+                                {coupon.used_count}/{coupon.usage_limit}
                             </span>
                         </div>
                         <div
