@@ -26,6 +26,7 @@ export interface TopicTranscription {
 export interface Topic {
   id: string;
   title: string;
+  title_color?: string | null;
   description: string;
   image: string;
   source_url: string | null;
@@ -74,9 +75,21 @@ export interface ArticleExtractionResponse {
   error?: string;
 }
 
+// AI title refinement response from backend
+export interface TitleRefinementResponse {
+  detail: string;
+  data?: {
+    original_title: string;
+    refined_title: string;
+  };
+  success: boolean;
+  error?: string;
+}
+
 // DTO for creating/editing topics (from AdminTopicWriteSerializer)
 export interface CreateTopicDTO {
   title: string;
+  title_color?: string;
   description: string;
   image_url?: string;
   image_file?: File;

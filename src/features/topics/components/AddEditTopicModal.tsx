@@ -4,7 +4,7 @@ import type {
 } from "../topic.types";
 
 import {
-  Link, AlertCircle, Loader2, Check, Upload, X, Video,
+  Link, AlertCircle, Loader2, Check, Upload, X, Video, Baseline,
 } from "lucide-react";
 import * as topicService from "../../../services/topic.service";
 import RichTextEditor from "../../settings/components/RichTextEditor";
@@ -15,6 +15,12 @@ const MAX_TITLE_CHARS = 150;
 const MAX_IMAGE_SIZE_MB = 5;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ALLOWED_IMAGE_LABEL = "PNG, JPG, JPEG or WebP";
+
+// Preset colors for the topic title
+const TITLE_COLORS = [
+  "#1f2937", "#ef4444", "#f97316", "#eab308", "#22c55e",
+  "#06b6d4", "#3b82f6", "#6b96ff", "#8b5cf6", "#ec4899",
+];
 
 interface AddEditTopicModalProps {
   topic: Topic | null;
@@ -27,6 +33,7 @@ type WorkflowMode = "article_input" | "ai_processing" | "ai_success" | "manual";
 
 const initialFormData: CreateTopicDTO = {
   title: "",
+  title_color: undefined,
   description: "",
   image_url: undefined,
   image_file: undefined,
@@ -95,8 +102,24 @@ export default function AddEditTopicModal({
   // AI processing message cycling
   const [aiMessageIndex, setAiMessageIndex] = useState(0);
 
+  // Title color picker state
+  const [showTitleColorPicker, setShowTitleColorPicker] = useState(false);
+  const titleColorRef = useRef<HTMLDivElement>(null);
+
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Close the title color popover when clicking outside of it
+  useEffect(() => {
+    if (!showTitleColorPicker) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (titleColorRef.current && !titleColorRef.current.contains(e.target as Node)) {
+        setShowTitleColorPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showTitleColorPicker]);
 
   // Reset modal on open/close
   useEffect(() => {
@@ -127,6 +150,7 @@ export default function AddEditTopicModal({
 
       setFormData({
         title: topic.title || "",
+        title_color: topic.title_color || undefined,
         description,
         image_url: topic.image || undefined,
         image_file: undefined,
@@ -431,6 +455,81 @@ export default function AddEditTopicModal({
 
   const hasNoImage = !formData.image_url && !formData.image_file && !imagePreview;
 
+  // Title color picker control (shared by manual & AI-success title fields)
+  const renderTitleColorPicker = () => (
+    <div className="relative" ref={titleColorRef}>
+      <button
+        type="button"
+        onClick={() => setShowTitleColorPicker((s) => !s)}
+        title="Title color"
+        className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-lg transition-all"
+        style={{
+          color: "#374151",
+          background: "#eff1f5",
+          boxShadow: "2px 2px 5px rgba(0,0,0,0.06), -1px -1px 3px rgba(255,255,255,0.6)",
+        }}
+      >
+        <Baseline className="w-3.5 h-3.5" />
+        <span
+          className="block w-3.5 rounded-full"
+          style={{ height: "3px", marginTop: "1px", background: formData.title_color || "#1f2937" }}
+        />
+      </button>
+      {showTitleColorPicker && (
+        <div
+          className="absolute right-0 z-20 mt-2 p-3 rounded-xl"
+          style={{
+            background: "#ffffff",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            width: "184px",
+          }}
+        >
+          <div className="grid grid-cols-5 gap-2 mb-2">
+            {TITLE_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, title_color: color }));
+                  setShowTitleColorPicker(false);
+                }}
+                title={color}
+                className="w-6 h-6 rounded-full transition-transform hover:scale-110"
+                style={{
+                  background: color,
+                  border: formData.title_color === color ? "2px solid #1f2937" : "1px solid rgba(0,0,0,0.12)",
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-2 pt-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+            <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+              <input
+                type="color"
+                value={formData.title_color || "#1f2937"}
+                onChange={(e) => setFormData((prev) => ({ ...prev, title_color: e.target.value }))}
+                className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+              />
+              Custom
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                // Empty string (not undefined) so a PATCH actually clears a saved color
+                setFormData((prev) => ({ ...prev, title_color: "" }));
+                setShowTitleColorPicker(false);
+              }}
+              className="text-xs font-medium text-gray-500 hover:text-gray-700"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   if (!isOpen) return null;
 
   // Determine which form id to use for the external submit button
@@ -660,13 +759,16 @@ export default function AddEditTopicModal({
 
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <div className="flex items-center justify-between mb-2 gap-3">
+                      <label className="block text-sm font-medium text-gray-700">Title *</label>
+                      {renderTitleColorPicker()}
+                    </div>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)" }}
+                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)", color: formData.title_color || undefined, fontWeight: formData.title_color ? 600 : undefined }}
                       placeholder="Enter topic title"
                       required
                     />
@@ -853,13 +955,16 @@ export default function AddEditTopicModal({
 
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <div className="flex items-center justify-between mb-2 gap-3">
+                      <label className="block text-sm font-medium text-gray-700">Title *</label>
+                      {renderTitleColorPicker()}
+                    </div>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)" }}
+                      style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.05)", color: formData.title_color || undefined, fontWeight: formData.title_color ? 600 : undefined }}
                       placeholder="Enter topic title"
                       required
                       maxLength={MAX_TITLE_CHARS}

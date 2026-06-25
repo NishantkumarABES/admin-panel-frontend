@@ -5,7 +5,7 @@ import type {
 } from "./topic.types";
 
 import {
-  Link, AlertCircle, Loader2, Check, Upload, X, ArrowLeft,
+  Link, AlertCircle, Loader2, Check, Upload, X, ArrowLeft, Sparkles, Undo2, Baseline,
 } from "lucide-react";
 import * as topicService from "../../services/topic.service";
 import RichTextEditor from "../settings/components/RichTextEditor";
@@ -21,12 +21,19 @@ type WorkflowMode = "article_input" | "ai_processing" | "ai_success" | "manual";
 
 const initialFormData: CreateTopicDTO = {
   title: "",
+  title_color: undefined,
   description: "",
   image_url: undefined,
   image_file: undefined,
   source_url: "",
   publishing_time: new Date().toISOString(),
 };
+
+// Preset colors for the topic title
+const TITLE_COLORS = [
+  "#1f2937", "#ef4444", "#f97316", "#eab308", "#22c55e",
+  "#06b6d4", "#3b82f6", "#6b96ff", "#8b5cf6", "#ec4899",
+];
 
 // Step indicator labels
 const STEPS = [
@@ -79,6 +86,15 @@ export default function AddEditTopicPage() {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [sourceUrlError, setSourceUrlError] = useState("");
 
+  // AI title refinement state
+  const [isRefiningTitle, setIsRefiningTitle] = useState(false);
+  const [titleRefineError, setTitleRefineError] = useState("");
+  const [titleBeforeRefine, setTitleBeforeRefine] = useState<string | null>(null);
+
+  // Title color picker state
+  const [showTitleColorPicker, setShowTitleColorPicker] = useState(false);
+  const titleColorRef = useRef<HTMLDivElement>(null);
+
   // URL real-time validation
   const [urlValid, setUrlValid] = useState<boolean | null>(null);
   const urlValidateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -88,6 +104,18 @@ export default function AddEditTopicPage() {
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Close the title color popover when clicking outside of it
+  useEffect(() => {
+    if (!showTitleColorPicker) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (titleColorRef.current && !titleColorRef.current.contains(e.target as Node)) {
+        setShowTitleColorPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showTitleColorPicker]);
 
   // AI message cycling
   useEffect(() => {
@@ -180,6 +208,9 @@ export default function AddEditTopicPage() {
     const selectedUrl = extractedImages[index];
     setFormData({ ...formData, image_url: selectedUrl, image_file: undefined });
     setImagePreview(selectedUrl);
+    setImageError("");
+    // Clear any previously chosen upload so the two paths don't conflict
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // Handle manual image upload
@@ -218,6 +249,35 @@ export default function AddEditTopicPage() {
     setMode("manual");
     setArticleUrl("");
     setUrlError("");
+  };
+
+  // Refine the title with AI (make it more engaging/catchy)
+  const handleRefineTitle = async () => {
+    const current = formData.title?.trim();
+    if (!current || isRefiningTitle) return;
+    setTitleRefineError("");
+    setIsRefiningTitle(true);
+    try {
+      const result = await topicService.refineTitleWithAI(current);
+      if (result.success && result.data?.refined_title) {
+        setTitleBeforeRefine(current);
+        setFormData((prev) => ({ ...prev, title: result.data!.refined_title }));
+      } else {
+        setTitleRefineError(result.error || "Could not refine the title. Please try again.");
+      }
+    } catch {
+      setTitleRefineError("Could not refine the title. Please try again.");
+    } finally {
+      setIsRefiningTitle(false);
+    }
+  };
+
+  // Revert to the title the user had before AI refinement
+  const handleUndoRefine = () => {
+    if (titleBeforeRefine === null) return;
+    setFormData((prev) => ({ ...prev, title: titleBeforeRefine }));
+    setTitleBeforeRefine(null);
+    setTitleRefineError("");
   };
 
   // Get plain text character count from HTML content
@@ -316,8 +376,152 @@ export default function AddEditTopicPage() {
   const activeFormId = mode === "ai_success" ? "topic-ai-success-form" : mode === "manual" ? "topic-manual-form" : undefined;
   const showFooter = mode === "ai_success" || mode === "manual";
 
+  // Title field with an AI "Refine" action — shared by manual & AI-success forms
+  const renderTitleField = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2 gap-3">
+        <label className="block text-sm font-semibold text-gray-800">Title *</label>
+        <div className="flex items-center gap-2">
+          {/* Title color picker */}
+          <div className="relative" ref={titleColorRef}>
+            <button
+              type="button"
+              onClick={() => setShowTitleColorPicker((s) => !s)}
+              title="Title color"
+              className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-lg transition-all"
+              style={{
+                color: "#374151",
+                background: "#eff1f5",
+                boxShadow: "2px 2px 5px rgba(0,0,0,0.06), -1px -1px 3px rgba(255,255,255,0.6)",
+              }}
+            >
+              <Baseline className="w-3.5 h-3.5" />
+              <span
+                className="block w-3.5 rounded-full"
+                style={{ height: "3px", marginTop: "1px", background: formData.title_color || "#1f2937" }}
+              />
+            </button>
+            {showTitleColorPicker && (
+              <div
+                className="absolute right-0 z-20 mt-2 p-3 rounded-xl"
+                style={{
+                  background: "#ffffff",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08)",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  width: "184px",
+                }}
+              >
+                <div className="grid grid-cols-5 gap-2 mb-2">
+                  {TITLE_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, title_color: color }));
+                        setShowTitleColorPicker(false);
+                      }}
+                      title={color}
+                      className="w-6 h-6 rounded-full transition-transform hover:scale-110"
+                      style={{
+                        background: color,
+                        border: formData.title_color === color ? "2px solid #1f2937" : "1px solid rgba(0,0,0,0.12)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                    <input
+                      type="color"
+                      value={formData.title_color || "#1f2937"}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, title_color: e.target.value }))}
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                    />
+                    Custom
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, title_color: undefined }));
+                      setShowTitleColorPicker(false);
+                    }}
+                    className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRefineTitle}
+            disabled={!formData.title?.trim() || isRefiningTitle}
+            title="Use AI to make this title more engaging and catchy"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              color: "#6b46d4",
+              background: "linear-gradient(135deg, rgba(124,77,255,0.10), rgba(107,150,255,0.10))",
+              boxShadow: "2px 2px 5px rgba(0,0,0,0.06), -1px -1px 3px rgba(255,255,255,0.6)",
+            }}
+          >
+            {isRefiningTitle ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Refining…</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Refine with AI</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      <input
+        type="text"
+        value={formData.title}
+        onChange={(e) => {
+          setFormData({ ...formData, title: e.target.value });
+          if (titleRefineError) setTitleRefineError("");
+          // A manual edit invalidates the "undo to previous AI version" affordance
+          if (titleBeforeRefine !== null) setTitleBeforeRefine(null);
+        }}
+        className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
+        style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)", color: formData.title_color || undefined, fontWeight: formData.title_color ? 600 : undefined }}
+        placeholder="Enter topic title"
+        required
+        maxLength={MAX_TITLE_CHARS}
+      />
+      {titleRefineError && (
+        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+          <AlertCircle className="w-3.5 h-3.5" />
+          {titleRefineError}
+        </p>
+      )}
+      {titleBeforeRefine !== null && !titleRefineError && (
+        <div className="flex items-center justify-between mt-1.5 gap-2">
+          <p className="text-xs flex items-center gap-1" style={{ color: "#6b46d4" }}>
+            <Sparkles className="w-3 h-3" />
+            Enhanced with AI. Edit freely or undo.
+          </p>
+          <button
+            type="button"
+            onClick={handleUndoRefine}
+            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <Undo2 className="w-3 h-3" />
+            Undo
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="min-w-0 max-w-full">
 
       {/* Breadcrumb / Back */}
       <div className="flex items-center justify-between">
@@ -530,18 +734,7 @@ export default function AddEditTopicPage() {
                 </div>
 
                 {/* Title */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                    style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)" }}
-                    placeholder="Enter topic title"
-                    required
-                  />
-                </div>
+                {renderTitleField()}
 
                 {/* Description */}
                 <div>
@@ -587,16 +780,17 @@ export default function AddEditTopicPage() {
                       <p className="text-xs text-gray-600">
                         Select one image from the extracted images:
                       </p>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-4 gap-3">
                         {extractedImages.map((imageUrl, index) => (
                           <div
                             key={index}
                             onClick={() => handleImageSelect(index)}
                             className="relative aspect-video rounded-xl overflow-hidden cursor-pointer transition-all"
                             style={{
+                              border: selectedImageIndex === index ? "2px solid #6b96ff" : "1px solid #d1d5db",
                               boxShadow: selectedImageIndex === index
-                                ? "0 0 0 2px #6b96ff, 3px 3px 8px rgba(0,0,0,0.10)"
-                                : "inset 2px 2px 5px rgba(0,0,0,0.06), inset -2px -2px 5px rgba(255,255,255,0.5)",
+                                ? "0 0 0 1px #6b96ff, 3px 3px 8px rgba(0,0,0,0.10)"
+                                : "2px 2px 6px rgba(0,0,0,0.06)",
                             }}
                           >
                             <img
@@ -612,18 +806,83 @@ export default function AddEditTopicPage() {
                           </div>
                         ))}
                       </div>
-                      <button
+
+                      {/* Divider */}
+                      <div className="relative py-1">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full" style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent)" }}></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span
+                            className="px-4 font-medium text-gray-400"
+                            style={{ background: "#ffffff", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                          >or upload your own</span>
+                        </div>
+                      </div>
+
+                      {/* Manual upload option */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      {formData.image_file && imagePreview ? (
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                          <img
+                            src={imagePreview}
+                            alt="Uploaded preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-semibold text-white" style={{ background: "rgba(31,41,55,0.8)" }}>
+                            Your upload
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full px-4 py-6 rounded-xl flex flex-col items-center justify-center gap-2 text-sm text-gray-500 transition-all hover:text-gray-700"
+                          style={{
+                            background: "#ffffff",
+                            border: "2px dashed #d1d5db",
+                            boxShadow: "inset 1px 1px 3px rgba(0, 0, 0, 0.03)",
+                          }}
+                        >
+                          <Upload className="w-7 h-7 text-gray-400" />
+                          <span>Upload a custom image instead</span>
+                          <span className="text-xs text-gray-400">Max 5MB · JPG, PNG, JPEG or WebP</span>
+                        </button>
+                      )}
+                      {imageError && (
+                        <p className="text-xs text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {imageError}
+                        </p>
+                      )}
+
+                      {/* <button
                         type="button"
                         onClick={() => {
                           setSelectedImageIndex(null);
                           setFormData({ ...formData, image_url: undefined, image_file: undefined });
                           setImagePreview("");
+                          setImageError("");
+                          if (fileInputRef.current) fileInputRef.current.value = "";
                         }}
                         className="text-xs font-medium transition-colors hover:underline"
                         style={{ color: "#6b7280" }}
                       >
                         Skip image
-                      </button>
+                      </button> */}
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -720,19 +979,7 @@ export default function AddEditTopicPage() {
                 </div>
 
                 {/* Title */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl focus:ring-2 focus:ring-gray-900 focus:outline-none transition-all"
-                    style={{ background: "#eff1f5", border: "none", boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)" }}
-                    placeholder="Enter topic title"
-                    required
-                    maxLength={MAX_TITLE_CHARS}
-                  />
-                </div>
+                {renderTitleField()}
 
                 {/* Description */}
                 <div>
