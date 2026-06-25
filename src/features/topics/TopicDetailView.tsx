@@ -360,10 +360,10 @@ export default function TopicDetailView() {
               </div>
             ) : topic.image ? (
               <div
-                className="w-full aspect-video rounded-xl overflow-hidden"
-                style={{ boxShadow: "4px 4px 12px rgba(0,0,0,0.10), -2px -2px 8px rgba(255,255,255,0.6)" }}
+                className="w-full aspect-video rounded-xl overflow-hidden flex items-center justify-center"
+                style={{ background: "#eff1f5", boxShadow: "4px 4px 12px rgba(0,0,0,0.10), -2px -2px 8px rgba(255,255,255,0.6)" }}
               >
-                <img src={topic.image} alt={topic.title} className="w-full h-full object-cover" />
+                <img src={topic.image} alt={topic.title} className="w-full h-full object-contain" />
               </div>
             ) : (
               <div
@@ -383,7 +383,7 @@ export default function TopicDetailView() {
             {/* Title & Status */}
             <div className="mb-4">
               <div className="flex items-start justify-between gap-3 mb-2">
-                <h1 className="text-xl font-bold text-gray-900 leading-tight">{topic.title}</h1>
+                <h1 className="text-xl font-bold text-gray-900 leading-tight" style={topic.title_color ? { color: topic.title_color } : undefined}>{topic.title}</h1>
                 <span
                   className="px-3 py-1 text-xs font-semibold rounded-full shrink-0"
                   style={

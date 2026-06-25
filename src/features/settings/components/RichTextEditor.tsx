@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import { TextStyle, Color } from '@tiptap/extension-text-style';
 import {
   Bold,
   Italic,
@@ -19,7 +20,14 @@ import {
   Heading3,
   Undo,
   Redo,
+  Baseline,
 } from 'lucide-react';
+
+// Preset text colors for the editor
+const TEXT_COLORS = [
+  '#1f2937', '#ef4444', '#f97316', '#eab308', '#22c55e',
+  '#06b6d4', '#3b82f6', '#6b96ff', '#8b5cf6', '#ec4899',
+];
 
 interface RichTextEditorProps {
   content: string;
@@ -34,6 +42,9 @@ export default function RichTextEditor({
   onChange,
   editable = true,
 }: RichTextEditorProps) {
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -47,6 +58,8 @@ export default function RichTextEditor({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      TextStyle,
+      Color.configure({ types: ['textStyle'] }),
     ],
     content,
     editable,
@@ -62,9 +75,33 @@ export default function RichTextEditor({
     }
   }, [content, editor]);
 
+  // Close the color popover when clicking outside of it
+  useEffect(() => {
+    if (!showColorPicker) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target as Node)) {
+        setShowColorPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showColorPicker]);
+
   if (!editor) {
     return null;
   }
+
+  const applyColor = (color: string) => {
+    editor.chain().focus().setColor(color).run();
+    setShowColorPicker(false);
+  };
+
+  const clearColor = () => {
+    editor.chain().focus().unsetColor().run();
+    setShowColorPicker(false);
+  };
+
+  const currentColor = editor.getAttributes('textStyle').color as string | undefined;
 
   const addLink = () => {
     const url = window.prompt('Enter URL:');
@@ -270,11 +307,81 @@ export default function RichTextEditor({
           >
             <LinkIcon className="w-4 h-4" />
           </button>
+
+          <div className="w-px mx-1" style={{ background: "rgba(0,0,0,0.08)" }} />
+
+          {/* Text Color */}
+          <div className="relative" ref={colorPickerRef}>
+            <button
+              type="button"
+              onClick={() => setShowColorPicker((s) => !s)}
+              className={`${toolbarBtnBase} flex flex-col items-center justify-center`}
+              style={getActiveStyle(!!currentColor)}
+              title="Text Color"
+            >
+              <Baseline className="w-4 h-4" />
+              <span
+                className="block w-4 rounded-full"
+                style={{ height: "3px", marginTop: "1px", background: currentColor || "#1f2937" }}
+              />
+            </button>
+            {showColorPicker && (
+              <div
+                className="absolute z-20 mt-2 p-3 rounded-xl"
+                style={{
+                  background: "#ffffff",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08)",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  width: "184px",
+                }}
+              >
+                <div className="grid grid-cols-5 gap-2 mb-2">
+                  {TEXT_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => applyColor(color)}
+                      title={color}
+                      className="w-6 h-6 rounded-full transition-transform hover:scale-110"
+                      style={{
+                        background: color,
+                        border: currentColor === color ? "2px solid #1f2937" : "1px solid rgba(0,0,0,0.12)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                    <input
+                      type="color"
+                      value={currentColor || "#1f2937"}
+                      onChange={(e) => applyColor(e.target.value)}
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                    />
+                    Custom
+                  </label>
+                  <button
+                    type="button"
+                    onClick={clearColor}
+                    className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       <div
-        onClick={() => editor.commands.focus()}
+        onClick={(e) => {
+          // Only when clicking the empty padding area (not the text itself):
+          // move the caret to the end, which collapses any active selection.
+          if (e.target === e.currentTarget) {
+            editor.commands.focus('end');
+          }
+        }}
         className={`prose prose-sm max-w-none p-4 min-h-[400px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
         style={{
           background: editable ? "#ffffff" : "#f8f9fb",

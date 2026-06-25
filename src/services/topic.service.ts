@@ -4,6 +4,7 @@ import type {
   CreateTopicDTO,
   UpdateTopicDTO,
   ArticleExtractionResponse,
+  TitleRefinementResponse,
   PaginatedResponse,
   TopicsAnalytics,
 } from "../features/topics/topic.types";
@@ -136,6 +137,24 @@ export const extractArticleFromUrl = async (
       detail: error.response?.data?.detail || "Failed to extract article content",
       success: false,
       error: error.response?.data?.detail || "Failed to extract article content",
+    };
+  }
+};
+
+export const refineTitleWithAI = async (
+  title: string
+): Promise<TitleRefinementResponse> => {
+  try {
+    const response = await api.post<TitleRefinementResponse>(
+      "topics/admin/refine-title/",
+      { title }
+    );
+    return response.data;
+  } catch (error: any) {
+    return {
+      detail: error.response?.data?.detail || "Failed to refine title",
+      success: false,
+      error: error.response?.data?.detail || "Failed to refine title",
     };
   }
 };
