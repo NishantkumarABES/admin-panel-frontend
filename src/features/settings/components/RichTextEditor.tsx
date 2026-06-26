@@ -33,6 +33,8 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   editable?: boolean;
+  /** Minimum height of the editable area. Defaults to "400px". */
+  minHeight?: string;
 }
 
 const toolbarBtnBase = "p-2 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed";
@@ -41,6 +43,7 @@ export default function RichTextEditor({
   content,
   onChange,
   editable = true,
+  minHeight = "400px",
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -382,9 +385,10 @@ export default function RichTextEditor({
             editor.commands.focus('end');
           }
         }}
-        className={`prose prose-sm max-w-none p-4 min-h-[400px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
+        className={`prose prose-sm max-w-none p-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar cursor-text outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror:focus]:outline-none ${editable ? '' : ''}`}
         style={{
           background: editable ? "#ffffff" : "#f8f9fb",
+          minHeight,
         }}
       >
         <EditorContent
