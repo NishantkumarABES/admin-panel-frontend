@@ -474,7 +474,7 @@ export default function AddEditTopicPage() {
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Refine with AI</span>
+                <span>Rewrite with AI</span>
               </>
             )}
           </button>
