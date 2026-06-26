@@ -5,10 +5,11 @@ import type {
 } from "./topic.types";
 
 import {
-  Link, AlertCircle, Loader2, Check, Upload, X, ArrowLeft, Sparkles, Undo2, Baseline,
+  Link, AlertCircle, Loader2, Check, Upload, X, ArrowLeft, Sparkles, Undo2, Baseline, Crop,
 } from "lucide-react";
 import * as topicService from "../../services/topic.service";
 import RichTextEditor from "../settings/components/RichTextEditor";
+import ImageEditor, { MIN_OUTPUT_W, MIN_OUTPUT_H } from "./components/ImageEditor";
 import { stripHtml } from "../../utils/stripHtml";
 
 const MAX_DESCRIPTION_CHARS = 500;
@@ -62,6 +63,62 @@ const AI_MESSAGES = [
   "Summarizing with AI…",
 ];
 
+// Load a (possibly remote) image URL into a same-origin Blob the editor can crop.
+//
+// Primary path: ask our own backend to return the bytes. Extracted/topic images
+// live on a bucket/CDN that serves them without CORS headers, so a browser-side
+// fetch (and any crossOrigin canvas built from the cached preview) is blocked —
+// that is exactly the CORS error this previously produced. Routing through our
+// API makes the request same-origin, so there is nothing to taint or block.
+//
+// Fallback path: if the proxy is unavailable, try a direct CORS fetch, then a
+// crossOrigin <img> re-encoded via canvas, rejecting when even that cannot
+// produce pixels.
+const loadImageAsBlob = async (url: string): Promise<Blob> => {
+  try {
+    const blob = await topicService.fetchImageBlob(url);
+    if (blob.size > 0 && blob.type.startsWith("image/")) return blob;
+  } catch {
+    // Proxy unavailable — fall through to direct fetch / canvas approaches.
+  }
+
+  try {
+    const res = await fetch(url, { mode: "cors", cache: "reload" });
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.size > 0 && blob.type.startsWith("image/")) return blob;
+    }
+  } catch {
+    // Direct fetch blocked — fall through to the canvas approach.
+  }
+
+  return new Promise<Blob>((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas not supported"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      try {
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Encoding failed"))),
+          "image/png"
+        );
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = () => reject(new Error("Image load failed"));
+    img.src = url;
+  });
+};
+
 export default function AddEditTopicPage() {
   const navigate = useNavigate();
 
@@ -83,6 +140,9 @@ export default function AddEditTopicPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [imageError, setImageError] = useState("");
+  // Image editor (crop / resize / preview) state. `owned` marks a src whose
+  // object URL was created for the editor and must be revoked on close.
+  const [editorState, setEditorState] = useState<{ src: string; name: string; type: string; owned: boolean } | null>(null);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [sourceUrlError, setSourceUrlError] = useState("");
 
@@ -227,10 +287,75 @@ export default function AddEditTopicPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    setImageError("");
-    setFormData({ ...formData, image_file: file, image_url: undefined });
-    setImagePreview(URL.createObjectURL(file));
+    // Dimension validation: the source must be large enough to crop a 9:16
+    // portrait that meets the app's minimum, so the editor never has to upscale.
+    const objectUrl = URL.createObjectURL(file);
+    const probe = new Image();
+    probe.onload = () => {
+      if (probe.naturalWidth < MIN_OUTPUT_W || probe.naturalHeight < MIN_OUTPUT_H) {
+        setImageError(
+          `Image is too small (${probe.naturalWidth}×${probe.naturalHeight}px). Please use a portrait image of at least ${MIN_OUTPUT_W}×${MIN_OUTPUT_H}px so it stays sharp full-screen in the app.`
+        );
+        URL.revokeObjectURL(objectUrl);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      setImageError("");
+      // Open the editor so the admin can crop/reposition before committing the image
+      setEditorState({ src: objectUrl, name: file.name, type: file.type, owned: true });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    probe.onerror = () => {
+      setImageError("Could not read this image. Please try a different file.");
+      URL.revokeObjectURL(objectUrl);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    probe.src = objectUrl;
+  };
+
+  // Save the edited (cropped/resized) image from the editor
+  const handleEditorSave = (file: File, previewUrl: string) => {
+    if (editorState?.owned) URL.revokeObjectURL(editorState.src);
+    setFormData((prev) => ({ ...prev, image_file: file, image_url: undefined }));
+    setImagePreview(previewUrl);
     setSelectedImageIndex(null);
+    setImageError("");
+    setEditorState(null);
+  };
+
+  // Close the editor without applying changes
+  const handleEditorCancel = () => {
+    if (editorState?.owned) URL.revokeObjectURL(editorState.src);
+    setEditorState(null);
+  };
+
+  // Open the editor for the current image — a freshly uploaded/cropped file or a
+  // selected extracted image (remote URL).
+  const handleEditCurrentImage = async () => {
+    if (!imagePreview) return;
+    // A freshly uploaded/cropped file is already a same-origin blob — edit directly.
+    if (formData.image_file) {
+      setEditorState({
+        src: imagePreview,
+        name: formData.image_file.name,
+        type: formData.image_file.type,
+        owned: false,
+      });
+      return;
+    }
+    // A selected extracted image is a remote URL — fetch it as a same-origin blob
+    // so the editor's canvas can crop it without CORS tainting.
+    if (formData.image_url) {
+      try {
+        setImageError("");
+        const blob = await loadImageAsBlob(formData.image_url);
+        const objUrl = URL.createObjectURL(blob);
+        const name = formData.image_url.split("/").pop()?.split("?")[0] || "topic-image.png";
+        setEditorState({ src: objUrl, name, type: blob.type || "image/png", owned: true });
+      } catch {
+        setImageError("Unable to load this image for editing. Please upload a new image instead.");
+      }
+    }
   };
 
   // Remove uploaded/selected image
@@ -747,6 +872,7 @@ export default function AddEditTopicPage() {
                       setFormData({ ...formData, description: html })
                     }
                     editable={true}
+                    minHeight="150px"
                   />
                   <div className="mt-1.5">
                     <div
@@ -807,6 +933,23 @@ export default function AddEditTopicPage() {
                         ))}
                       </div>
 
+                      {/* Crop/edit the selected extracted image (same editor as uploads) */}
+                      {selectedImageIndex !== null && !formData.image_file && (
+                        <button
+                          type="button"
+                          onClick={handleEditCurrentImage}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all"
+                          style={{
+                            color: "#4369d4",
+                            background: "rgba(107,150,255,0.10)",
+                            boxShadow: "inset 1px 1px 3px rgba(107,150,255,0.15), inset -1px -1px 3px rgba(255,255,255,0.5)",
+                          }}
+                        >
+                          <Crop className="w-4 h-4" />
+                          Edit / crop selected image
+                        </button>
+                      )}
+
                       {/* Divider */}
                       <div className="relative py-1">
                         <div className="absolute inset-0 flex items-center">
@@ -829,7 +972,11 @@ export default function AddEditTopicPage() {
                         className="hidden"
                       />
                       {formData.image_file && imagePreview ? (
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                        <div
+                          className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
+                          style={{ aspectRatio: "4 / 3", maxHeight: 360 }}
+                        >
+                          {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
                           <img
                             src={imagePreview}
                             alt="Uploaded preview"
@@ -838,6 +985,16 @@ export default function AddEditTopicPage() {
                           <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-semibold text-white" style={{ background: "rgba(31,41,55,0.8)" }}>
                             Your upload
                           </div>
+                          {formData.image_file && (
+                            <button
+                              type="button"
+                              onClick={handleEditCurrentImage}
+                              title="Edit image (crop / resize)"
+                              className="absolute top-2 right-11 p-1.5 bg-white/90 text-gray-700 rounded-full hover:bg-white transition-colors shadow"
+                            >
+                              <Crop className="w-4 h-4" />
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={handleRemoveImage}
@@ -897,12 +1054,26 @@ export default function AddEditTopicPage() {
                         className="hidden"
                       />
                       {imagePreview ? (
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                        <div
+                          className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
+                          style={{ aspectRatio: "4 / 3", maxHeight: 360 }}
+                        >
+                          {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
                           <img
                             src={imagePreview}
                             alt="Uploaded preview"
                             className="w-full h-full object-cover"
                           />
+                          {formData.image_file && (
+                            <button
+                              type="button"
+                              onClick={handleEditCurrentImage}
+                              title="Edit image (crop / resize)"
+                              className="absolute top-2 right-11 p-1.5 bg-white/90 text-gray-700 rounded-full hover:bg-white transition-colors shadow"
+                            >
+                              <Crop className="w-4 h-4" />
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={handleRemoveImage}
@@ -992,6 +1163,7 @@ export default function AddEditTopicPage() {
                       setFormData({ ...formData, description: html })
                     }
                     editable={true}
+                    minHeight="150px"
                   />
                   <div className="mt-1.5">
                     <div
@@ -1022,12 +1194,23 @@ export default function AddEditTopicPage() {
                     className="hidden"
                   />
                   {imagePreview ? (
-                    <div className="relative w-full aspect-video rounded-lg overflow-hidden" style={{ boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
+                    <div className="relative mx-auto rounded-lg overflow-hidden bg-gray-100" style={{ aspectRatio: "4 / 3", maxHeight: 360, boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
+                      {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
                       <img
                         src={imagePreview}
                         alt="Uploaded preview"
                         className="w-full h-full object-cover"
                       />
+                      {formData.image_file && (
+                        <button
+                          type="button"
+                          onClick={handleEditCurrentImage}
+                          title="Edit image (crop / resize)"
+                          className="absolute top-2 right-11 p-1.5 bg-white/90 text-gray-700 rounded-full hover:bg-white transition-colors shadow"
+                        >
+                          <Crop className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={handleRemoveImage}
@@ -1132,6 +1315,16 @@ export default function AddEditTopicPage() {
           </div>
         )}
       </div>
+
+      {editorState && (
+        <ImageEditor
+          src={editorState.src}
+          fileName={editorState.name}
+          fileType={editorState.type}
+          onCancel={handleEditorCancel}
+          onSave={handleEditorSave}
+        />
+      )}
     </div>
   );
 }

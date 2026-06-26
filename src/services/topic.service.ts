@@ -159,6 +159,17 @@ export const refineTitleWithAI = async (
   }
 };
 
+// Fetch a topic image's bytes through our own API so the editor can crop/resize
+// it. The image bucket/CDN serves images without CORS headers, so a direct
+// browser fetch is blocked; this same-origin proxy returns the raw bytes.
+export const fetchImageBlob = async (imageUrl: string): Promise<Blob> => {
+  const response = await api.get("topics/admin/image-proxy/", {
+    params: { url: imageUrl },
+    responseType: "blob",
+  });
+  return response.data as Blob;
+};
+
 export const cleanupUnwantedImages = async (imageUrls: string[]) => {
   try {
     await api.post("topics/admin/cleanup-unwanted-images/", {
