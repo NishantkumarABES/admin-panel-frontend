@@ -1,5 +1,24 @@
 export type TopicStatus = "unpublished" | "published"; // "scheduled" removed for simplicity
 
+// Article mood / writing-style options. The value is sent to the backend as-is
+// and must match the `Mood` choices in apps/topics/constants.py exactly.
+export const MOOD_OPTIONS = [
+  "Neutral",
+  "Professional",
+  "Promotional",
+  "Simplified",
+  "Patient-Friendly",
+  "Academic / Physician-Facing",
+  "Conversational",
+  "Creative",
+  "Serious",
+  "Empathetic",
+] as const;
+
+export type Mood = (typeof MOOD_OPTIONS)[number];
+
+export const DEFAULT_MOOD: Mood = "Neutral";
+
 // Transcription Status Types
 export type TranscriptionStatus =
   | "pending"
