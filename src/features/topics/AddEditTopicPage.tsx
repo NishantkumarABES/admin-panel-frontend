@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type {
-  CreateTopicDTO, ArticleExtractionResponse,
+  CreateTopicDTO, ArticleExtractionResponse, Mood,
 } from "./topic.types";
+import { MOOD_OPTIONS, DEFAULT_MOOD } from "./topic.types";
 
 import {
   Link, AlertCircle, Loader2, Check, Upload, X, ArrowLeft, Sparkles, Undo2, Baseline, Crop,
@@ -127,6 +128,10 @@ export default function AddEditTopicPage() {
   const [articleUrl, setArticleUrl] = useState("");
   const [urlError, setUrlError] = useState("");
 
+  // Selected article mood / writing style. Persists across the whole workflow
+  // (URL input → review/refine) and is injected into every AI-powered action.
+  const [mood, setMood] = useState<Mood>(DEFAULT_MOOD);
+
   // Form data
   const [formData, setFormData] = useState<CreateTopicDTO>(initialFormData);
 
@@ -235,7 +240,7 @@ export default function AddEditTopicPage() {
     setProcessingError("");
     setMode("ai_processing");
     try {
-      const result = await topicService.extractArticleFromUrl(articleUrl);
+      const result = await topicService.extractArticleFromUrl(articleUrl, mood);
       if (result.success && result.data?.title && result.data?.summary) {
         setExtractedData(result);
         setExtractedImages(result.data.images || []);
@@ -383,7 +388,7 @@ export default function AddEditTopicPage() {
     setTitleRefineError("");
     setIsRefiningTitle(true);
     try {
-      const result = await topicService.refineTitleWithAI(current);
+      const result = await topicService.refineTitleWithAI(current, mood);
       if (result.success && result.data?.refined_title) {
         setTitleBeforeRefine(current);
         setFormData((prev) => ({ ...prev, title: result.data!.refined_title }));
@@ -501,12 +506,39 @@ export default function AddEditTopicPage() {
   const activeFormId = mode === "ai_success" ? "topic-ai-success-form" : mode === "manual" ? "topic-manual-form" : undefined;
   const showFooter = mode === "ai_success" || mode === "manual";
 
+  // Mood <option> list — Neutral is labelled as the default choice.
+  const renderMoodOptions = () =>
+    MOOD_OPTIONS.map((m) => (
+      <option key={m} value={m}>
+        {m === "Neutral" ? "Neutral (Default)" : m}
+      </option>
+    ));
+
   // Title field with an AI "Refine" action — shared by manual & AI-success forms
   const renderTitleField = () => (
     <div>
-      <div className="flex items-center justify-between mb-2 gap-3">
+      <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
         <label className="block text-sm font-semibold text-gray-800">Title *</label>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Mood selector — kept in sync with the URL screen; changing it and
+              clicking "Rewrite with AI" regenerates the title in the new tone. */}
+          <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+            <span className="hidden sm:inline">Mood</span>
+            <select
+              value={mood}
+              onChange={(e) => setMood(e.target.value as Mood)}
+              title="Mood — the tone the AI uses when rewriting the title"
+              className="text-xs font-semibold rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-gray-900"
+              style={{
+                color: "#374151",
+                background: "#eff1f5",
+                boxShadow: "2px 2px 5px rgba(0,0,0,0.06), -1px -1px 3px rgba(255,255,255,0.6)",
+              }}
+            >
+              {renderMoodOptions()}
+            </select>
+          </label>
+
           {/* Title color picker */}
           <div className="relative" ref={titleColorRef}>
             <button
@@ -775,6 +807,33 @@ export default function AddEditTopicPage() {
                   )}
                   <p className="text-xs text-gray-500 mt-1.5">
                     We'll extract the title, summary, and images automatically.
+                  </p>
+                </div>
+
+                {/* Mood / writing style — defaults to Neutral; influences the AI
+                    title generation and summary, and persists into the next step. */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Mood
+                  </label>
+                  <select
+                    value={mood}
+                    onChange={(e) => setMood(e.target.value as Mood)}
+                    className="w-full sm:max-w-60 appearance-none pl-4 pr-10 py-2.5 text-sm rounded-xl outline-none transition-all focus:ring-2 focus:ring-gray-900"
+                    style={{
+                      background: "#eff1f5",
+                      backgroundImage:
+                        "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 0.85rem center",
+                      border: "none",
+                      boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {renderMoodOptions()}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Sets the writing style the AI uses for the generated title and summary. Defaults to Neutral.
                   </p>
                 </div>
 

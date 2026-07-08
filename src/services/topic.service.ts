@@ -124,12 +124,13 @@ export const togglePublishStatus = async (id: string) => {
 };
 
 export const extractArticleFromUrl = async (
-  url: string
+  url: string,
+  mood?: string
 ): Promise<ArticleExtractionResponse> => {
   try {
     const response = await api.post<ArticleExtractionResponse>(
       "topics/admin/extract-article/",
-      { url }
+      { url, ...(mood ? { mood } : {}) }
     );
     return response.data;
   } catch (error: any) {
@@ -142,12 +143,13 @@ export const extractArticleFromUrl = async (
 };
 
 export const refineTitleWithAI = async (
-  title: string
+  title: string,
+  mood?: string
 ): Promise<TitleRefinementResponse> => {
   try {
     const response = await api.post<TitleRefinementResponse>(
       "topics/admin/refine-title/",
-      { title }
+      { title, ...(mood ? { mood } : {}) }
     );
     return response.data;
   } catch (error: any) {
