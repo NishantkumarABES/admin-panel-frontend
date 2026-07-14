@@ -30,20 +30,20 @@ const SHOW_RESIZE_OUTPUT = false;
  *
  * Topic images render in a fixed-aspect card and are cover-cropped to fill it
  * (no letterboxing): a topic with no description uses 4:5 (`image_full`), and one
- * with a description shows its image area in 4:3 (`image_text`). Because the app
+ * with a description shows its image area in 4:3.7 (`image_text`). Because the app
  * cover-crops, the stored image must already match the card ratio — anything that
  * doesn't gets trimmed on screen.
  *
  * Every topic created here requires a description, so it always renders as
- * `image_text`. We therefore lock the crop to 4:3 (the image_text ratio): the
- * editor exports exactly 4:3, the card displays 4:3, so the app's cover-crop
- * trims nothing. Backend should store topic images at this ratio (4:3 → 1080×810)
+ * `image_text`. We therefore lock the crop to 4:3.7 (the image_text ratio): the
+ * editor exports exactly 4:3.7, the card displays 4:3.7, so the app's cover-crop
+ * trims nothing. Backend should store topic images at this ratio (4:3.7 → 1080×999)
  * so they stay sharp full-width.
  */
-export const TARGET_ASPECT = 4 / 3;
-export const TARGET_ASPECT_LABEL = "4:3";
+export const TARGET_ASPECT = 4 / 3.7;
+export const TARGET_ASPECT_LABEL = "4:3.7";
 export const MIN_OUTPUT_W = 40;
-export const MIN_OUTPUT_H = 30;
+export const MIN_OUTPUT_H = 37;
 
 const OUTPUT_SIZES: { key: string; label: string; max: number | null }[] = [
   { key: "original", label: "Original size", max: null },
@@ -82,7 +82,7 @@ export default function ImageEditor({
   const prevDisplayRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
 
   const [crop, setCrop] = useState<Rect>({ x: 0, y: 0, w: 0, h: 0 });
-  // The crop aspect is locked to the app's topic-card ratio (4:3, image_text) so
+  // The crop aspect is locked to the app's topic-card ratio (4:3.7, image_text) so
   // the exported image already matches the card and the app's cover-crop trims
   // nothing.
   const aspect = TARGET_ASPECT;

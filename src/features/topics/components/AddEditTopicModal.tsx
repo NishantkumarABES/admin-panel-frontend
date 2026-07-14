@@ -727,7 +727,7 @@ export default function AddEditTopicModal({
                         {/* Connector line */}
                         {idx < STEPS.length - 1 && (
                           <div
-                            className="w-8 sm:w-12 h-[2px] mx-1.5"
+                            className="w-8 sm:w-12 h-0.5 mx-1.5"
                             style={{
                               background: getStepState(idx + 1, mode) !== "upcoming" ? "#4fcfa5" : "#d1d5db",
                             }}

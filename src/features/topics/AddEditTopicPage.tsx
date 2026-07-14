@@ -1033,9 +1033,9 @@ export default function AddEditTopicPage() {
                       {formData.image_file && imagePreview ? (
                         <div
                           className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
-                          style={{ aspectRatio: "4 / 3", maxHeight: 360 }}
+                          style={{ aspectRatio: "4 / 3.7", maxHeight: 360 }}
                         >
-                          {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
+                          {/* 4:3.7 box + object-cover mirrors how the app cover-crops the topic-card image */}
                           <img
                             src={imagePreview}
                             alt="Uploaded preview"
@@ -1115,9 +1115,9 @@ export default function AddEditTopicPage() {
                       {imagePreview ? (
                         <div
                           className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
-                          style={{ aspectRatio: "4 / 3", maxHeight: 360 }}
+                          style={{ aspectRatio: "4 / 3.7", maxHeight: 360 }}
                         >
-                          {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
+                          {/* 4:3.7 box + object-cover mirrors how the app cover-crops the topic-card image */}
                           <img
                             src={imagePreview}
                             alt="Uploaded preview"
@@ -1253,8 +1253,8 @@ export default function AddEditTopicPage() {
                     className="hidden"
                   />
                   {imagePreview ? (
-                    <div className="relative mx-auto rounded-lg overflow-hidden bg-gray-100" style={{ aspectRatio: "4 / 3", maxHeight: 360, boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
-                      {/* 4:3 box + object-cover mirrors how the app cover-crops the topic-card image */}
+                    <div className="relative mx-auto rounded-lg overflow-hidden bg-gray-100" style={{ aspectRatio: "4 / 3.7", maxHeight: 360, boxShadow: "2px 2px 6px rgba(0,0,0,0.06), -2px -2px 6px rgba(255,255,255,0.8)" }}>
+                      {/* 4:3.7 box + object-cover mirrors how the app cover-crops the topic-card image */}
                       <img
                         src={imagePreview}
                         alt="Uploaded preview"
