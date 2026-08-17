@@ -28,22 +28,14 @@ const SHOW_RESIZE_OUTPUT = false;
  * Mobile display requirements — derived from the app feed (clinic-topics-app
  * `src/screens/Main/Home/Home.tsx`).
  *
- * Topic images render in a fixed-aspect card and are cover-cropped to fill it
- * (no letterboxing): a topic with no description uses 4:5 (`image_full`), and one
- * with a description shows its image area in 4:3.7 (`image_text`). Because the app
- * cover-crops, the stored image must already match the card ratio — anything that
- * doesn't gets trimmed on screen.
- *
- * Every topic created here requires a description, so it always renders as
- * `image_text`. We therefore lock the crop to 4:3.7 (the image_text ratio): the
- * editor exports exactly 4:3.7, the card displays 4:3.7, so the app's cover-crop
- * trims nothing. Backend should store topic images at this ratio (4:3.7 → 1080×999)
- * so they stay sharp full-width.
+ * Topic cards use a consistent 4:5 portrait crop so they feel taller and more
+ * editorial. The app cover-crops images to fill the fixed aspect card, so the
+ * uploaded/stored image should already match the final ratio.
  */
-export const TARGET_ASPECT = 4 / 3.7;
-export const TARGET_ASPECT_LABEL = "4:3.7";
+export const TARGET_ASPECT = 4 / 5;
+export const TARGET_ASPECT_LABEL = "4:5";
 export const MIN_OUTPUT_W = 40;
-export const MIN_OUTPUT_H = 37;
+export const MIN_OUTPUT_H = 50;
 
 const OUTPUT_SIZES: { key: string; label: string; max: number | null }[] = [
   { key: "original", label: "Original size", max: null },
@@ -355,7 +347,7 @@ export default function ImageEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/60" onClick={onCancel} />
 
       <div
