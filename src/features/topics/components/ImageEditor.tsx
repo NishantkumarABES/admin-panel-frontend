@@ -28,14 +28,14 @@ const SHOW_RESIZE_OUTPUT = false;
  * Mobile display requirements — derived from the app feed (clinic-topics-app
  * `src/screens/Main/Home/Home.tsx`).
  *
- * Topic cards use a consistent 4:5 portrait crop so they feel taller and more
- * editorial. The app cover-crops images to fill the fixed aspect card, so the
- * uploaded/stored image should already match the final ratio.
+ * Topic cards use the default 4:3 layout. The app cover-crops images to fill the
+ * fixed aspect card, so the uploaded/stored image should already match the final
+ * ratio.
  */
-export const TARGET_ASPECT = 4 / 5;
-export const TARGET_ASPECT_LABEL = "4:5";
+export const TARGET_ASPECT = 4 / 3;
+export const TARGET_ASPECT_LABEL = "4:3";
 export const MIN_OUTPUT_W = 40;
-export const MIN_OUTPUT_H = 50;
+export const MIN_OUTPUT_H = 30;
 
 const OUTPUT_SIZES: { key: string; label: string; max: number | null }[] = [
   { key: "original", label: "Original size", max: null },
